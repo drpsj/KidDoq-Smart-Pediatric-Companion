@@ -158,7 +158,7 @@
         document.getElementById('rxLedgerView').style.display = 'block';
         document.getElementById('rxDraftView').style.display = 'none';
         
-        // 1. Data Migration: Convert old prototype Rx data into the new Ledger format
+        // 1. Data Migration
         if (!p.visits) p.visits = [];
         if (p.rxList && p.rxList.length > 0 && p.visits.length === 0) {
             p.visits.push({
@@ -169,8 +169,8 @@
                 review: p.review || "",
                 rxList: [...p.rxList]
             });
-            p.rxList = []; // Clear the old format
-            DB.savePatient(p); // Silently save the migration
+            p.rxList = []; 
+            DB.savePatient(p); 
         }
 
         // 2. Render the Ledger
@@ -204,16 +204,14 @@
         document.getElementById('rxDraftView').style.display = 'block';
         document.getElementById('draftDateText').innerText = new Date().toLocaleDateString('en-IN');
         
-        // Wipe the draft slate clean
         document.getElementById('rxDiagnosis').value = "";
         document.getElementById('rxTests').value = "";
         document.getElementById('rxAdvice').value = "";
         document.getElementById('rxReview').value = "";
         
-        // Wipe the draft Rx cart
         if(activePatientId) {
             globalPatientsStore[activePatientId].rxList = []; 
-            renderRxCartList();
+            if(typeof renderRxCartList === 'function') renderRxCartList();
         }
     }
 
@@ -223,7 +221,6 @@
         }
     }
 
-    // --- SAFE EHR FINALIZATION ENGINE ---
     async function finalizeVisit() {
         if(!activePatientId) return;
         const p = globalPatientsStore[activePatientId];
@@ -244,10 +241,9 @@
         await DB.savePatient(p); 
         
         if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored in Ledger");
-        if(typeof renderVisitLedger === 'function') renderVisitLedger(); 
+        renderVisitLedger(); 
     }
 
-    // --- PHASE 5: ORDER SETS (RX TEMPLATES) ---
     function applyOrderSet(setId) {
         if(!activePatientId || !setId) return;
         
@@ -293,55 +289,12 @@
         if(adviceInput) adviceInput.value = advice;
 
         p.rxList = p.rxList.concat(newRx);
-        globalPatientsStore[activePatientId] = p; // Sync memory instantly
+        globalPatientsStore[activePatientId] = p; 
         
         if(typeof renderRxCartList === 'function') renderRxCartList();
         if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
         
         document.getElementById('orderSetSelect').value = "";
-    }
-
-        // 3. Update the UI Text Inputs safely
-        const dxInput = document.getElementById('rxDiagnosis');
-        const adviceInput = document.getElementById('rxAdvice');
-        if(dxInput) dxInput.value = dx;
-        if(adviceInput) adviceInput.value = advice;
-
-        // 4. Push new drugs and save instantly to prevent data loss
-        p.rxList = p.rxList.concat(newRx);
-        globalPatientsStore[activePatientId] = p; // Sync memory
-        
-        // 5. Force the UI to re-render the cart and reset the dropdown
-        if(typeof renderRxCartList === 'function') renderRxCartList();
-        if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
-        
-        document.getElementById('orderSetSelect').value = "";
-    }
-
-        // 3. Force update the HTML DOM inputs
-        const dxInput = document.getElementById('rxDiagnosis');
-        const adviceInput = document.getElementById('rxAdvice');
-        
-        if(dxInput) dxInput.value = dx;
-        if(adviceInput) adviceInput.value = advice;
-
-        // 4. Safely push new drugs into the array
-        p.rxList = p.rxList.concat(newRx);
-
-        // 5. Force the UI to re-render the cart and reset the dropdown
-        if(typeof renderRxCartList === 'function') renderRxCartList();
-        if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
-        
-        document.getElementById('orderSetSelect').value = "";
-    }
-        
-        p.visits.push(newVisit); // Push to ledger
-        p.rxList = []; // Clear the draft cart
-        
-        await DB.savePatient(p); // Save to database
-        
-        if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored in Ledger");
-        renderVisitLedger(); // Return to ledger view
     }
 
     function renderRxCartList() { 
@@ -352,7 +305,7 @@
             <div>
                 <strong style="display:block; font-size:1.05rem; color:var(--primary-dark);">${r.name}</strong>
                 <span style="font-size:0.9rem; color:var(--text-main); font-weight:600;">${r.vol} ${r.unit} — ${r.freq}</span>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">${r.details}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">${r.details || ""}</div>
             </div>
             <button onclick="removeDrugFromCart(${i})" style="background:var(--danger); color:white; border:none; padding:8px 12px; border-radius:var(--radius-md); cursor:pointer; font-weight:bold;">X</button>
         </div>`).join(""); 
