@@ -399,6 +399,9 @@
             return;
         }
         
+        // 🚨 THE CRITICAL FIX: Sync the downloaded patient to active memory 🚨
+        if(typeof globalPatientsStore !== 'undefined') globalPatientsStore[id] = p;
+        
         document.getElementById('pName').value = p.name || "";
         document.getElementById('dob').value = p.dob || "";
         document.getElementById('pPhone').value = p.phone || "";

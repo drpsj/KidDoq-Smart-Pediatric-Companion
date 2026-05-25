@@ -237,11 +237,11 @@
             rxList: [...(p.rxList || [])] // Take whatever is in the active cart
         };
 
-        // --- PHASE 5: ORDER SETS (RX TEMPLATES) BUG FIX ---
-    function applyOrderSet(setId) {
+        // --- PHASE 5: ORDER SETS (RX TEMPLATES) ---
+    async function applyOrderSet(setId) {
         if(!activePatientId || !setId) return;
         
-        // 1. Ensure patient object and rxList array exist safely
+        // 1. Fetch safely from active memory
         let p = globalPatientsStore[activePatientId];
         if (!p) return;
         if (!p.rxList) p.rxList = []; 
@@ -253,7 +253,7 @@
         let advice = "";
         let newRx = [];
 
-        // 2. Protocol Router (Now with Advice included)
+        // 2. Protocol Router
         if (setId === 'os_aom') {
             dx = "Acute Otitis Media";
             advice = "Keep ear dry. Do not insert cotton buds. Follow up in 5 days or earlier if fever spikes.";
@@ -278,6 +278,23 @@
             advice = "Tepid sponging for high fever. Ensure adequate fluid intake. Monitor for rashes or decreased oral intake.";
             newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS Q6H for Fever" });
         }
+
+        // 3. Update the UI Text Inputs safely
+        const dxInput = document.getElementById('rxDiagnosis');
+        const adviceInput = document.getElementById('rxAdvice');
+        if(dxInput) dxInput.value = dx;
+        if(adviceInput) adviceInput.value = advice;
+
+        // 4. Push new drugs and save instantly to prevent data loss
+        p.rxList = p.rxList.concat(newRx);
+        globalPatientsStore[activePatientId] = p; // Sync memory
+        
+        // 5. Force the UI to re-render the cart and reset the dropdown
+        if(typeof renderRxCartList === 'function') renderRxCartList();
+        if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
+        
+        document.getElementById('orderSetSelect').value = "";
+    }
 
         // 3. Force update the HTML DOM inputs
         const dxInput = document.getElementById('rxDiagnosis');
