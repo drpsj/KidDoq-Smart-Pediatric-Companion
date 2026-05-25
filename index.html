@@ -335,6 +335,17 @@
                                 <button onclick="cancelNewVisit()" style="background:var(--bg-body); color:var(--text-muted); border:1px solid var(--border-soft); border-radius:50%; width:36px; height:36px; cursor:pointer; font-weight:bold; transition:all 0.2s;">✖</button>
                             </div>
                             
+                            <div style="margin-bottom: 20px; padding: 12px 15px; background: rgba(91,97,246,0.06); border: 1px dashed var(--primary); border-radius: var(--radius-md);">
+                                <label style="color: var(--primary-dark); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block;">⚡ Quick Protocol (Order Sets)</label>
+                                <select id="orderSetSelect" onchange="applyOrderSet(this.value)" style="width: 100%; font-weight: 600; color: var(--primary); border: 1px solid var(--border-soft); border-radius: 6px; padding: 8px;">
+                                    <option value="">-- Select a Clinical Protocol to Auto-Fill --</option>
+                                    <option value="os_aom">Acute Otitis Media (AOM)</option>
+                                    <option value="os_uri">Viral Upper Respiratory Infection (URI)</option>
+                                    <option value="os_age">Acute Gastroenteritis (Mild Dehydration)</option>
+                                    <option value="os_fever">Acute Febrile Illness</option>
+                                </select>
+                            </div>
+                            
                             <div class="tool-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                                 <div>
                                     <label>Complaints / Differential Diagnosis</label>
