@@ -107,28 +107,26 @@ function getPrintHeaderHTML(title, patientObj) {
         if (mode === 'rx') {
             html += getPrintHeaderHTML("PRESCRIPTION", p);
             
-            // 1. AI Logic: Decide whether to print the Active Draft OR the Latest Finalized Visit
+            // --- SMART PRINT LOGIC ---
+            // It decides whether to print the Active Draft OR the Latest Finalized Visit
             let printRxList = [];
-            let printDx = "";
-            let printAdvice = "";
-            let printTests = "";
+            let printDx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
+            let printAdvice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
+            let printTests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
             
             if (p.rxList && p.rxList.length > 0) {
                 // Patient has an active draft open, print the draft
                 printRxList = p.rxList;
-                printDx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
-                printAdvice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
-                printTests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
             } else if (p.visits && p.visits.length > 0) {
                 // Draft is empty, so print the most recently finalized visit
                 let latestVisit = p.visits[p.visits.length - 1];
                 printRxList = latestVisit.rxList || [];
-                printDx = latestVisit.diagnosis || "";
-                printAdvice = latestVisit.advice || "";
-                printTests = latestVisit.tests || "";
+                if (!printDx) printDx = latestVisit.diagnosis || "";
+                if (!printAdvice) printAdvice = latestVisit.advice || "";
+                if (!printTests) printTests = latestVisit.tests || "";
             }
             
-            // 2. Build the Print UI
+            // --- BUILD THE Rx UI ---
             html += `<div style="margin-bottom: 20px; font-family: sans-serif; color: #333;">
                         <b style="color: #1e3a8a;">Diagnosis:</b> ${printDx || "____________________"}
                      </div>`;
@@ -167,11 +165,9 @@ function getPrintHeaderHTML(title, patientObj) {
         if (mode === 'comprehensive') {
             html += getPrintHeaderHTML("COMPREHENSIVE CLINICAL SUMMARY", p);
             
-            // 1. Core Vitals & Triage Snapshot
             let maln = extractToolResult('malnGridOutput'); 
             if(maln) html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Triage & Anthropometry</h3>${maln}`;
             
-            // 2. The Longitudinal Medical Ledger (Discharge Summary)
             html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">Longitudinal Medical History</h3>`;
             
             if (p.visits && p.visits.length > 0) {
@@ -190,7 +186,6 @@ function getPrintHeaderHTML(title, patientObj) {
                 html += `<p style="font-family:sans-serif; color:#64748b;">No historical encounters recorded.</p>`;
             }
             
-            // 3. Add Vaccine Timeline at the end
             html += `<div class="page-break"></div>`;
             html += getPrintHeaderHTML("IMMUNIZATION STATUS", p);
             html += document.getElementById('timelineOutput').innerHTML; 
@@ -210,14 +205,11 @@ function getPrintHeaderHTML(title, patientObj) {
         engine.innerHTML = ""; 
         engine.innerHTML = html; 
         
-        // THE FIX: Temporarily disable Dark Mode for the printer
         const wasDarkMode = document.body.classList.contains('dark-mode');
         if (wasDarkMode) document.body.classList.remove('dark-mode');
 
         setTimeout(() => {
             window.print();
-            
-            // Restore Dark Mode the millisecond the print dialog closes
             if (wasDarkMode) document.body.classList.add('dark-mode');
         }, 500);
     }
