@@ -269,6 +269,9 @@
         // 3. Update the Phase 2 Sticky Banner
         updateStickyBanner(pId);
         
+        // WAKE UP THE COPILOT
+        updateCopilot(pId);
+        
         // 4. WAKE UP ALL MODULES WITH CORRECT FUNCTION NAMES
         if(typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
         // ... (rest of the function remains the same)
@@ -422,7 +425,7 @@
         if(typeof calcGrowth === 'function') calcGrowth();
         if(typeof calcMalnutrition === 'function') calcMalnutrition();
         
-        if(typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
+        if(typeof openClinicalTool === 'function') openClinicalTool('prescriptionFeatureView');
         
         if(typeof showSystemToast === 'function') showSystemToast(`Opened file: ${p.name}`);
     }
@@ -541,6 +544,36 @@
         loginAsDoctor(newDoc.id);
     }
 
+    function updateCopilot(pId) {
+        const p = globalPatientsStore[pId];
+        const container = document.getElementById('aiCopilotSuggestions');
+        if(!p || !container) return;
+
+        document.getElementById('aiCopilotBanner').style.display = 'block';
+        let suggestions = [];
+
+        // Logic 1: Is this a brand new patient with no visits?
+        if (!p.visits || p.visits.length === 0) {
+            suggestions.push(`<button class="action" onclick="openClinicalTool('prescriptionFeatureView'); startNewVisit();" style="width:auto; margin:0; padding:8px 16px; background:var(--primary); box-shadow:var(--shadow-sm);">➕ Start Initial Visit</button>`);
+        }
+
+        // Logic 2: Are they missing vital parameters for calculators?
+        if (!p.weight || p.weight === "") {
+            suggestions.push(`<button class="secondary" onclick="openClinicalTool('malnutritionFeatureView')" style="width:auto; border-color:var(--warning); color:var(--warning); background:white;">⚖️ Record Weight</button>`);
+        }
+
+        // Logic 3: Is it an infant? Suggest vaccines and milestones.
+        if (p.totalMonths <= 24) {
+            suggestions.push(`<button class="secondary" onclick="openClinicalTool('trackerFeatureView')" style="width:auto; border-color:var(--success); color:var(--success); background:white;">💉 Check Due Vaccines</button>`);
+            suggestions.push(`<button class="secondary" onclick="openClinicalTool('milestoneFeatureView')" style="width:auto; border-color:var(--brand-pink); color:var(--brand-pink); background:white;">👶 Assess Milestones</button>`);
+        }
+
+        // Logic 4: Always offer quick access to Dosing
+        suggestions.push(`<button class="secondary" onclick="openClinicalTool('prescriptionFeatureView'); switchSubTab('doseCalcTab', document.querySelector('[onclick*=\\'doseCalcTab\\']'));" style="width:auto; border-color:var(--primary); color:var(--primary); background:white;">🧮 Calculate Doses</button>`);
+
+        container.innerHTML = suggestions.join("");
+    }
+
     function loginAsDoctor(docId) {
         const doc = doctorProfiles.find(d => d.id === docId);
         if(!doc) return;
@@ -587,19 +620,19 @@
             input.setAttribute('inputmode', 'decimal');
         });
 
-        // 4. Handle Mobile Splash Screen & Authentication Intercept
+        // 4. INSTANT Gatekeeper: Check Authentication
+        if(activeDoctorId && doctorProfiles.length > 0) {
+            loginAsDoctor(activeDoctorId);
+            if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
+        } else {
+            showAuthScreen();
+        }
+
+        // 5. Handle Mobile Splash Screen Fade
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
             if(splash) splash.classList.add('hidden');
-            
-            // The Gatekeeper: Check if a doctor is logged in
-            if(activeDoctorId && doctorProfiles.length > 0) {
-                loginAsDoctor(activeDoctorId);
-                if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
-            } else {
-                showAuthScreen();
-            }
-        }, 2500);
+        }, 2000);
 
         // 5. Route to Home Dashboard on load
         if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');

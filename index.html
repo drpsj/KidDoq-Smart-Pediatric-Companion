@@ -237,6 +237,15 @@
                 </div>
                 <button class="banner-close-btn" onclick="prepNewPatient()">Close File ✖</button>
             </div>
+
+            <div id="aiCopilotBanner" style="background: linear-gradient(135deg, rgba(91,97,246,0.08), rgba(0,212,255,0.08)); border: 1px solid rgba(91,97,246,0.2); border-radius: var(--radius-md); padding: 15px; margin-bottom: 20px; display: none; box-shadow: var(--shadow-sm);">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <span style="font-size:1.2rem;">✨</span>
+                    <span style="font-weight:800; color:var(--primary-dark); font-size:0.95rem; text-transform:uppercase; letter-spacing:0.5px;">Suggested Next Steps</span>
+                </div>
+                <div id="aiCopilotSuggestions" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:5px;">
+                    </div>
+            </div>
             
     <div id="masterActionsBar" class="workspace-actions" style="display:none;">
         <button id="btnMasterPrint" onclick="executePrint('comprehensive')" class="action" style="background:var(--brand-blue); color:white; border:none; font-weight:bold; margin:0;">🖨️ Print Report</button>

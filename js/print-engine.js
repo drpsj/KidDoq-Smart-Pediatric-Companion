@@ -138,11 +138,35 @@ function getPrintHeaderHTML(title, patientObj) {
         }
 
         if (mode === 'comprehensive') {
-            html += getPrintHeaderHTML("CLINICAL TRIAGE & ANTHROPOMETRY REPORT", p);
-            let maln = extractToolResult('malnGridOutput'); if(maln) html += `<h3 style="font-family:sans-serif;">Malnutrition & Anthropometry Triage</h3>${maln}`;
-            let fluids = extractToolResult('fluidResultArea'); if(fluids) html += `<h3 style="font-family:sans-serif;">IV Fluid Resuscitation Protocol</h3>${fluids}`;
-            let asthma = extractToolResult('pramResultArea'); if(asthma) html += `<h3 style="font-family:sans-serif;">Asthma PRAM Triage Score</h3>${asthma}`;
-            let jaun = extractToolResult('jaunResultArea'); if(jaun) html += `<h3 style="font-family:sans-serif;">Neonatal Jaundice Triage Risk</h3>${jaun}`;
+            html += getPrintHeaderHTML("COMPREHENSIVE CLINICAL SUMMARY", p);
+            
+            // 1. Core Vitals & Triage Snapshot
+            let maln = extractToolResult('malnGridOutput'); 
+            if(maln) html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Triage & Anthropometry</h3>${maln}`;
+            
+            // 2. The Longitudinal Medical Ledger (Discharge Summary)
+            html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">Longitudinal Medical History</h3>`;
+            
+            if (p.visits && p.visits.length > 0) {
+                [...p.visits].reverse().forEach((visit) => {
+                    const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+                    html += `
+                    <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 8px; font-family:sans-serif;">
+                        <div style="font-weight:bold; font-size:16px; margin-bottom:10px; color:#334155;">Encounter Date: ${dateStr}</div>
+                        ${visit.diagnosis ? `<div style="font-size:14px; margin-bottom:8px;"><b>Diagnosis:</b> ${visit.diagnosis}</div>` : ''}
+                        ${visit.rxList && visit.rxList.length > 0 ? `<div style="font-size:14px; margin-bottom:8px;"><b>Medications Prescribed:</b><ul style="margin:5px 0; padding-left:20px;">${visit.rxList.map(rx => `<li>${rx.name} - ${rx.freq} (${rx.vol} ${rx.unit})</li>`).join('')}</ul></div>` : ''}
+                        ${visit.tests ? `<div style="font-size:14px; margin-bottom:8px;"><b>Investigations:</b> ${visit.tests}</div>` : ''}
+                        ${visit.advice ? `<div style="font-size:14px; margin-bottom:8px;"><b>Advice/Care Plan:</b> ${visit.advice}</div>` : ''}
+                    </div>`;
+                });
+            } else {
+                html += `<p style="font-family:sans-serif; color:#64748b;">No historical encounters recorded.</p>`;
+            }
+            
+            // 3. Add Vaccine Timeline at the end
+            html += `<div class="page-break"></div>`;
+            html += getPrintHeaderHTML("IMMUNIZATION STATUS", p);
+            html += document.getElementById('timelineOutput').innerHTML; 
         }
 
         html += `
