@@ -42,13 +42,36 @@
         <div class="splash-waves"></div>
     </div>
 
+    <div id="authScreen" class="auth-overlay" style="display:none; opacity:0;">
+        <div class="auth-box">
+            <img src="kiddoq lite.png" style="width:64px; height:64px; margin-bottom:15px; filter: drop-shadow(0 4px 10px rgba(0,212,255,0.3));">
+            <h2 style="margin:0; font-size: 1.6rem; color:var(--text-main); letter-spacing:-0.5px;">Welcome to KidDoq</h2>
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-top:5px;">Select your physician profile</p>
+            
+            <div id="doctorProfileList" class="profile-list">
+                </div>
+            
+            <button class="secondary" onclick="document.getElementById('newDoctorForm').style.display='block'" style="width:100%; border-style:dashed;">➕ Create New Profile</button>
+            
+            <div id="newDoctorForm" style="display:none; text-align:left; margin-top:20px; border-top:1px solid var(--border-soft); padding-top:20px;">
+                <label>Doctor's Name</label>
+                <input type="text" id="newDocName" placeholder="e.g. Dr. Peter Suraj" style="margin-bottom:12px;">
+                <label>Qualifications</label>
+                <input type="text" id="newDocQual" placeholder="e.g. MD Pediatrics" style="margin-bottom:15px;">
+                <button class="action" onclick="createNewDoctorProfile()">Save & Login</button>
+            </div>
+        </div>
+    </div>
+
     <div id="systemToastContainer" style="position:fixed; bottom:100px; right:30px; z-index:99999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
   
     <header>
-        <div style="width: 33%;"></div>
+        <div style="width: 33%; display: flex; align-items: center;">
+            <div id="headerAvatar" class="avatar-circle" onclick="showAuthScreen()" title="Switch User" style="display:none;"></div>
+        </div>
         <div class="brand-logo" onclick="switchNavTab('homeDashboardView')">
             <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 32px; height: 32px; object-fit: contain;">
-            KidDoq
+            <span class="brand-text">KidDoq</span>
         </div>
         <div id="headerPatientText" style="width: 33%; text-align: right; font-size: 0.9rem; font-weight: 600; color: var(--brand-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
     </header>

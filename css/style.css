@@ -383,4 +383,38 @@
     border-color: #f87171;
 }
 
+/* =========================================
+   PHASE 4: DOCTOR AUTH & PROFILES
+   ========================================= */
+.auth-overlay { 
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; 
+    background: rgba(245, 247, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    z-index: 9999990; display: flex; align-items: center; justify-content: center; 
+    transition: opacity 0.4s ease;
+}
+.dark-mode .auth-overlay { background: rgba(11, 14, 20, 0.95); }
+
+.auth-box { 
+    background: var(--bg-surface); padding: 2.5rem 2rem; border-radius: var(--radius-xl); 
+    box-shadow: var(--shadow-float); width: 90%; max-width: 420px; text-align: center; 
+    border: 1px solid var(--border-soft);
+}
+
+.profile-list { margin: 1.5rem 0; display: flex; flex-direction: column; gap: 12px; }
+
+.profile-btn { 
+    display: flex; align-items: center; gap: 15px; background: var(--bg-body); 
+    padding: 12px 16px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); 
+    cursor: pointer; transition: all 0.2s; text-align: left;
+}
+.profile-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-2px); }
+
+.avatar-circle { 
+    width: 38px; height: 38px; border-radius: 50%; 
+    background: linear-gradient(135deg, var(--brand-pink), var(--brand-blue)); 
+    color: white; display: flex; align-items: center; justify-content: center; 
+    font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
         

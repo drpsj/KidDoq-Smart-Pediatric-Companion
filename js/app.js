@@ -501,6 +501,73 @@
         `;
     }
 
+    // --- PHASE 4: DOCTOR AUTHENTICATION ENGINE ---
+    let doctorProfiles = JSON.parse(localStorage.getItem('kiddoq_profiles')) || [];
+    let activeDoctorId = localStorage.getItem('kiddoq_active_doctor') || null;
+
+    function showAuthScreen() {
+        document.getElementById('authScreen').style.display = 'flex';
+        setTimeout(() => { document.getElementById('authScreen').style.opacity = '1'; }, 10);
+        
+        const list = document.getElementById('doctorProfileList');
+        if (doctorProfiles.length === 0) {
+            list.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No profiles found. Create one below.</p>`;
+        } else {
+            let html = "";
+            doctorProfiles.forEach(doc => {
+                let initial = doc.name.toLowerCase().startsWith("dr. ") ? doc.name.charAt(4).toUpperCase() : doc.name.charAt(0).toUpperCase();
+                html += `
+                <div class="profile-btn" onclick="loginAsDoctor('${doc.id}')">
+                    <div class="avatar-circle">${initial}</div>
+                    <div>
+                        <strong style="display:block; color:var(--text-main); font-size:1.05rem;">${doc.name}</strong>
+                        <span style="font-size:0.85rem; color:var(--text-muted);">${doc.qual}</span>
+                    </div>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+    }
+
+    function createNewDoctorProfile() {
+        const name = document.getElementById('newDocName').value.trim();
+        const qual = document.getElementById('newDocQual').value.trim();
+        if (!name) return alert("Please enter a doctor's name.");
+        
+        const newDoc = { id: 'doc_' + Date.now(), name: name, qual: qual };
+        doctorProfiles.push(newDoc);
+        localStorage.setItem('kiddoq_profiles', JSON.stringify(doctorProfiles));
+        
+        loginAsDoctor(newDoc.id);
+    }
+
+    function loginAsDoctor(docId) {
+        const doc = doctorProfiles.find(d => d.id === docId);
+        if(!doc) return;
+        
+        activeDoctorId = docId;
+        localStorage.setItem('kiddoq_active_doctor', docId);
+        
+        // Sync active profile to app settings for printing
+        appSettings.docName = doc.name;
+        appSettings.qual = doc.qual;
+        localStorage.setItem('clinic_settings', JSON.stringify(appSettings));
+        
+        // Hide Auth Screen
+        document.getElementById('authScreen').style.opacity = '0';
+        setTimeout(() => { document.getElementById('authScreen').style.display = 'none'; }, 400);
+        
+        // Render Header Avatar
+        const headerAvatar = document.getElementById('headerAvatar');
+        if(headerAvatar) {
+            headerAvatar.style.display = 'flex';
+            headerAvatar.innerText = doc.name.toLowerCase().startsWith("dr. ") ? doc.name.charAt(4).toUpperCase() : doc.name.charAt(0).toUpperCase();
+        }
+        
+        if(typeof showSystemToast === 'function') showSystemToast(`Logged in as ${doc.name}`);
+        if(typeof updateGreeting === 'function') updateGreeting();
+    }
+
     // --- MASTER INITIALIZATION ENGINE ---
     document.addEventListener("DOMContentLoaded", function() {
         // 1. Load User Settings & Dark Mode
@@ -520,10 +587,18 @@
             input.setAttribute('inputmode', 'decimal');
         });
 
-        // 4. Handle Mobile Splash Screen (Fades after 2.5s)
+        // 4. Handle Mobile Splash Screen & Authentication Intercept
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
             if(splash) splash.classList.add('hidden');
+            
+            // The Gatekeeper: Check if a doctor is logged in
+            if(activeDoctorId && doctorProfiles.length > 0) {
+                loginAsDoctor(activeDoctorId);
+                if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
+            } else {
+                showAuthScreen();
+            }
         }, 2500);
 
         // 5. Route to Home Dashboard on load
