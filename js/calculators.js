@@ -223,6 +223,7 @@
         }
     }
 
+    // --- SAFE EHR FINALIZATION ENGINE ---
     async function finalizeVisit() {
         if(!activePatientId) return;
         const p = globalPatientsStore[activePatientId];
@@ -234,14 +235,23 @@
             tests: document.getElementById('rxTests').value,
             advice: document.getElementById('rxAdvice').value,
             review: document.getElementById('rxReview').value,
-            rxList: [...(p.rxList || [])] // Take whatever is in the active cart
+            rxList: [...(p.rxList || [])] 
         };
+        
+        p.visits.push(newVisit); 
+        p.rxList = []; 
+        
+        // This 'await' requires the 'async' keyword at the top of the function!
+        await DB.savePatient(p); 
+        
+        if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored in Ledger");
+        if(typeof renderVisitLedger === 'function') renderVisitLedger(); 
+    }
 
-        // --- PHASE 5: ORDER SETS (RX TEMPLATES) ---
-    async function applyOrderSet(setId) {
+    // --- PHASE 5: ORDER SETS (RX TEMPLATES) ---
+    function applyOrderSet(setId) {
         if(!activePatientId || !setId) return;
         
-        // 1. Fetch safely from active memory
         let p = globalPatientsStore[activePatientId];
         if (!p) return;
         if (!p.rxList) p.rxList = []; 
@@ -253,7 +263,6 @@
         let advice = "";
         let newRx = [];
 
-        // 2. Protocol Router
         if (setId === 'os_aom') {
             dx = "Acute Otitis Media";
             advice = "Keep ear dry. Do not insert cotton buds. Follow up in 5 days or earlier if fever spikes.";
@@ -278,6 +287,20 @@
             advice = "Tepid sponging for high fever. Ensure adequate fluid intake. Monitor for rashes or decreased oral intake.";
             newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS Q6H for Fever" });
         }
+
+        const dxInput = document.getElementById('rxDiagnosis');
+        const adviceInput = document.getElementById('rxAdvice');
+        if(dxInput) dxInput.value = dx;
+        if(adviceInput) adviceInput.value = advice;
+
+        p.rxList = p.rxList.concat(newRx);
+        globalPatientsStore[activePatientId] = p; // Sync memory instantly
+        
+        if(typeof renderRxCartList === 'function') renderRxCartList();
+        if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
+        
+        document.getElementById('orderSetSelect').value = "";
+    }
 
         // 3. Update the UI Text Inputs safely
         const dxInput = document.getElementById('rxDiagnosis');
