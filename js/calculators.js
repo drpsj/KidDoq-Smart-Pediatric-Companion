@@ -293,6 +293,92 @@ function populateDrugs() {
         }
     }
 
+    // --- PHASE 7: INVESTIGATION COMPILER ---
+    function updateTestsTextarea() {
+        let tests = [];
+        
+        // Gather all the tapped blue chips
+        document.querySelectorAll('.investigation-chips input:checked').forEach(cb => {
+            tests.push(cb.value);
+        });
+        
+        // Add anything typed into the custom box
+        let custom = document.getElementById('rxTestsCustom') ? document.getElementById('rxTestsCustom').value.trim() : "";
+        if(custom) tests.push(custom);
+        
+        // Compile them with commas and save to the hidden input
+        const hiddenInput = document.getElementById('rxTests');
+        if(hiddenInput) hiddenInput.value = tests.join(", ");
+    }
+
+    // --- PHASE 8: INLINE DOSE CALCULATOR ---
+    function populateInlineDrugs() {
+        const cat = document.getElementById('inlineDrugCat').value;
+        const sel = document.getElementById('inlineDrugSelect');
+        sel.innerHTML = '<option value="">-- Select Drug --</option>';
+        document.getElementById('inlineDoseResult').innerText = '';
+        
+        if(!cat) return;
+        
+        const filtered = drugsDb.filter(d => d.category === cat);
+        filtered.forEach(d => {
+            sel.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+        });
+    }
+
+    function calcInlineDose() {
+        const drugId = document.getElementById('inlineDrugSelect').value;
+        const res = document.getElementById('inlineDoseResult');
+        res.innerText = '';
+        
+        if(!drugId || !activePatientId) return;
+        
+        const p = globalPatientsStore[activePatientId];
+        const wt = parseFloat(p.weight);
+        if(!wt || isNaN(wt)) {
+            res.innerHTML = '<span style="color:var(--danger)">⚠️ Patient weight missing!</span>';
+            return;
+        }
+        
+        const drug = drugsDb.find(d => d.id === drugId);
+        if(!drug) return;
+        
+        let reqMg = wt * drug.doseMgPerKg;
+        let reqVol = (reqMg / drug.formMg) * drug.formMl;
+        
+        res.innerHTML = `Calculated Dose: <span style="font-size:1.1rem; color:var(--primary);">${reqVol.toFixed(1)} mL</span> (${reqMg.toFixed(0)} mg)`;
+        
+        const freqInput = document.getElementById('inlineFreq');
+        if(freqInput.value === '') {
+            if(drug.category === 'Antibiotic') freqInput.value = 'BID x 5 Days';
+            if(drug.category === 'Fever/Pain') freqInput.value = 'SOS for Fever';
+        }
+    }
+
+    function addInlineDrugToCart() {
+        const drugId = document.getElementById('inlineDrugSelect').value;
+        const freq = document.getElementById('inlineFreq').value;
+        
+        if(!drugId || !freq) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a drug and frequency.");
+            return;
+        }
+        
+        const rxObj = autoCalcFromDB(drugId, freq);
+        if(rxObj) {
+            const p = globalPatientsStore[activePatientId];
+            if(!p.rxList) p.rxList = [];
+            p.rxList.push(rxObj);
+            
+            if(typeof renderRxCartList === 'function') renderRxCartList();
+            if(typeof showSystemToast === 'function') showSystemToast(`✅ Added ${rxObj.name}`);
+            
+            document.getElementById('inlineDrugSelect').value = '';
+            document.getElementById('inlineFreq').value = '';
+            document.getElementById('inlineDoseResult').innerHTML = '';
+        }
+    }
+
     function startNewVisit() {
         // 1. UI Swaps
         document.getElementById('rxLedgerView').style.display = 'none';
@@ -324,6 +410,12 @@ function populateDrugs() {
         document.querySelectorAll('.investigation-chips input[type="checkbox"]').forEach(cb => cb.checked = false);
         if(document.getElementById('rxTestsCustom')) {
             document.getElementById('rxTestsCustom').value = "";
+        }
+
+        // 6. Update Inline Calc Weight Display
+        if(activePatientId && globalPatientsStore[activePatientId]) {
+            const wtDisplay = document.getElementById('inlineWtDisplay');
+            if(wtDisplay) wtDisplay.innerText = globalPatientsStore[activePatientId].weight || "--";
         }
     }
 
