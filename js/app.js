@@ -425,7 +425,18 @@
         if(typeof calcGrowth === 'function') calcGrowth();
         if(typeof calcMalnutrition === 'function') calcMalnutrition();
         
-        if(typeof openClinicalTool === 'function') openClinicalTool('prescriptionFeatureView');
+        // 🚀 FORCE ROUTING TO THE PRESCRIPTION LEDGER 🚀
+        if(typeof openClinicalTool === 'function') {
+            openClinicalTool('prescriptionFeatureView');
+            // Ensure the ledger sub-tab is the one currently active
+            let ledgerTabBtn = document.querySelector('[onclick*=\\'rxNotesTab\\']');
+            if(ledgerTabBtn) switchSubTab('rxNotesTab', ledgerTabBtn);
+        }
+
+        // Update the bottom navigation UI to highlight the "Tools" tab instead of staying on "Patients"
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        const toolsTabBtn = document.querySelector(`.nav-item[onclick*="toolsTab"]`);
+        if(toolsTabBtn) toolsTabBtn.classList.add('active');
         
         if(typeof showSystemToast === 'function') showSystemToast(`Opened file: ${p.name}`);
     }
