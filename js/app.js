@@ -393,10 +393,9 @@
     async function loadPatientFromDB(id) {
         activePatientId = id;
         
-        // Fetch via async DB
         let p = await DB.getPatient(id);
         if (!p) {
-            showSystemToast("⚠️ Error loading patient data.");
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Error loading patient data.");
             return;
         }
         
@@ -425,17 +424,15 @@
         if(typeof calcGrowth === 'function') calcGrowth();
         if(typeof calcMalnutrition === 'function') calcMalnutrition();
         
-        // 🚀 FORCE ROUTING TO THE PRESCRIPTION LEDGER 🚀
         if(typeof openClinicalTool === 'function') {
             openClinicalTool('prescriptionFeatureView');
-            // Ensure the ledger sub-tab is the one currently active
-            let ledgerTabBtn = document.querySelector('[onclick*=\\'rxNotesTab\\']');
+            // FIX: Using safe double quotes for the selector
+            let ledgerTabBtn = document.querySelector('[onclick*="rxNotesTab"]');
             if(ledgerTabBtn) switchSubTab('rxNotesTab', ledgerTabBtn);
         }
 
-        // Update the bottom navigation UI to highlight the "Tools" tab instead of staying on "Patients"
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-        const toolsTabBtn = document.querySelector(`.nav-item[onclick*="toolsTab"]`);
+        const toolsTabBtn = document.querySelector('.nav-item[onclick*="toolsTab"]');
         if(toolsTabBtn) toolsTabBtn.classList.add('active');
         
         if(typeof showSystemToast === 'function') showSystemToast(`Opened file: ${p.name}`);
@@ -563,24 +560,21 @@
         document.getElementById('aiCopilotBanner').style.display = 'block';
         let suggestions = [];
 
-        // Logic 1: Is this a brand new patient with no visits?
         if (!p.visits || p.visits.length === 0) {
             suggestions.push(`<button class="action" onclick="openClinicalTool('prescriptionFeatureView'); startNewVisit();" style="width:auto; margin:0; padding:8px 16px; background:var(--primary); box-shadow:var(--shadow-sm);">➕ Start Initial Visit</button>`);
         }
 
-        // Logic 2: Are they missing vital parameters for calculators?
         if (!p.weight || p.weight === "") {
             suggestions.push(`<button class="secondary" onclick="openClinicalTool('malnutritionFeatureView')" style="width:auto; border-color:var(--warning); color:var(--warning); background:white;">⚖️ Record Weight</button>`);
         }
 
-        // Logic 3: Is it an infant? Suggest vaccines and milestones.
         if (p.totalMonths <= 24) {
             suggestions.push(`<button class="secondary" onclick="openClinicalTool('trackerFeatureView')" style="width:auto; border-color:var(--success); color:var(--success); background:white;">💉 Check Due Vaccines</button>`);
             suggestions.push(`<button class="secondary" onclick="openClinicalTool('milestoneFeatureView')" style="width:auto; border-color:var(--brand-pink); color:var(--brand-pink); background:white;">👶 Assess Milestones</button>`);
         }
 
-        // Logic 4: Always offer quick access to Dosing
-        suggestions.push(`<button class="secondary" onclick="openClinicalTool('prescriptionFeatureView'); switchSubTab('doseCalcTab', document.querySelector('[onclick*=\\'doseCalcTab\\']'));" style="width:auto; border-color:var(--primary); color:var(--primary); background:white;">🧮 Calculate Doses</button>`);
+        // FIX: Simplified the onclick string to prevent escaping errors
+        suggestions.push(`<button class="secondary" onclick="openClinicalTool('prescriptionFeatureView')" style="width:auto; border-color:var(--primary); color:var(--primary); background:white;">🧮 Rx & Dosing</button>`);
 
         container.innerHTML = suggestions.join("");
     }
