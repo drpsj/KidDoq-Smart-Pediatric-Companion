@@ -237,62 +237,62 @@
             rxList: [...(p.rxList || [])] // Take whatever is in the active cart
         };
 
-        // --- PHASE 5: ORDER SETS (RX TEMPLATES) ---
+        // --- PHASE 5: ORDER SETS (RX TEMPLATES) BUG FIX ---
     function applyOrderSet(setId) {
         if(!activePatientId || !setId) return;
-        const p = globalPatientsStore[activePatientId];
         
-        // Failsafe: Default to 10kg if weight is missing to prevent NaN errors
+        // 1. Ensure patient object and rxList array exist safely
+        let p = globalPatientsStore[activePatientId];
+        if (!p) return;
+        if (!p.rxList) p.rxList = []; 
+        
         const wt = parseFloat(p.weight) || 10; 
         const ageMos = p.totalMonths || 12;
 
         let dx = "";
+        let advice = "";
         let newRx = [];
 
-        // PROTOCOL ROUTER & BACKGROUND CALCULATOR
+        // 2. Protocol Router (Now with Advice included)
         if (setId === 'os_aom') {
             dx = "Acute Otitis Media";
-            // Amoxicillin: 80mg/kg/day div BID. Susp: 400mg/5ml. Math: (wt * 40 / 400) * 5 = wt * 0.5 ml
+            advice = "Keep ear dry. Do not insert cotton buds. Follow up in 5 days or earlier if fever spikes.";
             newRx.push({ name: "Syp Amoxicillin (400mg/5ml)", vol: (wt * 0.5).toFixed(1), unit: "ml", freq: "BID x 5 Days" });
-            // Paracetamol: 15mg/kg/dose. Susp: 250mg/5ml. Math: (wt * 15 / 250) * 5 = wt * 0.3 ml
             newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS for Ear Pain / Fever" });
         } 
         else if (setId === 'os_uri') {
             dx = "Viral Upper Respiratory Infection (URI)";
+            advice = "Maintain hydration. Steam inhalation twice daily. Elevate head end of bed slightly. Warning signs: fast breathing, chest indrawing.";
             newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS for Fever" });
             newRx.push({ name: "Saline Nasal Drops (0.65%)", vol: "2", unit: "drops", freq: "TID in both nostrils" });
-            if(ageMos >= 12) newRx.push({ name: "Honey", vol: "2.5", unit: "ml", freq: "HS for Nocturnal Cough" });
         } 
         else if (setId === 'os_age') {
             dx = "Acute Gastroenteritis (Mild Dehydration)";
+            advice = "Strict ORS after every loose stool. Continue normal feeding/breastfeeding. Avoid sugary juices. Return immediately if lethargic or decreased urine output.";
             newRx.push({ name: "ORS Sachet", vol: "1", unit: "packet", freq: "Mix in 1L water, sip 50-100ml after every loose stool" });
-            // Zinc: 10mg (<6mo) or 20mg (>6mo). Susp: 20mg/5ml.
             newRx.push({ name: "Syp Zinc (20mg/5ml)", vol: ageMos < 6 ? "2.5" : "5.0", unit: "ml", freq: "OD x 14 Days" });
-            // Ondansetron: 0.15mg/kg. Susp: 2mg/5ml. Math: (wt * 0.15 / 2) * 5 = wt * 0.375 ml
             newRx.push({ name: "Syp Ondansetron (2mg/5ml)", vol: (wt * 0.375).toFixed(1), unit: "ml", freq: "STAT for vomiting" });
         } 
         else if (setId === 'os_fever') {
             dx = "Acute Febrile Illness";
+            advice = "Tepid sponging for high fever. Ensure adequate fluid intake. Monitor for rashes or decreased oral intake.";
             newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS Q6H for Fever" });
-            // Ibuprofen: 10mg/kg/dose. Susp: 100mg/5ml. Math: (wt * 10 / 100) * 5 = wt * 0.5 ml
-            newRx.push({ name: "Syp Ibuprofen (100mg/5ml)", vol: (wt * 0.5).toFixed(1), unit: "ml", freq: "SOS Q8H for High Grade Fever" });
         }
 
-        // 1. Auto-fill the Diagnosis field if it is currently empty
+        // 3. Force update the HTML DOM inputs
         const dxInput = document.getElementById('rxDiagnosis');
-        if(dxInput && dxInput.value.trim() === "") {
-            dxInput.value = dx;
-        }
+        const adviceInput = document.getElementById('rxAdvice');
+        
+        if(dxInput) dxInput.value = dx;
+        if(adviceInput) adviceInput.value = advice;
 
-        // 2. Append the calculated protocol drugs to the active cart
-        if(!p.rxList) p.rxList = [];
+        // 4. Safely push new drugs into the array
         p.rxList = p.rxList.concat(newRx);
 
-        // 3. Render the UI
+        // 5. Force the UI to re-render the cart and reset the dropdown
         if(typeof renderRxCartList === 'function') renderRxCartList();
         if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
         
-        // 4. Reset the dropdown to default
         document.getElementById('orderSetSelect').value = "";
     }
         
