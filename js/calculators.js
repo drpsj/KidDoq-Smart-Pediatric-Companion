@@ -231,17 +231,16 @@
         
         const newVisit = {
             date: new Date().toISOString(),
-            diagnosis: document.getElementById('rxDiagnosis').value,
-            tests: document.getElementById('rxTests').value,
-            advice: document.getElementById('rxAdvice').value,
-            review: document.getElementById('rxReview').value,
+            diagnosis: document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "",
+            tests: document.getElementById('rxTests') ? document.getElementById('rxTests').value : "",
+            advice: document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "",
+            review: document.getElementById('rxReview') ? document.getElementById('rxReview').value : "",
             rxList: [...(p.rxList || [])] 
         };
         
         p.visits.push(newVisit); 
         p.rxList = []; 
         
-        // This 'await' requires the 'async' keyword at the top of the function!
         await DB.savePatient(p); 
         
         if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored in Ledger");
