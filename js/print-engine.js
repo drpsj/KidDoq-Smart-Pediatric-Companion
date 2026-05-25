@@ -104,26 +104,53 @@ function getPrintHeaderHTML(title, patientObj) {
             if (mode === 'comprehensive') html += `<div class="page-break"></div>`; 
         }
         
-        if (mode === 'prescription' || mode === 'comprehensive') {
+        if (mode === 'rx') {
             html += getPrintHeaderHTML("PRESCRIPTION", p);
-            let sigHtml = appSettings.signature ? `<img src="${appSettings.signature}" style="max-height:60px; margin-bottom:5px;"><br>` : `<br><br><br>`;
-            let extraNotes = "";
-            if (p.tests) extraNotes += `<div style="margin-top:20px; font-size:14px; font-family:sans-serif;"><b>Investigations / Scans:</b><br>${p.tests.replace(/\n/g, '<br>')}</div>`;
-            if (p.advice) extraNotes += `<div style="margin-top:15px; font-size:14px; font-family:sans-serif;"><b>Advice & Care Plan:</b><br>${p.advice.replace(/\n/g, '<br>')}</div>`;
-            if (p.review) extraNotes += `<div style="margin-top:15px; font-size:14px; font-weight:bold; color:#1e3a8a; font-family:sans-serif;">Next Review Date: ${new Date(p.review).toLocaleDateString('en-IN')}</div>`;
-
+            
+            // 1. AI Logic: Decide whether to print the Active Draft OR the Latest Finalized Visit
+            let printRxList = [];
+            let printDx = "";
+            let printAdvice = "";
+            let printTests = "";
+            
             if (p.rxList && p.rxList.length > 0) {
-                html += `<div style="font-family:sans-serif;"><div style="font-size:32px; font-weight:bold; font-style:italic; margin-bottom:20px;">Rx</div>`;
-                p.rxList.forEach((rx, index) => { 
-                    html += `<div style="margin-bottom: 25px;"><div style="font-size:18px; font-weight:bold;">${index + 1}. ${rx.name}</div><div style="font-size:16px;">Take ${rx.vol} ${rx.unit || 'mL'} &mdash; ${rx.freq}</div><div style="color:#555; font-size:12px; margin-top:5px;">Target: ${rx.details}</div></div>`; 
-                });
-                html += `${extraNotes}<div style="margin-top: 50px; border-top: 1px solid #000; width: 250px; padding-top: 5px; text-align: center; float:right;">${sigHtml}<b>${appSettings.docName || 'Doctor'}</b><br>Authorized Signature</div><div style="clear:both;"></div></div>`;
-            } else if (typeof pendingPrescriptionDrug !== 'undefined' && pendingPrescriptionDrug) {
-                html += `<div style="font-family:sans-serif;"><div style="font-size:32px; font-weight:bold; font-style:italic; margin-bottom:20px;">Rx</div><div style="margin-bottom: 25px;"><div style="font-size:18px; font-weight:bold;">1. ${pendingPrescriptionDrug.name}</div><div style="font-size:16px;">Take ${pendingPrescriptionDrug.vol} ${pendingPrescriptionDrug.unit || 'mL'} &mdash; ${pendingPrescriptionDrug.freq}</div><div style="color:#555; font-size:12px; margin-top:5px;">Target: ${pendingPrescriptionDrug.details}</div></div>${extraNotes}<div style="margin-top: 50px; border-top: 1px solid #000; width: 250px; padding-top: 5px; text-align: center; float:right;">${sigHtml}<b>${appSettings.docName || 'Doctor'}</b><br>Authorized Signature</div><div style="clear:both;"></div></div>`;
-            } else { 
-                html += `<p style="font-family:sans-serif;">No active medications prescribed.</p>${extraNotes}<div style="margin-top: 50px; border-top: 1px solid #000; width: 250px; padding-top: 5px; text-align: center; float:right;">${sigHtml}<b>${appSettings.docName || 'Doctor'}</b><br>Authorized Signature</div><div style="clear:both;"></div>`; 
+                // Patient has an active draft open, print the draft
+                printRxList = p.rxList;
+                printDx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
+                printAdvice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
+                printTests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
+            } else if (p.visits && p.visits.length > 0) {
+                // Draft is empty, so print the most recently finalized visit
+                let latestVisit = p.visits[p.visits.length - 1];
+                printRxList = latestVisit.rxList || [];
+                printDx = latestVisit.diagnosis || "";
+                printAdvice = latestVisit.advice || "";
+                printTests = latestVisit.tests || "";
             }
-            if (mode === 'comprehensive') html += `<div class="page-break"></div>`;
+            
+            // 2. Build the Print UI
+            html += `<div style="margin-bottom: 20px; font-family: sans-serif; color: #333;">
+                        <b style="color: #1e3a8a;">Diagnosis:</b> ${printDx || "____________________"}
+                     </div>`;
+            
+            html += `<h3 style="border-bottom: 2px solid #ccc; padding-bottom: 5px; margin-top: 20px; font-family: sans-serif; color: #1e3a8a;">Rx</h3>`;
+            
+            if (printRxList.length === 0) {
+                html += `<p style="color:#64748b; font-family: sans-serif;">No medications prescribed.</p>`;
+            } else {
+                html += `<ul style="list-style-type: none; padding-left: 0; line-height: 1.8; font-family: sans-serif; color: #333;">`;
+                printRxList.forEach(rx => {
+                    html += `<li style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                <strong style="font-size: 1.15rem; color: #0f172a;">${rx.name}</strong><br>
+                                <span style="font-size: 1rem;">Give <b style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${rx.vol} ${rx.unit}</b> — <i>${rx.freq}</i></span>
+                                ${rx.details ? `<div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">${rx.details}</div>` : ''}
+                             </li>`;
+                });
+                html += `</ul>`;
+            }
+            
+            if (printTests) html += `<div style="margin-top: 25px; font-family: sans-serif; color: #333;"><b style="color: #1e3a8a;">Required Investigations:</b><br>${printTests.replace(/\n/g, '<br>')}</div>`;
+            if (printAdvice) html += `<div style="margin-top: 20px; font-family: sans-serif; color: #333;"><b style="color: #1e3a8a;">General Advice:</b><br>${printAdvice.replace(/\n/g, '<br>')}</div>`;
         }
         
         if (mode === 'certificate') {

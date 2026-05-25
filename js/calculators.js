@@ -1,3 +1,32 @@
+// ==========================================
+// MASTER PEDIATRIC PHARMACOPEIA (drugsDb)
+// ==========================================
+const drugsDb = [
+    // ANTIPYRETICS / ANALGESICS
+    { id: "pcm_250", name: "Syp Paracetamol (250mg/5ml)", doseMgPerKg: 15, formMg: 250, formMl: 5, category: "Fever/Pain" },
+    { id: "pcm_120", name: "Syp Paracetamol (120mg/5ml)", doseMgPerKg: 15, formMg: 120, formMl: 5, category: "Fever/Pain" },
+    { id: "ibu_100", name: "Syp Ibuprofen (100mg/5ml)", doseMgPerKg: 10, formMg: 100, formMl: 5, category: "Fever/Pain" },
+    
+    // ANTIBIOTICS
+    { id: "amox_400", name: "Syp Amoxicillin (400mg/5ml)", doseMgPerKg: 40, formMg: 400, formMl: 5, category: "Antibiotic" },
+    { id: "amoxcv_228", name: "Syp Amoxicillin-Clavulanate (228mg/5ml)", doseMgPerKg: 40, formMg: 200, formMl: 5, category: "Antibiotic" }, // Dose based on Amox component
+    { id: "cefix_50", name: "Syp Cefixime (50mg/5ml)", doseMgPerKg: 8, formMg: 50, formMl: 5, category: "Antibiotic" },
+    { id: "azithro_200", name: "Syp Azithromycin (200mg/5ml)", doseMgPerKg: 10, formMg: 200, formMl: 5, category: "Antibiotic" },
+
+    // ANTI-EMETICS & GI
+    { id: "ondan_2", name: "Syp Ondansetron (2mg/5ml)", doseMgPerKg: 0.15, formMg: 2, formMl: 5, category: "Gastrointestinal" },
+    { id: "zinc_20", name: "Syp Zinc (20mg/5ml)", doseMgPerKg: 20, formMg: 20, formMl: 5, category: "Gastrointestinal" }, // Standardized 20mg base for calc
+    
+    // RESPIRATORY / ALLERGY
+    { id: "levo_2.5", name: "Syp Levocetirizine (2.5mg/5ml)", doseMgPerKg: 0.125, formMg: 2.5, formMl: 5, category: "Respiratory" },
+    { id: "salb_2", name: "Syp Salbutamol (2mg/5ml)", doseMgPerKg: 0.15, formMg: 2, formMl: 5, category: "Respiratory" }
+];
+
+// This function wakes up when the app loads to populate any manual dropdowns
+function populateDrugs() {
+    console.log("KidDoq Pharmacopeia Loaded: " + drugsDb.length + " drugs ready.");
+    // If you have a dropdown for the manual dose calculator, it will be injected here later.
+}
 // --- 6. DOSAGE ENGINE ---
     function populateDrugs() {
         const cat = document.getElementById('drugCategory').value;
@@ -244,44 +273,76 @@
         renderVisitLedger(); 
     }
 
+    // --- UNIVERSAL DOSE ENGINE (Links to drugsDb) ---
+    function autoCalcFromDB(drugId, freqStr, detailsStr = "") {
+        const p = globalPatientsStore[activePatientId];
+        const wt = parseFloat(p.weight) || 10;
+        
+        // 1. Find the drug in your Master Database
+        const drug = drugsDb.find(d => d.id === drugId);
+        if (!drug) {
+            console.error("Drug ID not found in database: " + drugId);
+            return null;
+        }
+
+        // 2. Perform the Clinical Math: (Weight * mg/kg) / formulation_mg * formulation_ml
+        let reqMg = wt * drug.doseMgPerKg;
+        let reqVol = (reqMg / drug.formMg) * drug.formMl;
+        
+        // 3. Return the perfectly formatted prescription object
+        return {
+            name: drug.name,
+            vol: reqVol.toFixed(1),
+            unit: "ml",
+            freq: freqStr,
+            details: detailsStr
+        };
+    }
+
+    // --- PHASE 5: SMART ORDER SETS (RX TEMPLATES) ---
     function applyOrderSet(setId) {
         if(!activePatientId || !setId) return;
         
         let p = globalPatientsStore[activePatientId];
         if (!p) return;
         if (!p.rxList) p.rxList = []; 
-        
-        const wt = parseFloat(p.weight) || 10; 
-        const ageMos = p.totalMonths || 12;
 
         let dx = "";
         let advice = "";
         let newRx = [];
 
+        // PROTOCOL ROUTER (Now using the auto-engine!)
         if (setId === 'os_aom') {
             dx = "Acute Otitis Media";
             advice = "Keep ear dry. Do not insert cotton buds. Follow up in 5 days or earlier if fever spikes.";
-            newRx.push({ name: "Syp Amoxicillin (400mg/5ml)", vol: (wt * 0.5).toFixed(1), unit: "ml", freq: "BID x 5 Days" });
-            newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS for Ear Pain / Fever" });
+            
+            // Look how clean this is! Just call the ID from drugsDb.
+            newRx.push(autoCalcFromDB("amox_400", "BID x 5 Days"));
+            newRx.push(autoCalcFromDB("pcm_250", "SOS for Ear Pain / Fever"));
         } 
         else if (setId === 'os_uri') {
             dx = "Viral Upper Respiratory Infection (URI)";
             advice = "Maintain hydration. Steam inhalation twice daily. Elevate head end of bed slightly. Warning signs: fast breathing, chest indrawing.";
-            newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS for Fever" });
+            newRx.push(autoCalcFromDB("pcm_250", "SOS for Fever"));
+            // Manual overrides are still allowed for things like drops/creams!
             newRx.push({ name: "Saline Nasal Drops (0.65%)", vol: "2", unit: "drops", freq: "TID in both nostrils" });
         } 
         else if (setId === 'os_age') {
             dx = "Acute Gastroenteritis (Mild Dehydration)";
             advice = "Strict ORS after every loose stool. Continue normal feeding/breastfeeding. Avoid sugary juices. Return immediately if lethargic or decreased urine output.";
             newRx.push({ name: "ORS Sachet", vol: "1", unit: "packet", freq: "Mix in 1L water, sip 50-100ml after every loose stool" });
-            newRx.push({ name: "Syp Zinc (20mg/5ml)", vol: ageMos < 6 ? "2.5" : "5.0", unit: "ml", freq: "OD x 14 Days" });
-            newRx.push({ name: "Syp Ondansetron (2mg/5ml)", vol: (wt * 0.375).toFixed(1), unit: "ml", freq: "STAT for vomiting" });
+            newRx.push(autoCalcFromDB("zinc_20", "OD x 14 Days"));
+            newRx.push(autoCalcFromDB("ondan_2", "STAT for vomiting"));
         } 
         else if (setId === 'os_fever') {
             dx = "Acute Febrile Illness";
             advice = "Tepid sponging for high fever. Ensure adequate fluid intake. Monitor for rashes or decreased oral intake.";
-            newRx.push({ name: "Syp Paracetamol (250mg/5ml)", vol: (wt * 0.3).toFixed(1), unit: "ml", freq: "SOS Q6H for Fever" });
+            newRx.push(autoCalcFromDB("pcm_250", "SOS Q6H for Fever"));
+            newRx.push(autoCalcFromDB("ibu_100", "SOS Q8H for High Grade Fever"));
         }
+
+        // Failsafe: Remove any nulls if a drug ID was typed wrong
+        newRx = newRx.filter(rx => rx !== null);
 
         const dxInput = document.getElementById('rxDiagnosis');
         const adviceInput = document.getElementById('rxAdvice');
@@ -289,7 +350,7 @@
         if(adviceInput) adviceInput.value = advice;
 
         p.rxList = p.rxList.concat(newRx);
-        globalPatientsStore[activePatientId] = p; 
+        globalPatientsStore[activePatientId] = p; // Sync memory
         
         if(typeof renderRxCartList === 'function') renderRxCartList();
         if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
