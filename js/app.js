@@ -10,7 +10,6 @@
 
     let activePatientId = null; 
     let currentPatientAgeInMonths = 0; 
-    let pendingPrescriptionDrug = null;
     let wtChartInstance = null; 
     let htChartInstance = null;
 
