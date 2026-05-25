@@ -1,183 +1,197 @@
-// ==========================================
-// MASTER PEDIATRIC PHARMACOPEIA (drugsDb)
-// ==========================================
-const drugsDb = [
-    // ANTIPYRETICS / ANALGESICS
-    { id: "pcm_250", name: "Syp Paracetamol (250mg/5ml)", doseMgPerKg: 15, formMg: 250, formMl: 5, category: "Fever/Pain" },
-    { id: "pcm_120", name: "Syp Paracetamol (120mg/5ml)", doseMgPerKg: 15, formMg: 120, formMl: 5, category: "Fever/Pain" },
-    { id: "ibu_100", name: "Syp Ibuprofen (100mg/5ml)", doseMgPerKg: 10, formMg: 100, formMl: 5, category: "Fever/Pain" },
+// --- CORE CLINICAL MATH ENGINE ---
+// This single function powers all calculators (Dashboard, Draft, Manual, Order Sets)
+function computeClinicalMath(drug, wt) {
+    if (drug.doseType === 'fixed') {
+        return { reqMg: drug.doseMg || 0, reqVol: drug.vol, isMax: false };
+    }
     
-    // ANTIBIOTICS
-    { id: "amox_400", name: "Syp Amoxicillin (400mg/5ml)", doseMgPerKg: 40, formMg: 400, formMl: 5, category: "Antibiotic" },
-    { id: "amoxcv_228", name: "Syp Amoxicillin-Clavulanate (228mg/5ml)", doseMgPerKg: 40, formMg: 200, formMl: 5, category: "Antibiotic" }, // Dose based on Amox component
-    { id: "cefix_50", name: "Syp Cefixime (50mg/5ml)", doseMgPerKg: 8, formMg: 50, formMl: 5, category: "Antibiotic" },
-    { id: "azithro_200", name: "Syp Azithromycin (200mg/5ml)", doseMgPerKg: 10, formMg: 200, formMl: 5, category: "Antibiotic" },
-
-    // ANTI-EMETICS & GI
-    { id: "ondan_2", name: "Syp Ondansetron (2mg/5ml)", doseMgPerKg: 0.15, formMg: 2, formMl: 5, category: "Gastrointestinal" },
-    { id: "zinc_20", name: "Syp Zinc (20mg/5ml)", doseMgPerKg: 20, formMg: 20, formMl: 5, category: "Gastrointestinal" }, // Standardized 20mg base for calc
+    // Calculate based on protocol (perDay divided, or perDose)
+    let targetMg = drug.doseType === 'perDay' ? (wt * drug.doseMg) / (drug.div || 1) : (wt * drug.doseMg);
+    let isMax = false;
     
-    // RESPIRATORY / ALLERGY
-    { id: "levo_2.5", name: "Syp Levocetirizine (2.5mg/5ml)", doseMgPerKg: 0.125, formMg: 2.5, formMl: 5, category: "Respiratory" },
-    { id: "salb_2", name: "Syp Salbutamol (2mg/5ml)", doseMgPerKg: 0.15, formMg: 2, formMl: 5, category: "Respiratory" }
-];
-
-// This function wakes up when the app loads to populate any manual dropdowns
-function populateDrugs() {
-    console.log("KidDoq Pharmacopeia Loaded: " + drugsDb.length + " drugs ready.");
-    // If you have a dropdown for the manual dose calculator, it will be injected here later.
+    // Apply Safety Ceiling
+    if (drug.maxMg && targetMg > drug.maxMg) {
+        targetMg = drug.maxMg;
+        isMax = true;
+    }
+    
+    // Calculate final MLs
+    let reqVol = drug.conc > 0 ? (targetMg * drug.vol) / drug.conc : drug.vol;
+    
+    return { reqMg: targetMg, reqVol: reqVol, isMax: isMax };
 }
-// --- 6. DOSAGE ENGINE ---
-    function populateDrugs() {
-        const cat = document.getElementById('drugCategory').value;
-        const formSelect = document.getElementById('drugFormulation');
-        formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
-        if(cat && drugDb[cat]) {
-            let combined = [...drugDb[cat], ...(customDrugsStore[cat] || [])];
-            combined.forEach((drug, idx) => {
-                let opt = document.createElement('option');
-                opt.value = idx; 
-                opt.text = drug.name + (drug.brand ? ` [${drug.brand}]` : ""); 
-                formSelect.add(opt);
-            });
-        }
-    }
 
-    function populateRevDrugs() {
-        const cat = document.getElementById('revCategory').value; const formSelect = document.getElementById('revFormulation');
-        formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
-        if(cat && drugDb[cat]) {
-            let combined = [...drugDb[cat], ...(customDrugsStore[cat] || [])];
-            combined.forEach((drug, idx) => { let opt = document.createElement('option'); opt.value = idx; opt.text = drug.name + (drug.brand ? ` [${drug.brand}]` : ""); formSelect.add(opt); });
-        }
-    }
+function getDrugUnit(drug) {
+    let n = drug.name.toLowerCase();
+    if (n.includes('tablet') || n.includes('suppository')) return 'Tab/Supp';
+    if (n.includes('drop')) return 'Drops';
+    return 'mL';
+}
 
-    function saveCustomDrug() {
-        let cat = document.getElementById('newDrugCat').value;
-        let name = document.getElementById('newDrugName').value.trim();
-        let dose = parseFloat(document.getElementById('newDrugDose').value) || 0;
-        let type = document.getElementById('newDrugType').value;
-        let div = parseFloat(document.getElementById('newDrugDiv').value) || 1;
-        let freq = document.getElementById('newDrugFreq').value.trim();
-        let conc = parseFloat(document.getElementById('newDrugConc').value) || 1;
-        let vol = parseFloat(document.getElementById('newDrugVol').value) || 1;
+// --- 1. UNIFIED DOSAGE ENGINE (For the 🧮 Dose Calc Tab) ---
+function populateDrugs() {
+    const cat = document.getElementById('drugCategory').value;
+    const formSelect = document.getElementById('drugFormulation');
+    formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
+    if(!cat) return;
+    
+    // Filter the massive drugsDb from database.js
+    const filtered = drugsDb.filter(d => d.category === cat);
+    filtered.forEach(d => {
+        formSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+    });
+}
 
-        if(!name || !freq) { alert("Please fill parameters."); return; }
-        if(!customDrugsStore[cat]) customDrugsStore[cat] = [];
-        customDrugsStore[cat].push({ name: name, doseMg: dose, doseType: type, div: div, freq: freq, conc: conc, vol: vol });
-        localStorage.setItem('custom_drugs', JSON.stringify(customDrugsStore));
-        alert(name + " added successfully.");
-        document.getElementById('newDrugName').value = ''; populateDrugs();
-    }
-
-    function calculateDose() {
-        try {
-            // UNIFIED WEIGHT LOGIC: Works instantly whether a patient is selected or not
-            const weight = parseFloat(document.getElementById('calcWeight').value);
-            const cat = document.getElementById('drugCategory').value;
-            const drugIndex = document.getElementById('drugFormulation').value;
-            const outputArea = document.getElementById('calcOutputArea');
-            const btnArea = document.getElementById('rxAddButtonArea');
-            
-            if(!weight || !cat || drugIndex === "") {
-                outputArea.innerHTML = "<div class='tool-result neutral'>Awaiting parameters. Ensure weight is entered.</div>";
-                btnArea.innerHTML = ""; pendingPrescriptionDrug = null; return;
-            }
-            
-            let combined = [...(drugDb[cat] || []), ...(customDrugsStore[cat] || [])];
-            const drug = combined[drugIndex];
-            if (!drug) return;
-            
-            let volMl = 0; let details = ""; let unitStr = drug.vol === 1 ? 'Unit/Tab' : 'mL';
-            let durVal = document.getElementById('calcDuration') ? document.getElementById('calcDuration').value : "";
-            let durStr = durVal ? ` for ${durVal} days` : "";
-            
-            if (drug.doseType === 'fixed') {
-                volMl = drug.vol; details = "";
-                outputArea.innerHTML = `<div class="result-card"><p style="margin-top:0; color:var(--text-muted); font-weight:700; font-size:0.75rem; text-transform:uppercase;">Administer Quantity</p><h2 style="font-size:3rem; margin:10px 0; color:var(--success); letter-spacing:-1px;">${volMl.toFixed(1)} ${unitStr}</h2><p style="color:var(--primary); font-weight:bold; font-size:1.1rem; margin-bottom:0;">Frequency: ${drug.freq}${durStr}</p></div>`;
-            } else {
-                let targetMg = drug.doseType === 'perDay' ? (weight * drug.doseMg) / (drug.div || 1) : (weight * drug.doseMg);
-                
-                if (drug.maxMg && targetMg > drug.maxMg) { 
-                    targetMg = drug.maxMg; 
-                    details = `⚠️ Adult Max Cap Enforced (${drug.maxMg} mg/dose)`; 
-                } else { 
-                    details = `${targetMg.toFixed(1)} mg/dose Target`; 
-                }
-                
-                volMl = (targetMg * (drug.vol || 1)) / (drug.conc || 1); 
-                
-                outputArea.innerHTML = `<div class="result-card"><p style="margin-top:0; color:var(--text-muted); font-weight:700; font-size:0.75rem; text-transform:uppercase;">Administer Volume</p><h2 style="font-size:3rem; margin:10px 0; color:var(--success); letter-spacing:-1px;">${volMl.toFixed(1)} ${unitStr}</h2><p style="color:var(--primary); font-weight:bold; font-size:1.1rem; margin-bottom:0;">Frequency: ${drug.freq}${durStr}</p><div style="font-size:0.85rem; color:#64748b; margin-top:1.5rem; border-top:1px dashed var(--border-soft); padding-top:1rem;">${drug.maxMg && targetMg === drug.maxMg ? `<span style="color:var(--danger); font-weight:bold;">${details}</span>` : `[(${weight}kg &times; ${drug.doseMg}mg) &times; ${drug.vol}] &divide; ${drug.conc}mg`}</div></div>`;
-            }
-            
-            let finalDrugName = drug.name + (drug.brand ? ` [${drug.brand}]` : "");
-            pendingPrescriptionDrug = { name: finalDrugName, vol: volMl.toFixed(1), freq: drug.freq + durStr, details: details, unit: unitStr };
-            
-            if(activePatientId) {
-                btnArea.innerHTML = `<button class="action" onclick="addToRxCart()" style="width:100%; font-size:1.1rem; padding:1rem; margin-top:1rem; background:var(--primary); color:white; border-radius:var(--radius-md); box-shadow:var(--shadow-md);">➕ Add to Prescription Pad</button>`;
-            } else {
-                btnArea.innerHTML = `<div style="text-align:center; color:var(--warning); font-size:0.85rem; padding-top:10px;">Calculation active. (Select a patient above to save this to a prescription pad).</div>`;
-            }
-        } catch (error) {
-            console.error("Calculator Error:", error);
-            document.getElementById('calcOutputArea').innerHTML = "<div class='tool-result danger'>⚠️ Calculation Error. Please check drug database.</div>";
-        }
-    }
-
-    function calcReverse() {
-        const weight = parseFloat(document.getElementById('calcWeight').value);
-        const cat = document.getElementById('revCategory').value; const drugIndex = document.getElementById('revFormulation').value;
-        const volGiven = parseFloat(document.getElementById('revVol').value); 
-        const out = document.getElementById('revOutputArea');
-        const addButtonArea = document.getElementById('revAddButtonArea');
-        
-        if(!weight || !cat || drugIndex === "" || !volGiven || isNaN(volGiven)) { out.innerHTML = "Awaiting volume parameters."; out.className = "tool-result neutral"; return; }
-        
-        let combined = [...(drugDb[cat]||[]), ...(customDrugsStore[cat]||[])]; const drug = combined[drugIndex];
-        if (drug.doseType === 'fixed') { out.innerHTML = "Fixed dose formulation. Standard is " + drug.vol + " unit(s)."; out.className="tool-result"; return; }
-        
-        let mgGiven = (volGiven * drug.conc) / drug.vol;
-        let targetDosePerDose = drug.doseType === 'perDay' ? (drug.doseMg / drug.div) : drug.doseMg;
-        let mgPerKgGiven = mgGiven / weight;
-        let percent = (mgPerKgGiven / targetDosePerDose) * 100;
-        let status = percent > 120 ? "<span style='color:var(--danger)'>⚠️ Overdose</span>" : (percent < 80 ? "<span style='color:var(--warning)'>⚠️ Underdose</span>" : "<span style='color:var(--success)'>✅ Optimal Range</span>");
-        
-        out.innerHTML = `<div style="text-align:left;"><div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">Administered Load Profile</div><h2 style="margin:5px 0;">${mgGiven.toFixed(1)} mg total</h2><div style="font-size:1.1rem; font-weight:bold; margin-bottom:10px;">= ${mgPerKgGiven.toFixed(2)} mg/kg/dose</div><div style="padding-top:10px; border-top:1px dashed var(--border-soft);"><b>Target Protocol:</b> ${targetDosePerDose.toFixed(1)} mg/kg/dose<br><b>Audit Status:</b> ${status} (${percent.toFixed(0)}%)</div></div>`;
-        out.className = percent > 120 ? "tool-result danger" : (percent < 80 ? "tool-result warning" : "tool-result");
-        
-        // Setup pending drug for cart
-        let finalDrugName = drug.name + (drug.brand ? ` [${drug.brand}]` : "");
-        pendingPrescriptionDrug = { name: finalDrugName, vol: volGiven.toFixed(1), freq: drug.freq, details: "Reverse Audited", unit: drug.vol === 1 ? 'Unit/Tab' : 'mL' };
-        
-        if(activePatientId) {
-            addButtonArea.innerHTML = `<button onclick='addPendingToRxCart()' class='action' style='background:var(--success);'>➕ Confirm & Add to Prescription Pad</button>`;
-        }
-    }
-
-    function addPendingToRxCart() { 
-        if(!activePatientId || !pendingPrescriptionDrug) return; 
-        globalPatientsStore[activePatientId].rxList.push(pendingPrescriptionDrug); 
-        localStorage.setItem('nis_patients', JSON.stringify(globalPatientsStore)); 
-        
-        document.getElementById('drugFormulation').value = ""; 
-        document.getElementById('calcOutputArea').innerHTML = "<div class='tool-result neutral'>Awaiting parameters.</div>"; 
-        document.getElementById('rxAddButtonArea').innerHTML = ''; 
-        if(document.getElementById('revAddButtonArea')) document.getElementById('revAddButtonArea').innerHTML = '';
-        
-        showSystemToast(`<b>${pendingPrescriptionDrug.name}</b> added to pad.`);
-        pendingPrescriptionDrug = null; 
-        renderRxCartList(); 
+function calculateDose() {
+    const weight = parseFloat(document.getElementById('calcWeight').value);
+    const drugId = document.getElementById('drugFormulation').value;
+    const outputArea = document.getElementById('calcOutputArea');
+    const btnArea = document.getElementById('rxAddButtonArea');
+    
+    if(!weight || drugId === "") {
+        outputArea.innerHTML = "<div class='tool-result neutral'>Awaiting parameters. Ensure weight is entered.</div>";
+        btnArea.innerHTML = ""; pendingPrescriptionDrug = null; return;
     }
     
-    function addToRxCart() { addPendingToRxCart(); }
+    const drug = drugsDb.find(d => d.id === drugId);
+    if (!drug) return;
     
-    function removeDrugFromCart(idx) { 
-        globalPatientsStore[activePatientId].rxList.splice(idx,1); 
-        localStorage.setItem('nis_patients', JSON.stringify(globalPatientsStore)); 
-        renderRxCartList(); 
+    // The Universal Math
+    let math = computeClinicalMath(drug, weight);
+    let unit = getDrugUnit(drug);
+    
+    let durVal = document.getElementById('calcDuration') ? document.getElementById('calcDuration').value : "";
+    let durStr = durVal ? ` x ${durVal} Days` : "";
+    let finalFreq = `${drug.defaultFreq}${durStr}`;
+    let warnHTML = math.isMax ? `<br><span style="color:var(--danger); font-size:0.85rem;">⚠️ Adult Max Cap Enforced (${drug.maxMg}mg)</span>` : "";
+    
+    // Build the Display Card
+    outputArea.innerHTML = `
+        <div class="result-card">
+            <p style="margin-top:0; color:var(--text-muted); font-weight:700; font-size:0.75rem; text-transform:uppercase;">Administer Volume</p>
+            <h2 style="font-size:3rem; margin:10px 0; color:var(--success); letter-spacing:-1px;">${math.reqVol.toFixed(1)} ${unit}</h2>
+            <p style="color:var(--primary); font-weight:bold; font-size:1.1rem; margin-bottom:0;">Frequency: ${finalFreq}</p>
+            <div style="font-size:0.85rem; color:#64748b; margin-top:1.5rem; border-top:1px dashed var(--border-soft); padding-top:1rem;">
+                Target: ${math.reqMg.toFixed(0)} mg/dose ${warnHTML}
+            </div>
+        </div>`;
+    
+    // Prepare it for the Cart
+    pendingPrescriptionDrug = { name: drug.name, vol: math.reqVol.toFixed(1), freq: finalFreq, details: math.isMax ? "Max dose cap" : "", unit: unit };
+    
+    if(activePatientId) {
+        btnArea.innerHTML = `<button class="action" onclick="addToRxCart()" style="width:100%; font-size:1.1rem; padding:1rem; margin-top:1rem; background:var(--primary); color:white; border-radius:var(--radius-md); box-shadow:var(--shadow-md);">➕ Add to Active Draft</button>`;
+    } else {
+        btnArea.innerHTML = `<div style="text-align:center; color:var(--warning); font-size:0.85rem; padding-top:10px;">Independent Calculation Active.</div>`;
     }
+}
+
+// --- 2. REVERSE AUDIT ENGINE ---
+function populateRevDrugs() {
+    const cat = document.getElementById('revCategory').value; 
+    const formSelect = document.getElementById('revFormulation');
+    formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
+    if(!cat) return;
+    const filtered = drugsDb.filter(d => d.category === cat);
+    filtered.forEach(d => { formSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`; });
+}
+
+function calcReverse() {
+    const weight = parseFloat(document.getElementById('calcWeight').value);
+    const drugId = document.getElementById('revFormulation').value;
+    const volGiven = parseFloat(document.getElementById('revVol').value); 
+    const out = document.getElementById('revOutputArea');
+    const addButtonArea = document.getElementById('revAddButtonArea');
     
-    // --- EHR STATE MACHINE LOGIC ---
+    if(!weight || !drugId || !volGiven || isNaN(volGiven)) { out.innerHTML = "Awaiting volume parameters."; out.className = "tool-result neutral"; return; }
+    
+    const drug = drugsDb.find(d => d.id === drugId);
+    if(!drug) return;
+    if (drug.doseType === 'fixed') { out.innerHTML = "Fixed dose formulation. Standard is " + drug.vol + " unit(s)."; out.className="tool-result"; return; }
+    
+    let mgGiven = (volGiven * drug.conc) / drug.vol;
+    let targetDosePerDose = drug.doseType === 'perDay' ? (drug.doseMg / (drug.div || 1)) : drug.doseMg;
+    let mgPerKgGiven = mgGiven / weight;
+    let percent = (mgPerKgGiven / targetDosePerDose) * 100;
+    let status = percent > 120 ? "<span style='color:var(--danger)'>⚠️ Overdose</span>" : (percent < 80 ? "<span style='color:var(--warning)'>⚠️ Underdose</span>" : "<span style='color:var(--success)'>✅ Optimal Range</span>");
+    
+    out.innerHTML = `<div style="text-align:left;"><div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">Administered Load Profile</div><h2 style="margin:5px 0;">${mgGiven.toFixed(1)} mg total</h2><div style="font-size:1.1rem; font-weight:bold; margin-bottom:10px;">= ${mgPerKgGiven.toFixed(2)} mg/kg/dose</div><div style="padding-top:10px; border-top:1px dashed var(--border-soft);"><b>Target Protocol:</b> ${targetDosePerDose.toFixed(1)} mg/kg/dose<br><b>Audit Status:</b> ${status} (${percent.toFixed(0)}%)</div></div>`;
+    out.className = percent > 120 ? "tool-result danger" : (percent < 80 ? "tool-result warning" : "tool-result");
+    
+    let unitStr = getDrugUnit(drug);
+    pendingPrescriptionDrug = { name: drug.name, vol: volGiven.toFixed(1), freq: drug.defaultFreq, details: "Reverse Audited", unit: unitStr };
+    
+    if(activePatientId) {
+        addButtonArea.innerHTML = `<button onclick='addPendingToRxCart()' class='action' style='background:var(--success);'>➕ Confirm & Add to Prescription Pad</button>`;
+    }
+}
+
+// --- 3. CART MANAGEMENT ---
+let pendingPrescriptionDrug = null;
+
+function addPendingToRxCart() { 
+    if(!activePatientId || !pendingPrescriptionDrug) return; 
+    
+    const p = globalPatientsStore[activePatientId];
+    if(!p.rxList) p.rxList = [];
+    p.rxList.push(pendingPrescriptionDrug); 
+    localStorage.setItem('nis_patients', JSON.stringify(globalPatientsStore)); 
+    
+    if(document.getElementById('drugFormulation')) document.getElementById('drugFormulation').value = ""; 
+    if(document.getElementById('calcOutputArea')) document.getElementById('calcOutputArea').innerHTML = "<div class='tool-result neutral'>Awaiting parameters.</div>"; 
+    if(document.getElementById('rxAddButtonArea')) document.getElementById('rxAddButtonArea').innerHTML = ''; 
+    if(document.getElementById('revAddButtonArea')) document.getElementById('revAddButtonArea').innerHTML = '';
+    
+    if(typeof showSystemToast === 'function') showSystemToast(`✅ Added ${pendingPrescriptionDrug.name}`);
+    pendingPrescriptionDrug = null; 
+    renderRxCartList(); 
+}
+
+function addToRxCart() { addPendingToRxCart(); }
+
+function removeDrugFromCart(idx) { 
+    if(!activePatientId) return;
+    globalPatientsStore[activePatientId].rxList.splice(idx,1); 
+    localStorage.setItem('nis_patients', JSON.stringify(globalPatientsStore)); 
+    renderRxCartList(); 
+}
+
+// --- 4. INDEPENDENT DASHBOARD CALCULATOR ---
+function populateHomeDrugs() {
+    const cat = document.getElementById('homeCategory').value;
+    const formSelect = document.getElementById('homeFormulation');
+    formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
+    if(!cat) return;
+    
+    const filtered = drugsDb.filter(d => d.category === cat);
+    filtered.forEach(d => { formSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`; });
+}
+
+function runHomeDoseCalc() {
+    const wt = parseFloat(document.getElementById('homeWeight').value);
+    const drugId = document.getElementById('homeFormulation').value;
+    const res = document.getElementById('homeDoseResult');
+
+    if(!wt || !drugId) { res.innerHTML = ''; return; }
+    const drug = drugsDb.find(d => d.id === drugId);
+    if(!drug) return;
+
+    let math = computeClinicalMath(drug, wt);
+    let unit = getDrugUnit(drug);
+    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:5px;">⚠️ Adult Max Cap Enforced</div>` : "";
+
+    res.innerHTML = `
+        <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--primary); text-align:center; box-shadow:var(--shadow-md);">
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Calculated Quantity</div>
+            <div style="font-size:2.8rem; color:var(--primary); font-weight:800; margin:5px 0;">${math.reqVol.toFixed(1)} <span style="font-size:1.2rem;">${unit}</span></div>
+            <div style="font-size:1rem; color:var(--text-main); font-weight:700; background:rgba(91,97,246,0.1); padding:5px 10px; border-radius:4px; display:inline-block;">${drug.defaultFreq}</div>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
+            ${warnHTML}
+        </div>
+    `;
+}
+
+// --- EHR STATE MACHINE LOGIC ---
 
     function renderVisitLedger() {
         if(!activePatientId) return;
@@ -378,6 +392,28 @@ function populateDrugs() {
             document.getElementById('inlineDoseResult').innerHTML = '';
         }
     }
+
+    // --- PHASE 7: INVESTIGATION COMPILER ---
+    window.updateTestsTextarea = function() {
+        let tests = [];
+        
+        // Gather all the tapped blue chips
+        document.querySelectorAll('.investigation-chips input:checked').forEach(cb => {
+            tests.push(cb.value);
+        });
+        
+        // Add anything typed into the custom box
+        let custom = document.getElementById('rxTestsCustom');
+        if (custom && custom.value.trim() !== "") {
+            tests.push(custom.value.trim());
+        }
+        
+        // Compile them with commas and save to the hidden input for the printer
+        const hiddenInput = document.getElementById('rxTests');
+        if (hiddenInput) {
+            hiddenInput.value = tests.join(", ");
+        }
+    };
 
     function startNewVisit() {
         // 1. UI Swaps
