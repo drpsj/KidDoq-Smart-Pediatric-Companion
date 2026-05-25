@@ -216,10 +216,6 @@
             htCm: document.getElementById('htCm').value,
             hcCm: document.getElementById('hcCm') ? document.getElementById('hcCm').value : "",
             je: document.getElementById('jeEndemic') ? document.getElementById('jeEndemic').checked : false,
-            diagnosis: document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "",
-            tests: document.getElementById('rxTests') ? document.getElementById('rxTests').value : "",
-            advice: document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "",
-            review: document.getElementById('rxReview') ? document.getElementById('rxReview').value : "",
             ageYrs: y, 
             ageMos: m, 
             totalMonths: currentPatientAgeInMonths
@@ -284,6 +280,7 @@
         if(typeof calcMalnutrition === 'function') calcMalnutrition();
         if(typeof renderSensory === 'function') renderSensory();
         if(typeof calcNutrition === 'function') calcNutrition();
+        if(typeof renderVisitLedger === 'function') renderVisitLedger();
     }
 
     

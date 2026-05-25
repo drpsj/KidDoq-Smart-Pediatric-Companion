@@ -286,21 +286,39 @@
                 </div>
                 
                 <div id="rxNotesTab" class="sub-tab-content active">
-                    <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 1fr;">
-                        <div>
-                            <h4 style="margin-top:0; color:var(--primary);">Clinical Notes</h4>
-                            <label>Complaints / Differential Diagnosis</label>
-                            <input type="text" id="rxDiagnosis" placeholder="e.g. Viral URI, Acute Otitis Media" oninput="saveAndRegisterPatient(true)" style="margin-bottom:10px; font-weight:bold;">
-                            <label>Required Investigations / Scans</label>
-                            <textarea id="rxTests" placeholder="e.g. CBC, CRP, USG Abdomen" oninput="saveAndRegisterPatient(true)" style="width:100%; padding:0.65rem; border:1px solid var(--border-soft); border-radius:var(--radius-md); font-family:inherit; margin-bottom:10px; resize:vertical; min-height:60px;"></textarea>
-                            <label>General Advice / Care Plan</label>
-                            <textarea id="rxAdvice" placeholder="e.g. Plenty of oral fluids, tepid sponging..." oninput="saveAndRegisterPatient(true)" style="width:100%; padding:0.65rem; border:1px solid var(--border-soft); border-radius:var(--radius-md); font-family:inherit; margin-bottom:10px; resize:vertical; min-height:60px;"></textarea>
-                            <label>Next Review Date</label>
-                            <input type="date" id="rxReview" onchange="saveAndRegisterPatient(true)">
+                    <div class="timeline-section">
+                        <div id="rxLedgerView" style="display:block;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:2px solid var(--border-soft); padding-bottom:10px;">
+                                <h4 style="margin:0; color:var(--primary); font-size:1.1rem;">🗂️ Historical Encounters</h4>
+                                <button class="action" onclick="startNewVisit()" style="width:auto; margin:0; padding:10px 20px; box-shadow:var(--shadow-md);">➕ Start New Visit</button>
+                            </div>
+                            <div id="rxLedgerList" style="display:flex; flex-direction:column; gap:15px; max-height:500px; overflow-y:auto; padding-right:10px;">
+                                </div>
                         </div>
-                        <div>
-                            <h4 style="margin-top:0; color:var(--primary);">Prescribed Medications</h4>
-                            <div id="rxCartList" style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--border-soft); min-height:300px;"></div>
+
+                        <div id="rxDraftView" style="display:none; border:2px solid var(--primary); border-radius:var(--radius-lg); padding:1.5rem; background:var(--bg-surface); position:relative;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-soft); padding-bottom:10px;">
+                                <h4 style="margin:0; color:var(--primary); font-size:1.1rem;">📝 Active Draft (<span id="draftDateText"></span>)</h4>
+                                <button onclick="cancelNewVisit()" style="background:var(--bg-body); color:var(--text-muted); border:1px solid var(--border-soft); border-radius:50%; width:36px; height:36px; cursor:pointer; font-weight:bold; transition:all 0.2s;">✖</button>
+                            </div>
+                            
+                            <div class="tool-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
+                                <div>
+                                    <label>Complaints / Differential Diagnosis</label>
+                                    <input type="text" id="rxDiagnosis" placeholder="e.g. Viral URI, Acute Otitis Media" style="margin-bottom:15px; font-weight:bold;">
+                                    <label>Required Investigations / Scans</label>
+                                    <textarea id="rxTests" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
+                                    <label>General Advice / Care Plan</label>
+                                    <textarea id="rxAdvice" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
+                                    <label>Next Review Date</label>
+                                    <input type="date" id="rxReview">
+                                </div>
+                                <div style="display:flex; flex-direction:column; height:100%;">
+                                    <h4 style="margin:0 0 10px 0; color:var(--primary);">Prescribed Medications</h4>
+                                    <div id="rxCartList" style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); flex-grow:1; margin-bottom:15px; min-height:200px;"></div>
+                                    <button class="action" onclick="finalizeVisit()" style="background:var(--success); margin:0; box-shadow:var(--shadow-md); padding:1rem; font-size:1.1rem;">💾 Sign & Finalize Visit</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

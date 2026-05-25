@@ -148,6 +148,104 @@
         renderRxCartList(); 
     }
     
+    // --- EHR STATE MACHINE LOGIC ---
+
+    function renderVisitLedger() {
+        if(!activePatientId) return;
+        const p = globalPatientsStore[activePatientId];
+        const ledgerList = document.getElementById('rxLedgerList');
+        
+        document.getElementById('rxLedgerView').style.display = 'block';
+        document.getElementById('rxDraftView').style.display = 'none';
+        
+        // 1. Data Migration: Convert old prototype Rx data into the new Ledger format
+        if (!p.visits) p.visits = [];
+        if (p.rxList && p.rxList.length > 0 && p.visits.length === 0) {
+            p.visits.push({
+                date: new Date().toISOString(),
+                diagnosis: p.diagnosis || "Legacy Record",
+                tests: p.tests || "",
+                advice: p.advice || "",
+                review: p.review || "",
+                rxList: [...p.rxList]
+            });
+            p.rxList = []; // Clear the old format
+            DB.savePatient(p); // Silently save the migration
+        }
+
+        // 2. Render the Ledger
+        if (p.visits.length === 0) {
+            ledgerList.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-body); border-radius:var(--radius-lg); border:1px dashed var(--border-soft);">No historical encounters. Click 'Start New Visit' to begin a chart.</div>`;
+            return;
+        }
+
+        let html = "";
+        [...p.visits].reverse().forEach((visit) => {
+            const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            let rxHtml = visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit}) - <i>${rx.freq}</i>`).join("<br>");
+            
+            html += `
+            <div style="border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:1.2rem; background:var(--bg-body); transition: transform 0.2s; box-shadow:var(--shadow-sm);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border-soft); padding-bottom:8px;">
+                    <b style="color:var(--primary-dark); font-size:1.05rem;">${dateStr}</b>
+                    <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Clinical Encounter</span>
+                </div>
+                ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
+                <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications prescribed.</span>'}</div>
+                ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
+                ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-muted);"><b>Advice:</b> ${visit.advice}</div>` : ''}
+            </div>`;
+        });
+        ledgerList.innerHTML = html;
+    }
+
+    function startNewVisit() {
+        document.getElementById('rxLedgerView').style.display = 'none';
+        document.getElementById('rxDraftView').style.display = 'block';
+        document.getElementById('draftDateText').innerText = new Date().toLocaleDateString('en-IN');
+        
+        // Wipe the draft slate clean
+        document.getElementById('rxDiagnosis').value = "";
+        document.getElementById('rxTests').value = "";
+        document.getElementById('rxAdvice').value = "";
+        document.getElementById('rxReview').value = "";
+        
+        // Wipe the draft Rx cart
+        if(activePatientId) {
+            globalPatientsStore[activePatientId].rxList = []; 
+            renderRxCartList();
+        }
+    }
+
+    function cancelNewVisit() {
+        if(confirm("Discard this draft? Unsaved changes will be lost.")) {
+            renderVisitLedger();
+        }
+    }
+
+    async function finalizeVisit() {
+        if(!activePatientId) return;
+        const p = globalPatientsStore[activePatientId];
+        if (!p.visits) p.visits = [];
+        
+        const newVisit = {
+            date: new Date().toISOString(),
+            diagnosis: document.getElementById('rxDiagnosis').value,
+            tests: document.getElementById('rxTests').value,
+            advice: document.getElementById('rxAdvice').value,
+            review: document.getElementById('rxReview').value,
+            rxList: [...(p.rxList || [])] // Take whatever is in the active cart
+        };
+        
+        p.visits.push(newVisit); // Push to ledger
+        p.rxList = []; // Clear the draft cart
+        
+        await DB.savePatient(p); // Save to database
+        
+        if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored in Ledger");
+        renderVisitLedger(); // Return to ledger view
+    }
+    
     function renderRxCartList() { 
         const container = document.getElementById('rxCartList'); if(!activePatientId) return; 
         let list = globalPatientsStore[activePatientId].rxList || []; 
