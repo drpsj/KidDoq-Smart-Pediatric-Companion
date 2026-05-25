@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KidDoq | Smart Pediatric Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const manifestJSON = {
+            "name": "KidDoq | Smart Pediatric Companion",
+            "short_name": "KidDoq",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#F1F2F6",
+            "theme_color": "#ffffff",
+            "icons": [{ "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235B61F6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='white' font-family='sans-serif' font-weight='bold'>K</text></svg>", "sizes": "192x192", "type": "image/svg+xml" }]
+        };
+        const blob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
+        const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
+        document.addEventListener('DOMContentLoaded', () => document.head.appendChild(link));
+    </script>
+
+    <style>
+        /* CORE VARIABLES - NEO CLINICAL SAAS THEME */
+        /* PREMIUM KIDDOQ DESIGN SYSTEM */
+        :root {
+            /* Vibrant Brand Colors */
+            --brand-pink: #FF5CAB; --brand-cyan: #00D4FF; --brand-blue: #5B61F6;
+            --primary: #5B61F6; --primary-light: #EEF0FF; --primary-dark: #3F44D1; 
+            
+            /* UI Colors */
+            --success: #10b981; --warning: #f59e0b; --danger: #ef4444;        
+            --bg-body: #F5F7FA; --bg-surface: #ffffff; 
+            --text-main: #14142B; --text-muted: #6B7280; --border-soft: #E5E7EB;
+            
+            /* Shapes & Shadows */
+            --radius-xl: 24px; --radius-lg: 16px; --radius-md: 12px; --radius-pill: 9999px;
+            --shadow-sm: 0 2px 4px rgba(20, 20, 43, 0.04); 
+            --shadow-md: 0 10px 20px rgba(20, 20, 43, 0.06); 
+            --shadow-float: 0 20px 30px rgba(91, 97, 246, 0.15);
+        }
+        body.dark-mode {
+            --bg-body: #0B0E14; --bg-surface: #14142B; --text-main: #F9FAFB;
+            --text-muted: #9CA3AF; --border-soft: #2D3047; --primary-light: #1E1F3D; --primary: #5B61F6;
+            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.4);
+            --shadow-float: 0 20px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        /* GLOBAL LAYOUT LOCK & BOX-SIZING FIX */
+        *, *::before, *::after { box-sizing: border-box !important; }
+        body, html { margin: 0; padding: 0; font-family: 'Poppins', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); -webkit-tap-highlight-color: transparent;}
+        
+       /* KIDDOQ TOP HEADER */
+        header {
+            background: var(--bg-surface); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: var(--shadow-sm); z-index: 100; flex-shrink: 0; border-bottom: 1px solid var(--border-soft);
+        }
+        .brand-logo { 
+            font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin: 0 auto; 
+            background: linear-gradient(135deg, var(--brand-pink), var(--brand-cyan), var(--brand-blue)); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer;
+        }
+        
+        .header-active-patient {
+            background: var(--primary-light); color: var(--primary); padding: 6px 12px; border-radius: var(--radius-pill);
+            font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(91, 97, 246, 0.2); cursor: pointer;
+        }
+
+        /* WORKSPACE & NAVIGATION ARCHITECTURE */
+        .app-shell { 
+            width: 100vw; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; 
+            background-color: var(--bg-body);
+            /* Premium Mesh Gradient overlay for Light Mode */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 92, 171, 0.04) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(0, 212, 255, 0.04) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        .workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
+        .main-content { flex: 1; height: 100%; overflow-y: auto; padding: 20px 20px 100px 20px; -webkit-overflow-scrolling: touch; }
+/* =========================================
+           KIDDOQ PREMIUM DASHBOARD UI
+           ========================================= */
+        .greeting-box { margin-bottom: 24px; padding-top: 10px; }
+        .greeting-box h1 { font-size: 1.6rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; color: var(--text-main); }
+        .greeting-box p { color: var(--text-muted); margin: 4px 0 0 0; font-size: 0.95rem; }
+
+        .usp-dose-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-radius: var(--radius-xl); padding: 24px; box-shadow: var(--shadow-float); position: relative; overflow: hidden; margin-bottom: 30px;}
+        .usp-dose-card::after { content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; }
+        .usp-dose-card label { color: rgba(255,255,255,0.8); font-size: 0.75rem; }
+        .usp-dose-card input, .usp-dose-card select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-weight: 600; font-size: 1rem; border-radius: 12px; }
+        .usp-dose-card input:focus, .usp-dose-card select:focus { background: rgba(255,255,255,0.2); border-color: white; box-shadow: none; color: white; }
+        .usp-dose-card select option { background: var(--bg-surface); color: var(--text-main); }
+        .usp-dose-card input::placeholder { color: rgba(255,255,255,0.5); }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-header h3 { margin: 0; font-size: 1.1rem; color: var(--text-main); font-weight: 700; }
+        
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .tool-btn { background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: 24px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.2s ease; text-align: center; }
+        .tool-btn:active { transform: scale(0.95); background: var(--bg-body); }
+        .tool-icon-wrapper { width: 80px !important; height: 80px !important; border-radius: 18px !important; display: flex !important; align-items: center !important; justify-content: center !important; background: transparent !important; margin-bottom: 8px !important; }
+        .tool-icon-wrapper img, .tool-icon-wrapper svg { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+        .tool-btn span { font-size: 0.9rem; font-weight: 700; color: var(--text-main); line-height: 1.2; }
+
+        /* Icon Colors */
+        .ic-red { background: #FFE4E6; color: #E11D48; } .ic-blue { background: #DBEAFE; color: #2563EB; }
+        .ic-purple { background: #F3E8FF; color: #9333EA; } .ic-green { background: #DCFCE3; color: #16A34A; }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: var(--radius-pill); border: 2px solid var(--bg-body); }
+        
+        .view-content { display: none; width: 100%; max-width: 1200px; margin: 0 auto; }
+        .view-content.active-view { display: block; opacity: 1; animation: springSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .sub-tab-content { display: none; } 
+        .sub-tab-content.active { display: block; opacity: 1; animation: springSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes springSlideUp { 0% { opacity: 0; transform: translateY(20px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* FORMS & INPUTS */
+        .panel { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;}
+        label { display: block; font-weight: 700; margin: 0.25rem 0; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        input, select, textarea { width: 100%; padding: 0.85rem 1rem; border: 1.5px solid var(--border-soft); border-radius: var(--radius-md); box-sizing: border-box; font-size: 1rem; background: var(--bg-surface); color: var(--text-main); transition: all 0.2s ease; box-shadow: var(--shadow-sm);}
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); transform: translateY(-1px); }
+        
+        /* OVERRIDE: Stop checkboxes/radios from stretching to 100% width on desktop */
+        input[type="checkbox"], input[type="radio"] { 
+            width: 20px !important; 
+            height: 20px !important; 
+            padding: 0 !important; 
+            margin: 0; 
+            accent-color: var(--primary); 
+            cursor: pointer; 
+            box-shadow: none; 
+            flex-shrink: 0;
+        }
+
+        .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        button.action { width: 100%; background: var(--primary); color: white; border: none; padding: 0.85rem; font-size: 0.95rem; font-weight: 600; border-radius: var(--radius-md); cursor: pointer; margin-top: 1rem; box-shadow: var(--shadow-sm); transition: transform 0.1s;}
+        button.action:active { transform: translateY(1px); }
+        button.secondary { background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-soft); padding: 0.6rem; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; width: 100%; transition: background-color 0.2s;}
+
+        .timeline-section { background: var(--bg-surface); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); margin-bottom: 2rem; border: none; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .section-title { color: var(--text-main); border-bottom: none; padding-bottom: 0; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 800; display: flex; justify-content: space-between; align-items: center; letter-spacing: -0.5px;}
+        .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; align-items: start;}
+        
+        .formula-box { background: var(--primary-light); padding: 1.25rem; border-radius: var(--radius-md); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.6; border-left: 4px solid var(--primary); color: var(--primary-dark); }
+        .theory-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; background: var(--bg-surface); }
+        .theory-table th, .theory-table td { padding: 8px 12px; border: 1px solid var(--border-soft); text-align: left; }
+        .theory-table th { background: var(--bg-body); color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        .tool-result { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1.25rem; border-radius: var(--radius-md); color: var(--success); text-align: center; margin-top: 1rem; font-size: 1.1rem; line-height: 1.5;}
+        .tool-result.danger { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
+        .tool-result.warning { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: var(--warning); }
+        .tool-result.neutral { background: var(--bg-body); border-color: var(--border-soft); color: var(--text-main); }
+        
+        .sub-tabs-nav { 
+            display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-soft); 
+            flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px;
+        }
+        .sub-tabs-nav::-webkit-scrollbar { display: none; /* Hides the ugly scrollbar but keeps it scrollable */ }
+        .sub-tab-btn { 
+            background: transparent; border: none; color: var(--text-muted); padding: 0.75rem 1rem; 
+            cursor: pointer; font-size: 0.95rem; font-weight: 600; border-bottom: 2px solid transparent; 
+            margin-bottom: -2px; transition: color 0.2s; white-space: nowrap; 
+        }
+        .sub-tab-btn.active { color: var(--primary); border-color: var(--primary); }
+
+        /* TAB BAR (MOBILE) / SIDEBAR (DESKTOP) */
+        .main-nav {
+            background: var(--bg-surface); border-top: 1px solid var(--border-soft); display: flex;
+            justify-content: space-around; padding: 10px 5px 25px 5px; box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 5000;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: transparent; border: none; color: var(--text-muted); gap: 4px; font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 25%;
+        }
+        .nav-item svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none; }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+        .nav-item.active svg { fill: rgba(91, 97, 246, 0.15); stroke-width: 2.5; }
+
+        /* FLOATING ACTION BUTTON (FAB) */
+        .fab {
+            position: fixed; bottom: 100px; right: 20px; width: 60px; height: 60px;
+            background: linear-gradient(135deg, var(--brand-cyan), var(--brand-blue)); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-float); border: none; cursor: pointer; z-index: 5000; transition: transform 0.2s;
+        }
+        .fab svg { width: 30px; height: 30px; stroke: white; stroke-width: 2.5; }
+        .fab:active { transform: scale(0.9); }
+
+        /* DESKTOP SAAS LAYOUT (Transforms bottom tabs to left sidebar) */
+        @media (min-width: 1024px) {
+            .app-shell { flex-direction: row !important; }
+            .main-content { padding-bottom: 40px !important; }
+            .main-nav { 
+                position: relative; 
+                width: 280px; 
+                min-width: 280px; /* NEW: Forces strict width */
+                flex-shrink: 0;   /* NEW: Prevents it from getting squished */
+                height: 100vh; 
+                flex-direction: column; 
+                justify-content: flex-start; 
+                padding: 30px 20px; 
+                border-top: none; 
+                border-right: 1px solid var(--border-soft); 
+                align-items: stretch; 
+                gap: 10px;
+            }
+            .nav-item { width: 100%; flex-direction: row; justify-content: flex-start; padding: 14px 20px; border-radius: var(--radius-md); font-size: 1rem; }
+            .nav-item:hover { background: var(--bg-body); }
+            .nav-item.active { background: var(--primary-light); color: var(--primary); }
+            .fab { bottom: 30px; right: 40px; width: 70px; height: 70px; }
+        }
+
+        /* KIDDOQ MODAL SYSTEM */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(20,20,43,0.6); z-index: 999999; display: none; backdrop-filter: blur(4px); animation: fadeIn 0.2s ease;}
+        .modal-overlay.active { display: flex; align-items: flex-end; justify-content: center; }
+        .modal-content { background: var(--bg-surface); width: 100%; max-width: 600px; max-height: 80dvh; overflow-y: auto; overscroll-behavior: contain; border-radius: 24px 24px 0 0; padding: 24px; animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @media (min-width: 1024px) { .modal-content { border-radius: var(--radius-xl); align-self: center; } }
+        @keyframes fadeIn { 0%{opacity:0;} 100%{opacity:1;} }
+        @keyframes slideUpModal { 0%{transform:translateY(100%);} 100%{transform:translateY(0);} }
+
+        /* PRINT ENGINE SECURE HIDING */
+        @media screen { 
+            .print-container { 
+                position: absolute !important; z-index: -9999 !important; 
+                opacity: 0 !important; pointer-events: none !important; 
+            } 
+        }
+        @media print {
+            @page { margin: 10mm; }
+            body, html { background: white !important; margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
+            .app-shell, header, .registry-dropdown, #systemToastContainer { display: none !important; }
+            .print-container { position: static !important; opacity: 1 !important; z-index: auto !important; display: block !important; width: 100% !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .page-break { page-break-after: always; }
+        }
+
+        /* =========================================
+           KIDDOQ BULLETPROOF GRID & ICON FIX
+           ========================================= */
+        .tools-grid { 
+            display: grid !important; 
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)) !important; 
+            gap: 16px !important; 
+            margin-bottom: 24px !important; 
+            align-items: start !important; /* This absolutely prevents vertical stretching */
+        }
+        .tool-btn { 
+            background: var(--bg-surface) !important; 
+            border: 1px solid var(--border-soft) !important; 
+            border-radius: 18px !important; 
+            padding: 20px 8px !important; 
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: center !important; 
+            justify-content: flex-start !important; 
+            gap: 12px !important; 
+            height: auto !important; 
+        }
+        .tool-icon-wrapper { 
+            width: 64px !important; 
+            height: 64px !important; 
+            flex-shrink: 0 !important; /* Prevents the box from collapsing or exploding */
+            display: flex !important; 
+            align-items: center !important; 
+            justify-content: center !important; 
+            background: transparent !important;
+        }
+        .tool-icon-wrapper img, .tool-icon-wrapper svg { 
+            width: 100% !important; 
+            height: 100% !important; 
+            max-width: 50px !important; 
+            max-height: 50px !important; 
+            object-fit: contain !important; 
+            display: block !important;
+        }
+        .tool-btn span { 
+            font-size: 0.85rem !important; 
+            font-weight: 700 !important; 
+            color: var(--text-main) !important; 
+            line-height: 1.2 !important; 
+            text-align: center !important; 
+        }
+
+        /* =========================================
+           MOBILE SPLASH SCREEN
+           ========================================= */
+        .splash-screen { display: none; }
+        @media (max-width: 1024px) {
+            .splash-screen {
+                display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+                background: #0B0E14; z-index: 9999999; align-items: center; justify-content: center;
+                flex-direction: column; transition: opacity 0.6s ease, visibility 0.6s;
+            }
+            .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+            
+            /* Gradient Waves at the bottom */
+            .splash-waves {
+                position: absolute; bottom: 0; left: 0; width: 100%; height: 35vh;
+                background: linear-gradient(135deg, var(--brand-blue), var(--brand-pink));
+                mask-image: radial-gradient(ellipse at top, transparent 50%, black 100%);
+                -webkit-mask-image: radial-gradient(ellipse at top, transparent 50%, black 100%);
+                opacity: 0.8; z-index: 1;
+            }
+            
+            .splash-content { z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
+            .splash-content h1 { color: white; font-size: 3.5rem; margin: 0; letter-spacing: -1px; }
+            .splash-content p { color: #9CA3AF; font-size: 1.1rem; margin-top: 5px; font-weight: 500; }
+            
+            /* Modern Loading Spinner */
+            .splash-loader {
+                margin-top: 50px; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+                border-left-color: var(--brand-cyan); border-radius: 50%; animation: spin 1s linear infinite;
+            }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        }
+
+        /* =========================================
+           THUMB ZONE: FIXED ACTION BAR
+           ========================================= */
+        .workspace-actions {
+            position: fixed;
+            bottom: 90px; /* Hovers perfectly above your bottom navigation tabs */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5000;
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 1px solid var(--border-soft);
+            width: max-content;
+        }
+        .dark-mode .workspace-actions {
+            background: rgba(18, 24, 38, 0.85);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .workspace-actions button { margin: 0 !important; border-radius: 30px !important; padding: 10px 20px !important; }
+
+        
+    </style>
+</head>
+<body>
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 90px; height: 90px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(0,212,255,0.4));">
+            <h1>Kid<span style="color: var(--brand-cyan);">Doq</span></h1>
+            <p>Smart Pediatric Companion</p>
+            <div class="splash-loader"></div>
+        </div>
+        <div class="splash-waves"></div>
+    </div>
+
+    <div id="systemToastContainer" style="position:fixed; bottom:100px; right:30px; z-index:99999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
+  
+    <header>
+        <div style="width: 33%;"></div>
+        <div class="brand-logo" onclick="switchNavTab('homeDashboardView')">
+            <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 32px; height: 32px; object-fit: contain;">
+            KidDoq
+        </div>
+        <div id="headerPatientText" style="width: 33%; text-align: right; font-size: 0.9rem; font-weight: 600; color: var(--brand-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+    </header>
+
+  <div class="modal-overlay" id="registryModal" onclick="if(event.target===this) this.classList.remove('active')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+            <h3 style="margin:0; font-size:1.4rem;">➕ New Patient</h3>
+            <button onclick="document.getElementById('registryModal').classList.remove('active')" style="background:var(--bg-body); border:none; width:36px; height:36px; border-radius:50%; font-size:1.2rem; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center;">✖</button>
+        </div>
+        
+        <label>Patient Name</label>
+        <input type="text" id="pName" placeholder="e.g., Baby of Sunita" autocomplete="off" style="margin-bottom:12px;">
+        <label>Phone</label>
+        <input type="text" id="pPhone" placeholder="e.g., 9876543210" oninput="saveAndRegisterPatient(true)" style="margin-bottom:12px;">
+        <label>DOB</label>
+        <input type="date" id="dob" onchange="calculateAgeFromDob()">
+        
+        <div class="row-inputs" style="margin-top:16px;">
+            <div><label>Age (Yrs)</label><input type="number" id="ageYrs" oninput="estimateWeightFromAge()"></div>
+            <div><label>Age (Mos)</label><input type="number" id="ageMos" oninput="estimateWeightFromAge()"></div>
+        </div>
+        <div class="row-inputs" style="margin-top:16px;">
+            <div><label>Wt (kg)</label><input type="number" step="0.1" id="pWeight" oninput="saveAndRegisterPatient(true)"></div>
+            <div><label>Ht (cm)</label><input type="number" step="0.1" id="htCm" oninput="saveAndRegisterPatient(true)"></div>
+        </div>
+        <div class="row-inputs" style="margin-top:16px;">
+            <div><label>HC (cm)</label><input type="number" step="0.1" id="hcCm" oninput="saveAndRegisterPatient(true)"></div>
+            <div><label>Gender</label><select id="gender" onchange="saveAndRegisterPatient(true)"><option value="male">Male</option><option value="female">Female</option></select></div>
+        </div>
+        
+        <button class="action" style="margin-top:24px; box-shadow: 0 4px 12px rgba(91, 97, 246, 0.25);" onclick="saveAndRegisterPatient(false)">💾 Save & Open File</button>
+        <button class="secondary" style="margin-top:12px; border:none;" onclick="prepNewPatient()">🧹 Clear Form</button>
+    </div>
+  </div>
+
+<div class="app-shell home-active">
+    <nav class="main-nav">
+        <button class="nav-item" style="width: 33.3%;" onclick="switchMainFeature('databaseFeatureView', this)">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Patients
+        </button>
+        <button class="nav-item active" style="width: 33.3%;" onclick="switchNavTab('toolsTab')">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Tools
+        </button>
+        <button class="nav-item" style="width: 33.3%;" onclick="switchMainFeature('aboutFeatureView', this)">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Settings
+        </button>
+    </nav>
+
+    <button class="fab" onclick="document.getElementById('registryModal').classList.add('active')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </button>
+
+    <div class="main-content">
+        <div id="homeDashboardView" class="view-content active-view">
+            <div class="greeting-box">
+                <h1 id="homeGreetingText">Good morning, Doctor 👋</h1>
+                <p>What would you like to calculate today?</p>
+            </div>
+
+            <div class="usp-dose-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; position:relative; z-index:2;">
+                    <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.47 5.08a6.1 6.1 0 0 0-8.6 8.61l6.1 6.1a6.1 6.1 0 0 0 8.61-8.61l-6.1-6.1Z"></path><line x1="6.81" y1="13.19" x2="16.3" y2="3.7"></line></svg> Quick Dose Calc
+                    </h3>
+                </div>
+                
+                <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2;">
+                    <div>
+                        <label>Patient Weight (kg)</label>
+                        <input type="number" id="homeWeight" placeholder="e.g. 12.5" oninput="runHomeDoseCalc()" style="font-size: 1.1rem;">
+                    </div>
+                    <div>
+                        <label>Drug Category</label>
+                        <select id="homeCategory" onchange="populateHomeDrugs(); runHomeDoseCalc();">
+                            <option value="">-- Select --</option>
+                            <option value="antibiotics">Antibiotics</option>
+                            <option value="antipyretics">Antipyretics / Pain</option>
+                            <option value="antihistamines">Allergy / Cold</option>
+                            <option value="respiratory">Respiratory</option>
+                            <option value="git">Gastrointestinal</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="position:relative; z-index:2;">
+                    <label>Formulation</label>
+                    <select id="homeFormulation" onchange="runHomeDoseCalc()" style="margin-bottom: 10px;">
+                        <option value="">-- Choose Category First --</option>
+                    </select>
+                </div>
+
+                <div id="homeDoseResult" style="margin-top:15px; position:relative; z-index:2;"></div>
+            </div>
+
+            <div class="section-header">
+                <h3>Quick Access Tools</h3>
+            </div>
+            
+            <div id="homeQuickToolsGrid" class="tools-grid">
+            </div>
+        </div> <div id="toolsTab" class="view-content">
+            <div class="section-header" style="margin-bottom:20px;">
+                <h3 style="font-size:1.3rem;">🧰 Clinical Modules</h3>
+            </div>
+            <div class="tools-grid">
+                <div class="tool-btn" onclick="openClinicalTool('prescriptionFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-rx.png" alt="Rx"></div>
+                    <span>Rx & Dosing</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('certificateFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-cert.png" alt="Cert"></div>
+                    <span>Certificates</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('growthFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-growth.png" alt="Growth"></div>
+                    <span>Growth Curves</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('trackerFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-vax.png" alt="Vax"></div>
+                    <span>Vaccination</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('erFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-er.png" alt="ER"></div>
+                    <span>ER & Resus</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('milestoneFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-miles.png" alt="Milestones"></div>
+                    <span>Milestones</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('malnutritionFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-triage.png" alt="Triage"></div>
+                    <span>Triage & MAC</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('nutritionFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-diet.png" alt="Diet"></div>
+                    <span>Diet Recall</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('jaundiceFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-jaundice.png" alt="Jaundice"></div>
+                    <span>Jaundice</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('asthmaFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-asthma.png" alt="Asthma"></div>
+                    <span>PRAM Score</span>
+                </div>
+            </div>
+        </div>
+    
+        <div id="activeWorkspace" style="display:none;">
+            
+    <div id="masterActionsBar" class="workspace-actions" style="display:none;">
+        <button id="btnMasterPrint" onclick="executePrint('comprehensive')" class="action" style="background:var(--brand-blue); color:white; border:none; font-weight:bold; margin:0;">🖨️ Print Report</button>
+        <button id="btnMasterWA" onclick="sendWACompReport()" class="action" style="background:#25D366; color:white; border:none; font-weight:bold; margin:0;">📱 WhatsApp</button>
+    </div>
+
+            <div id="databaseFeatureView" class="view-content">
+                <h2 class="section-title" style="margin-bottom: 0;">🗄️ Patient Master Database</h2>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-top:5px; margin-bottom:1.5rem;">Search and open existing patient files.</p>
+                
+                <div class="timeline-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:10px;">
+                        <input type="text" id="dbSearchInput" placeholder="🔍 Search by patient name or phone number..." onkeyup="renderFullDatabase()" style="flex:1; min-width:250px; border:2px solid var(--primary); box-shadow:var(--shadow-sm); padding:1rem; font-size:1.05rem; border-radius:var(--radius-md);">
+                        <button class="action" onclick="exportDatabase()" style="width:auto; margin:0; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft);">📥 Backup Database</button>
+                    </div>
+                    
+                    <div id="fullDatabaseList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:15px;">
+                        </div>
+                </div>
+            </div>
+
+            <div id="erFeatureView" class="view-content">
+                <h2 class="section-title" style="color:var(--danger)">🚨 ER & NICU Resuscitation</h2>
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('erCrashTab', this)">⚡ Crash Cart</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('erFluidsTab', this)">💧 IV Fluids</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('erNicuTab', this)">🍼 NICU (GIR/APGAR)</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('erVitalsTab', this)">📊 Vitals Matrix</button>
+                </div>
+                
+                <div id="erCrashTab" class="sub-tab-content active"><div class="timeline-section tool-grid" style="border: 2px solid var(--danger); background: rgba(239, 68, 68, 0.02);"><div><h3 style="color:var(--danger); margin-top:0;">Code Blue Calculator</h3><label>Weight (kg)</label><input type="number" id="crashWeight" oninput="calcCrash()"><label>Age (Yrs)</label><input type="number" id="crashAge" oninput="calcCrash()"><div class="formula-box" style="margin-top:10px;"><b>Defibrillation:</b> 2 J/kg &rarr; 4 J/kg<br><b>Fluid Bolus:</b> 20 mL/kg (NS)<br><b>Adrenaline (1:10,000):</b> 0.1 mL/kg</div></div><div id="crashOutputArea" class="tool-result danger">Input physical vectors to map lines.</div></div></div>
+                
+                <div id="erFluidsTab" class="sub-tab-content">
+                    <div class="timeline-section tool-grid">
+                        <div>
+                            <div class="formula-box">
+                                <b>Maintenance Limits:</b><br>
+                                1st 10kg: <code>100 ml/kg/day</code><br>
+                                2nd 10kg: <code>50 ml/kg/day</code><br>
+                                > 20kg: <code>20 ml/kg/day</code>
+                            </div>
+                            <label>Clinical Dehydration Grading</label>
+                            <select id="fluidDehydration" onchange="calcFluids()">
+                                <option value="0">Euvolemia (Maintenance Only 0%)</option>
+                                <option value="5">Mild Fluid Loss (5%)</option>
+                                <option value="10">Moderate Fluid Loss (10%)</option>
+                                <option value="15">Severe Fluid Deficit (15%)</option>
+                            </select>
+                            <label style="margin-top:1rem;">Fluid Mass Target (kg)</label>
+                            <input type="number" id="fluidWeight" oninput="calcFluids()">
+                        </div>
+                        <div id="fluidResultArea" class="tool-result neutral">Compile inputs parameter block.</div>
+                    </div>
+                </div>
+
+                <div id="erNicuTab" class="sub-tab-content"><div class="timeline-section tool-grid"><div><h3 style="color:var(--primary); margin-top:0;">GIR Calculator</h3><div class="formula-box"><code>GIR = (Rate × Dex%) / (Weight × 6)</code></div><div class="row-inputs"><div><label>Wt (kg)</label><input type="number" id="girWt" oninput="calcGIR()"></div><div><label>Rate (ml/hr)</label><input type="number" id="girRate" oninput="calcGIR()"></div></div><label>Dextrose %</label><input type="number" id="girDex" oninput="calcGIR()"><div id="girOutput" class="tool-result neutral"></div></div><div><h3 style="color:var(--primary); margin-top:0;">APGAR Score</h3><div class="row-inputs" style="gap:5px;"><label>Heart Rate</label><select id="apgarHR" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Resp. Effort</label><select id="apgarResp" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Muscle Tone</label><select id="apgarTone" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Reflex Excitability</label><select id="apgarReflex" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Color</label><select id="apgarColor" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div id="apgarOutput" class="tool-result success">Score: 10/10</div></div></div></div>
+                <div id="erVitalsTab" class="sub-tab-content"><div class="timeline-section"><table class="theory-table"><thead><tr><th>Age Bracket</th><th>Heart Rate (bpm)</th><th>Resp Rate (bpm)</th><th>Systolic BP (mmHg)</th></tr></thead><tbody><tr><td>Neonate (&lt;28 Days)</td><td>100 - 205</td><td>40 - 60</td><td>60 - 90</td></tr><tr><td>Infant (1 - 12 Mos)</td><td>100 - 180</td><td>30 - 53</td><td>87 - 105</td></tr><tr><td>Toddler (1 - 3 Yrs)</td><td>98 - 140</td><td>22 - 37</td><td>95 - 105</td></tr><tr><td>School Age (6 - 11 Yrs)</td><td>75 - 118</td><td>18 - 25</td><td>97 - 112</td></tr></tbody></table></div></div>
+            </div>
+
+            <div id="prescriptionFeatureView" class="view-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">📝 Prescription & Dosing</h2>
+                    <button onclick="executePrint('prescription')" class="secondary" style="width:auto; border-color:var(--primary); color:var(--primary);">🖨️ Print Rx</button>
+                </div>
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('rxNotesTab', this)">📝 Clinical Pad</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('doseCalcTab', this)">🧮 Dose Calc</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('doseReverseTab', this)">🔄 Reverse Audit</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('doseManageTab', this)">⚙️ Custom Drugs</button>
+                </div>
+                
+                <div id="rxNotesTab" class="sub-tab-content active">
+                    <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div>
+                            <h4 style="margin-top:0; color:var(--primary);">Clinical Notes</h4>
+                            <label>Complaints / Differential Diagnosis</label>
+                            <input type="text" id="rxDiagnosis" placeholder="e.g. Viral URI, Acute Otitis Media" oninput="saveAndRegisterPatient(true)" style="margin-bottom:10px; font-weight:bold;">
+                            <label>Required Investigations / Scans</label>
+                            <textarea id="rxTests" placeholder="e.g. CBC, CRP, USG Abdomen" oninput="saveAndRegisterPatient(true)" style="width:100%; padding:0.65rem; border:1px solid var(--border-soft); border-radius:var(--radius-md); font-family:inherit; margin-bottom:10px; resize:vertical; min-height:60px;"></textarea>
+                            <label>General Advice / Care Plan</label>
+                            <textarea id="rxAdvice" placeholder="e.g. Plenty of oral fluids, tepid sponging..." oninput="saveAndRegisterPatient(true)" style="width:100%; padding:0.65rem; border:1px solid var(--border-soft); border-radius:var(--radius-md); font-family:inherit; margin-bottom:10px; resize:vertical; min-height:60px;"></textarea>
+                            <label>Next Review Date</label>
+                            <input type="date" id="rxReview" onchange="saveAndRegisterPatient(true)">
+                        </div>
+                        <div>
+                            <h4 style="margin-top:0; color:var(--primary);">Prescribed Medications</h4>
+                            <div id="rxCartList" style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--border-soft); min-height:300px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="doseCalcTab" class="sub-tab-content">
+                    <div class="timeline-section">
+                        <div class="tool-grid">
+                            <div>
+                                <label style="color:var(--primary); font-size:0.85rem;">Bedside Weight (kg)</label>
+                                <input type="number" id="calcWeight" placeholder="Enter weight for calc..." oninput="calculateDose()" style="border-color:var(--primary); font-weight:bold;">
+                                
+                                <label style="margin-top:15px;">Category</label>
+                                <select id="drugCategory" onchange="populateDrugs(); calculateDose();">
+                                    <option value="">-- Select --</option>
+                                    <option value="antibiotics">Antibiotics</option>
+                                    <option value="antipyretics">Antipyretics & Analgesics</option>
+                                    <option value="antihistamines">Antihistamines / Cold</option>
+                                    <option value="respiratory">Respiratory Suite</option>
+                                    <option value="git">Gastrointestinal</option>
+                                </select>
+                                <label>Formulation</label><select id="drugFormulation" onchange="calculateDose()"><option value="">-- formulation --</option></select>
+                                <label>Duration (Days)</label><input type="number" id="calcDuration" placeholder="e.g. 5" oninput="calculateDose()">
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div id="calcOutputArea"></div>
+                                <div id="rxAddButtonArea"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="doseReverseTab" class="sub-tab-content">
+                    <div class="timeline-section">
+                        <div class="tool-grid">
+                            <div>
+                                <label>Category</label><select id="revCategory" onchange="populateRevDrugs()"><option value="">-- Select --</option><option value="antibiotics">Antibiotics</option><option value="antipyretics">Antipyretics</option><option value="antihistamines">Antihistamines</option><option value="git">Gastrointestinal</option><option value="respiratory">Respiratory</option></select>
+                                <label>Formulation</label><select id="revFormulation" onchange="calcReverse()"><option value="">-- formulation --</option></select>
+                                <label>Volume Administered (mL/Tab)</label><input type="number" step="0.1" id="revVol" oninput="calcReverse()">
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div id="revOutputArea" class="tool-result neutral">Awaiting volume parameters.</div>
+                                <div id="revAddButtonArea"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="doseManageTab" class="sub-tab-content">
+                    <div class="timeline-section tool-grid" style="grid-template-columns: 1.5fr 1fr;">
+                        <div>
+                            <h4 style="margin-top:0; color:var(--primary);">➕ Add Custom Formulation</h4>
+                            <div class="row-inputs">
+                                <div><label>Category</label><select id="newDrugCat"><option value="antibiotics">Antibiotics</option><option value="antipyretics">Antipyretics</option><option value="antihistamines">Antihistamines</option><option value="respiratory">Respiratory</option><option value="git">Gastrointestinal</option></select></div>
+                                <div><label>Drug Name & Brand</label><input type="text" id="newDrugName" placeholder="e.g. Paracetamol [Calpol]"></div>
+                            </div>
+                            <div class="row-inputs" style="margin-top:10px;">
+                                <div><label>Dose Amount</label><input type="number" id="newDrugDose" placeholder="e.g. 15"></div>
+                                <div><label>Dose Type</label><select id="newDrugType"><option value="perDose">mg/kg/dose</option><option value="perDay">mg/kg/day</option><option value="fixed">Fixed Volume (e.g. 1 Tab)</option></select></div>
+                            </div>
+                            <div class="row-inputs" style="margin-top:10px;">
+                                <div><label>Divided Into</label><input type="number" id="newDrugDiv" placeholder="e.g. 3 (for TID)"></div>
+                                <div><label>Frequency Label</label><input type="text" id="newDrugFreq" placeholder="e.g. TID"></div>
+                            </div>
+                            <div class="row-inputs" style="margin-top:10px;">
+                                <div><label>Concentration (mg)</label><input type="number" id="newDrugConc" placeholder="e.g. 250"></div>
+                                <div><label>Per Volume (mL)</label><input type="number" id="newDrugVol" placeholder="e.g. 5"></div>
+                            </div>
+                            <button class="action" style="margin-top:20px;" onclick="saveCustomDrug()">💾 Save to Database</button>
+                        </div>
+                        <div style="background:var(--bg-body); padding:1rem; border-radius:var(--radius-md);">
+                            <h4 style="margin-top:0;">Database Rules</h4>
+                            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                                • <b>perDose</b>: Multiplies dose directly by weight.<br>
+                                • <b>perDay</b>: Multiplies by weight, then divides by "Divided Into".<br>
+                                • <b>fixed</b>: Ignores weight, prescribes exact "Volume".<br>
+                                • Saved drugs persist locally and appear at the bottom of dropdowns.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="certificateFeatureView" class="view-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">📄 Medical Certificates</h2>
+                    <button onclick="executePrint('certificate')" class="secondary" style="width:auto; border-color:var(--warning); color:var(--warning);">🖨️ Print Cert</button>
+                </div>
+                <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 1.5fr;">
+                    <div>
+                        <h4 style="margin-top:0; color:var(--warning);">Universal Note Generator</h4>
+                        <label>Template Category</label>
+                        <select id="certCategory" onchange="generateCertTemplate()">
+                            <option value="none">-- Select Template --</option>
+                            <option value="leave">Medical Leave / Bed Rest</option>
+                            <option value="fitness">Fitness / Rejoining</option>
+                            <option value="attendance">Attendance / Visit Proof</option>
+                            <option value="referral">Specialist / Lab Referral</option>
+                            <option value="advice">Advice / Diet / Home Care</option>
+                            <option value="exemption">Medical Exemption</option>
+                        </select>
+                        <label style="margin-top:10px;">Document Title</label>
+                        <input type="text" id="certTitle" placeholder="e.g. FITNESS CERTIFICATE">
+                        <label style="margin-top:10px;">Relevant Dates / Days</label>
+                        <input type="text" id="certDates" placeholder="e.g. 3 days from 12-Nov" oninput="generateCertTemplate()">
+                        <button class="secondary" style="margin-top:10px; width:100%;" onclick="generateCertTemplate()">🔄 Auto-Fill Template</button>
+                    </div>
+                    <div>
+                        <h4 style="margin-top:0; color:var(--primary);">Final Document Content (Editable)</h4>
+                        <textarea id="certBody" style="width:100%; padding:1rem; border:1px solid var(--border-soft); border-radius:var(--radius-md); font-family:inherit; font-size:0.95rem; min-height:250px; resize:vertical;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="nutritionFeatureView" class="view-content">
+                <h2 class="section-title">🍎 Nutrition Tracker & 24h Recall</h2>
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('nutriCalcTab', this)">🧮 ICMR Target Metrics</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('nutriRecallTab', this)">🍽️ 24h Diet Recall Board</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('nutriDBTab', this); renderFoodDB(foodsDb);">📊 Reference Matrix</button>
+                </div>
+                <div id="nutriCalcTab" class="sub-tab-content active"><div class="timeline-section"><div id="nutriTargetArea"></div></div></div>
+                <div id="nutriRecallTab" class="sub-tab-content">
+                    <div class="timeline-section tool-grid">
+                        <div style="background:var(--bg-body); padding:1rem; border-radius:8px; border:1px solid var(--border-soft);">
+                            <label>Meal Window</label><select id="recallMeal"><option>Breakfast</option><option>Morning Snack</option><option>Lunch</option><option>Evening Snack</option><option>Dinner</option></select>
+                            <label>Target Food Matrix Item</label><select id="recallFood"></select>
+                            <label>Mass/Vol Loaded (g/ml)</label><input type="number" id="recallQty">
+                            <button class="action" style="background:var(--success);" onclick="addDietRecall()">➕ Append Entry</button>
+                        </div>
+                        <div id="recallSummaryArea" class="tool-result neutral">Staging balances lookup panel.</div>
+                    </div>
+                    <div id="recallListArea" style="margin-top:1.5rem;"></div>
+                </div>
+                <div id="nutriDBTab" class="sub-tab-content">
+                    <div class="timeline-section" style="margin-bottom:1rem; padding:1rem; font-size:0.85rem; line-height:1.5;">
+                        <h4 style="margin:0 0 10px 0; color:var(--primary);">Key Micronutrient Dietary Sources</h4>
+                        <b>Vit A:</b> Green/yellow/orange veg, papaya, liver, egg yolk. <br>
+                        <b>Vit C:</b> Amla, citrus fruits, drumstick, sprouting cereals, capsicum.<br>
+                        <b>Vit D/E/K:</b> Egg yolk, fish, cow's milk (D); Cereals/veg oils (E); GLV, pork, liver (K).<br>
+                        <b>Calcium:</b> Milk products, millets, greens, fish, Bengal gram, soya bean.<br>
+                        <b>Iron:</b> Fish, meat, crab, Jaggery, dates, GLV, soya bean, raisins.
+                    </div>
+                    <div class="timeline-section">
+                        <input type="text" id="foodSearch" class="search-bar" placeholder="Filter search matching database indices..." onkeyup="filterFoodDB()">
+                        <div style="overflow-x:auto;">
+                            <table class="theory-table">
+                                <thead><tr><th>Matrix Food Item</th><th>Classification</th><th>Protein (g)</th><th>CHO (g)</th><th>Fat (g)</th><th>Energy (kcal)</th></tr></thead>
+                                <tbody id="foodTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="malnutritionFeatureView" class="view-content">
+                <h2 class="section-title">🩺 Malnutrition & Anthropometry</h2>
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('malnCalcTab', this)">🧮 Diagnostics</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('malnSensoryTab', this)">👀 Sensory Screening</button>
+                </div>
+                <div id="malnCalcTab" class="sub-tab-content active">
+                    <div class="timeline-section tool-grid">
+                        <div>
+                            <div class="formula-box">
+                                <b>Weech's Expected Weight Formula:</b><br>
+                                &lt;1 yr: <code>(Age in mos + 9) / 2</code><br>
+                                1 - 6 yrs: <code>(Age in yrs × 2) + 8</code><br>
+                                7 - 12 yrs: <code>(Age in yrs × 7 - 5) / 2</code>
+                            </div>
+                            <label>Bedside Height/Length (cm)</label><input type="number" id="triageHt" oninput="document.getElementById('htCm').value=this.value; calcMalnutrition();">
+                            <label>Mid-Arm Circumference (cm)</label><input type="number" id="triageMac" step="0.1" oninput="evalMAC(this.value)">
+                            <div style="margin-top:15px; background:var(--bg-body); padding:10px; border-radius:8px; border:1px solid var(--border-soft);"><input type="checkbox" id="malnOedemaToggle" onchange="calcMalnutrition()"> <label style="display:inline;">Bilateral Pitting Oedema Present?</label></div>
+                        </div>
+                        <div>
+                            <div id="malnGridOutput" class="tool-result neutral">Awaiting data entry...</div>
+                            <div id="macOutput" style="margin-top:10px; font-weight:bold; text-align:center;"></div>
+                            
+                            <h4 style="margin-top:20px; color:var(--primary);">Reference: Weight for Height (SAM/MAM)</h4>
+                            <table class="theory-table">
+                                <thead><tr><th>Classification</th><th>WFH / WFL</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Normal</td><td>> -2 SD ( >80% )</td></tr>
+                                    <tr><td>MAM</td><td>-2 SD to -3 SD (70-80%)</td></tr>
+                                    <tr><td>SAM</td><td>&lt; -3 SD ( &lt;70% )</td></tr>
+                                </tbody>
+                            </table>
+                            <h4 style="margin-top:20px; color:var(--primary);">Wellcome Trust Classification</h4>
+                            <table class="theory-table">
+                                <thead><tr><th>Wt for Age %</th><th>Oedema Absent</th><th>Oedema Present</th></tr></thead>
+                                <tbody>
+                                    <tr><td>60-80%</td><td>Underweight</td><td>Kwashiorkor</td></tr>
+                                    <tr><td>&lt;60%</td><td>Marasmus</td><td>Marasmic-kwashiorkor</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="formula-box" style="margin-top:20px;">
+                                <b>US/LS Ratio:</b> 1.7:1 (Birth) &rarr; 1:1 (7-10 yrs). Alters in disproportionate short stature.<br>
+                                <b>Arm Span:</b> Less than height up to 7 yrs, equal 8-12 yrs, greater than height after 14 yrs.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="malnSensoryTab" class="sub-tab-content"><div class="timeline-section"><div id="sensoryOutputArea"></div></div></div>
+            </div>
+
+            <div id="milestoneFeatureView" class="view-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">👶 Developmental Progress</h2>
+                    <button onclick="executePrint('milestones')" class="secondary" style="width:auto;">🖨️ Print Progress</button>
+                </div>
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('msEvalTab', this)">📋 Checklist</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('msProgressTab', this)">📈 Dashboard</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('msMissedTab', this)">🚨 Red Flags</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('msReferenceTab', this); buildMilestoneReference();">📘 Standards</button>
+                </div>
+                <div id="msEvalTab" class="sub-tab-content active"><div class="timeline-section"><h3 style="color:var(--primary); margin-top:0;">Comprehensive Evaluation</h3><div id="msEvalContainer"></div></div></div>
+                <div id="msProgressTab" class="sub-tab-content"><div class="timeline-section"><h3 style="color:var(--primary); margin-top:0;">Developmental Dashboard</h3><div class="tool-grid"><div id="msCompletedContainer"></div><div id="msUpcomingContainer"></div></div></div></div>
+                <div id="msMissedTab" class="sub-tab-content"><div class="timeline-section"><h3 style="color:var(--primary); margin-top:0;">Red Flags</h3><div id="msMissedContainer"></div></div></div>
+                <div id="msReferenceTab" class="sub-tab-content"><div class="timeline-section" style="overflow-x:auto;"><h3 style="color:var(--primary); margin-top:0;">Standard Milestones</h3><div id="msReferenceContainer"></div></div></div>
+            </div>
+
+            <div id="trackerFeatureView" class="view-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">💉 Immunization Tracker</h2>
+                    <button onclick="executePrint('tracker')" class="secondary" style="width:auto; border-color:var(--primary); color:var(--primary);">🖨️ Print Schedule</button>
+                </div>
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('vaxTimelineTab', this)">📅 Master Timeline</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('vaxAuditTab', this)">📊 Audit & Status</button>
+                </div>
+                <div id="vaxTimelineTab" class="sub-tab-content active">
+                    <div id="timelineOutput"></div>
+                </div>
+                <div id="vaxAuditTab" class="sub-tab-content">
+                    <div class="timeline-section">
+                        <div id="auditOutput" class="tool-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="growthFeatureView" class="view-content">
+                <h2 class="section-title">📈 Interactive Growth Curves</h2>
+                <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 2fr;">
+                    <div>
+                        <label>Length / Stature (cm)</label><input type="number" id="htCmOnTheGo" oninput="syncGrowthFieldsAndCalc()">
+                        <div id="growthResultArea" class="tool-result neutral" style="margin-top:1rem; font-size:0.9rem;">Registry vectors verified. Auto-plotting active on change.</div>
+                    </div>
+                    <div>
+                        <div class="chart-card-wrapper" style="min-height: 250px;"><canvas id="weightChartCanvas"></canvas></div>
+                        <div class="chart-card-wrapper" style="margin-top:1rem; min-height: 250px;"><canvas id="heightChartCanvas"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="asthmaFeatureView" class="view-content">
+                <h2 class="section-title">🫁 PRAM Score (Pediatric Respiratory Assessment Measure)</h2>
+                <div class="timeline-section tool-grid">
+                    <div>
+                        <label>Airway O2 Saturations</label><select id="pramO2" onchange="calcPRAM()"><option value="0">&ge;95%</option><option value="1">92% - 94%</option><option value="2">&lt;92%</option></select>
+                        <label>Suprasternal Retractions</label><select id="pramSupra" onchange="calcPRAM()"><option value="0">Absent</option><option value="2">Present</option></select>
+                        <label>Scalene Muscle Access</label><select id="pramScalene" onchange="calcPRAM()"><option value="0">Absent</option><option value="2">Present</option></select>
+                        <label>Air Entry Index</label><select id="pramAir" onchange="calcPRAM()"><option value="0">Symmetric Normal</option><option value="1">Decreased Bases</option><option value="2">Widespread Loss</option><option value="3">Silent Chest</option></select>
+                        <label>Wheeze Auscultation</label><select id="pramWheeze" onchange="calcPRAM()"><option value="0">Absent</option><option value="1">Expiratory Only</option><option value="2">Pan-Inspiratory Cycle</option><option value="3">Silent / Audible Without Scope</option></select>
+                    </div>
+                    <div id="pramResultArea" class="tool-result neutral">Staging clinical entry score.</div>
+                </div>
+            </div>
+
+            <div id="jaundiceFeatureView" class="view-content">
+                <h2 class="section-title">🍼 Bhutani Nomogram Standards</h2>
+                <div class="timeline-section tool-grid">
+                    <div>
+                        <label>Postnatal Lifespan (Hours)</label><input type="number" id="jaunHours" oninput="calcJaundice()">
+                        <label>TSB Matrix Concentration (mg/dL)</label><input type="number" step="0.1" id="jaunTSB" oninput="calcJaundice()">
+                        <label>Risk Assignment Level</label><select id="jaunRisk" onchange="calcJaundice()"><option value="low">Low Risk Profile (&ge;38w & Well)</option><option value="med">Medium Risk Profile (35w-37w Well OR 38w+ Risk Factors)</option><option value="high">High Risk Profile (35w-37w with Associated Hemolysis Factors)</option></select>
+                    </div>
+                    <div id="jaunResultArea" class="tool-result neutral">Awaiting data entry to map standard Bhutani bands.</div>
+                </div>
+            </div>
+
+            <div id="aboutFeatureView" class="view-content">
+                <h2 class="section-title">⚙️ Settings & About</h2>
+                <div class="timeline-section tool-grid">
+                    <div>
+                        <h4 style="margin-top:0; color:var(--primary);">👨‍⚕️ Letterhead / Rx Builder</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">These details appear at the top of printed prescriptions.</p>
+                        <div class="panel" style="background:var(--bg-body); border:1px solid var(--border-soft); border-radius:var(--radius-lg);">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border-soft);">
+                                <label style="margin:0; font-weight:bold; font-size:0.9rem; color:var(--text-main);">🌙 Dark Mode</label>
+                                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)" style="width:22px; height:22px; margin:0; cursor:pointer;">
+                            </div>
+                            <div class="row-inputs"><div><label>Doctor's Name</label><input type="text" id="setDocName" placeholder="Dr. Peter Suraj Joseph"></div><div><label>Qualifications</label><input type="text" id="setQual" placeholder="MBBS, MD"></div></div>
+                            <div class="row-inputs"><div><label>Medical Reg. No.</label><input type="text" id="setRegNo" placeholder="e.g. KMC 12345"></div><div><label>Clinic Name</label><input type="text" id="setClinic" placeholder="Sunrise Clinic"></div></div>
+                            <label>Tagline</label><input type="text" id="setTagline" placeholder="Child Development Center">
+                            <div class="row-inputs"><div><label>Phone</label><input type="text" id="setPhone" placeholder="Phone"></div><div><label>Address</label><input type="text" id="setAddress" placeholder="Location"></div></div>
+                            <label style="margin-top:10px;">Upload Signature (PNG/JPG)</label>
+                            <input type="file" accept="image/*" onchange="handleSignatureUpload(this)" style="padding:0.5rem; font-size:0.85rem;">
+                            <div id="sigPreview" style="margin-top:10px; border:1px dashed var(--border-soft); padding:10px; text-align:center; min-height:50px; border-radius:var(--radius-md); background:var(--bg-surface);">No signature loaded.</div>
+                            <button class="action" onclick="saveSettings()" style="background:var(--primary); color:white;">💾 Save Profile</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-top:0; color:var(--primary);">📱 Dashboard Quick Access</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Select which tools appear on your Home screen.</p>
+                        <div id="settingsQuickToolsList" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background:var(--bg-body); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); margin-bottom:1.5rem;">
+                            </div>
+                        <h4 style="margin-top:0; color:var(--primary);">📚 Clinical Guidelines & Sources</h4>
+                        <div style="font-size:0.85rem; line-height:1.6; background:var(--bg-body); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); margin-bottom:1rem;">
+                            <ul style="margin:0; padding-left:1.2rem; color:var(--text-main);">
+                                <li style="margin-bottom:6px;"><b>Growth & Triage:</b> WHO Multicentre Growth Reference Study (MGRS) & IAP Guidelines 2024</li>
+                                <li style="margin-bottom:6px;"><b>Immunization:</b> National Immunization Schedule (NIS) India</li>
+                                <li style="margin-bottom:6px;"><b>Nutrition:</b> ICMR-NIN Dietary Guidelines for Indians</li>
+                            </ul>
+                        </div>
+                        <div style="background:rgba(245, 158, 11, 0.1); border-left:4px solid var(--warning); padding:10px; font-size:0.8rem; color:var(--text-main); line-height:1.5; margin-bottom:1.5rem;">
+                            <b>⚠️ Medico-Legal Disclaimer:</b> This framework is a clinical reference tool. Verify calculations against standard institutional protocols before administration.
+                        </div>
+                        <div style="border-top:1px solid var(--border-soft); padding-top:1rem; text-align:center;">
+                            <h3 style="margin:0 0 5px 0; color:var(--primary); font-size:1.1rem;">Pediatric Clinical Hub v2.0</h3>
+                            <span style="font-size:0.85rem; color:var(--text-muted);">Architected & Developed by <b>Dr. Peter Suraj Joseph</b></span><br>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">100% Client-Side Execution • Zero Data Tracking</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> </div> </div> <div id="printEngine" class="print-container"></div>
+
+<script src="js/database.js"></script>
+
+<script src="js/patient-store.js"></script>
+
+<script src="js/calculators.js"></script>
+<script src="js/growth-vax.js"></script>
+<script src="js/print-engine.js"></script>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>
