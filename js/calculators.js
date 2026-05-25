@@ -293,28 +293,37 @@ function populateDrugs() {
         }
     }
 
-    // OVERRIDE: We must clear the symptom array when a visit is cancelled or started
-    const originalStartVisit = startNewVisit;
-    startNewVisit = function() {
-        originalStartVisit();
-        activeDraftSymptoms = [];
-        document.getElementById('symptomTagsArea').innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>`;
-        document.getElementById('ddxSuggestions').style.display = 'none';
-    };
-
     function startNewVisit() {
+        // 1. UI Swaps
         document.getElementById('rxLedgerView').style.display = 'none';
         document.getElementById('rxDraftView').style.display = 'block';
         document.getElementById('draftDateText').innerText = new Date().toLocaleDateString('en-IN');
         
-        document.getElementById('rxDiagnosis').value = "";
-        document.getElementById('rxTests').value = "";
-        document.getElementById('rxAdvice').value = "";
-        document.getElementById('rxReview').value = "";
+        // 2. Clear Standard Text Inputs
+        if(document.getElementById('rxDiagnosis')) document.getElementById('rxDiagnosis').value = "";
+        if(document.getElementById('rxTests')) document.getElementById('rxTests').value = "";
+        if(document.getElementById('rxAdvice')) document.getElementById('rxAdvice').value = "";
+        if(document.getElementById('rxReview')) document.getElementById('rxReview').value = "";
         
-        if(activePatientId) {
+        // 3. Clear Prescriptions Cart
+        if(activePatientId && globalPatientsStore[activePatientId]) {
             globalPatientsStore[activePatientId].rxList = []; 
             if(typeof renderRxCartList === 'function') renderRxCartList();
+        }
+
+        // 4. Clear Symptoms & DDx (Phase 6)
+        if (typeof activeDraftSymptoms !== 'undefined') activeDraftSymptoms = [];
+        if(document.getElementById('symptomTagsArea')) {
+            document.getElementById('symptomTagsArea').innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>`;
+        }
+        if(document.getElementById('ddxSuggestions')) {
+            document.getElementById('ddxSuggestions').style.display = 'none';
+        }
+
+        // 5. Clear Investigations (Phase 7)
+        document.querySelectorAll('.investigation-chips input[type="checkbox"]').forEach(cb => cb.checked = false);
+        if(document.getElementById('rxTestsCustom')) {
+            document.getElementById('rxTestsCustom').value = "";
         }
     }
 

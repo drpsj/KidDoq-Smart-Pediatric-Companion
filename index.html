@@ -376,7 +376,52 @@
                                         <span style="font-size:0.85rem; color:var(--primary); font-weight:bold; width:100%;">✨ AI Predicted Differentials:</span>
                                         </div>
                                     <label>Required Investigations / Scans</label>
-                                    <textarea id="rxTests" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
+                                    <style>
+                                        .chip-checkbox { cursor: pointer; margin-right: 2px; }
+                                        .chip-checkbox input { display: none; }
+                                        .chip-checkbox span { display: inline-block; padding: 6px 14px; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--border-soft); font-size: 0.85rem; color: var(--text-muted); transition: all 0.2s; user-select: none; }
+                                        .chip-checkbox input:checked + span { background: rgba(91,97,246,0.1); color: var(--primary-dark); border-color: var(--primary); font-weight: 700; box-shadow: 0 2px 4px rgba(91,97,246,0.15); }
+                                    </style>
+                                    <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); margin-bottom:15px;">
+                                        
+                                        <div style="margin-bottom:15px;">
+                                            <strong style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">🩸 Pathology / Blood</strong>
+                                            <div style="display:flex; flex-wrap:wrap; gap:8px;" class="investigation-chips" onchange="updateTestsTextarea()">
+                                                <label class="chip-checkbox"><input type="checkbox" value="CBC"><span>CBC</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="CRP"><span>CRP</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Dengue NS1/IgM"><span>Dengue NS1/IgM</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Peripheral Smear"><span>Smear</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="LFT"><span>LFT</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="KFT/RFT"><span>RFT</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Blood Culture"><span>Blood C/S</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Serum Electrolytes"><span>Electrolytes</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Widal Test"><span>Widal</span></label>
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom:15px;">
+                                            <strong style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">☢️ Radiology / Imaging</strong>
+                                            <div style="display:flex; flex-wrap:wrap; gap:8px;" class="investigation-chips" onchange="updateTestsTextarea()">
+                                                <label class="chip-checkbox"><input type="checkbox" value="CXR (PA View)"><span>CXR</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="USG Abdomen & Pelvis"><span>USG Abdomen</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="CT Brain (Plain)"><span>CT Brain</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="X-Ray KUB"><span>X-Ray KUB</span></label>
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom:15px;">
+                                            <strong style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">🔬 Urine / Others</strong>
+                                            <div style="display:flex; flex-wrap:wrap; gap:8px;" class="investigation-chips" onchange="updateTestsTextarea()">
+                                                <label class="chip-checkbox"><input type="checkbox" value="Urine Routine (U/R)"><span>Urine Routine</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Urine Culture"><span>Urine C/S</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Stool Routine"><span>Stool Routine</span></label>
+                                            </div>
+                                        </div>
+                                        
+                                        <input type="text" id="rxTestsCustom" placeholder="Type other specific tests here..." onkeyup="updateTestsTextarea()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem;">
+                                        
+                                        <input type="hidden" id="rxTests">
+                                    </div>
                                     <label>General Advice / Care Plan</label>
                                     <textarea id="rxAdvice" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
                                     <label>Next Review Date</label>
