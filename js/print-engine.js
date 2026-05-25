@@ -75,7 +75,8 @@ function getPrintHeaderHTML(title, patientObj) {
     }
 
     function executePrint(mode) {
-        if (!activePatientId && mode !== 'prescription' && mode !== 'certificate') { 
+        // FIX 1: Allow both 'prescription' and 'rx' to pass the gatekeeper
+        if (!activePatientId && mode !== 'prescription' && mode !== 'rx' && mode !== 'certificate') { 
             if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select or add a patient first!"); 
             return; 
         }
@@ -104,21 +105,21 @@ function getPrintHeaderHTML(title, patientObj) {
             if (mode === 'comprehensive') html += `<div class="page-break"></div>`; 
         }
         
-        if (mode === 'rx') {
+        // FIX 2: Listen for BOTH 'prescription' and 'rx' triggers
+        if (mode === 'prescription' || mode === 'rx') {
             html += getPrintHeaderHTML("PRESCRIPTION", p);
             
             // --- SMART PRINT LOGIC ---
-            // It decides whether to print the Active Draft OR the Latest Finalized Visit
             let printRxList = [];
             let printDx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
             let printAdvice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
             let printTests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
             
             if (p.rxList && p.rxList.length > 0) {
-                // Patient has an active draft open, print the draft
+                // Draft is active
                 printRxList = p.rxList;
             } else if (p.visits && p.visits.length > 0) {
-                // Draft is empty, so print the most recently finalized visit
+                // Draft is empty, use latest ledger visit
                 let latestVisit = p.visits[p.visits.length - 1];
                 printRxList = latestVisit.rxList || [];
                 if (!printDx) printDx = latestVisit.diagnosis || "";
