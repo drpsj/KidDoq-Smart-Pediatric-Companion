@@ -322,4 +322,65 @@
         }
         .workspace-actions button { margin: 0 !important; border-radius: 30px !important; padding: 10px 20px !important; }
 
+        /* =========================================
+   PHASE 2: STICKY PATIENT BANNER
+   ========================================= */
+.sticky-patient-banner {
+    position: sticky;
+    top: -20px; /* Locks exactly to the top of the scrollable area */
+    z-index: 4000; /* Stays above tools, below modals */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    margin: -20px -20px 20px -20px; 
+}
+
+.dark-mode .sticky-patient-banner {
+    background: rgba(20, 20, 43, 0.85);
+}
+
+.patient-banner-info {
+    display: flex;
+    flex-direction: column;
+}
+
+#bannerPName {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+.dark-mode #bannerPName { color: var(--brand-cyan); }
+
+.patient-tags {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.banner-close-btn {
+    background: var(--bg-body);
+    border: 1px solid var(--border-soft);
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.banner-close-btn:hover, .banner-close-btn:active {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #f87171;
+}
+
         

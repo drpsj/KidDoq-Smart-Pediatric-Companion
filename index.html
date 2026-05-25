@@ -203,6 +203,18 @@
     
         <div id="activeWorkspace" style="display:none;">
             
+            <div class="sticky-patient-banner">
+                <div class="patient-banner-info">
+                    <span id="bannerPName">Patient Name</span>
+                    <span class="patient-tags">
+                        <span id="bannerPAge">-- Y -- M</span> • 
+                        <span id="bannerPWeight">-- kg</span> • 
+                        <span id="bannerPGender">--</span>
+                    </span>
+                </div>
+                <button class="banner-close-btn" onclick="prepNewPatient()">Close File ✖</button>
+            </div>
+            
     <div id="masterActionsBar" class="workspace-actions" style="display:none;">
         <button id="btnMasterPrint" onclick="executePrint('comprehensive')" class="action" style="background:var(--brand-blue); color:white; border:none; font-weight:bold; margin:0;">🖨️ Print Report</button>
         <button id="btnMasterWA" onclick="sendWACompReport()" class="action" style="background:#25D366; color:white; border:none; font-weight:bold; margin:0;">📱 WhatsApp</button>

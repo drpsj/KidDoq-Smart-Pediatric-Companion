@@ -248,6 +248,18 @@
         }
     }
 
+    function updateStickyBanner(pId) {
+        const p = globalPatientsStore[pId];
+        if(!p) return;
+        
+        document.getElementById('bannerPName').innerText = p.name;
+        document.getElementById('bannerPAge').innerText = `${p.ageYrs}Y ${p.ageMos}M`;
+        document.getElementById('bannerPWeight').innerText = `${p.weight} kg`;
+        
+        let genderStr = p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : "--";
+        document.getElementById('bannerPGender').innerText = genderStr;
+    }
+
     function triggerActiveWorkspaceBuild(pId) {
         activePatientId = pId;
         
@@ -257,9 +269,13 @@
         // 2. Un-hide the clinical workspace
         const workspace = document.getElementById('activeWorkspace');
         if(workspace) workspace.style.display = "block";
+
+        // 3. Update the Phase 2 Sticky Banner
+        updateStickyBanner(pId);
         
-        // 3. WAKE UP ALL MODULES WITH CORRECT FUNCTION NAMES
+        // 4. WAKE UP ALL MODULES WITH CORRECT FUNCTION NAMES
         if(typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
+        // ... (rest of the function remains the same)
         if(typeof buildMilestoneReference === 'function') buildMilestoneReference();
         if(typeof renderMilestoneDashboard === 'function') renderMilestoneDashboard();
         if(typeof renderDietRecall === 'function') renderDietRecall();
