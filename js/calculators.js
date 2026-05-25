@@ -343,8 +343,11 @@ function populateDrugs() {
         
         await DB.savePatient(p); 
         
-        if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored in Ledger");
-        renderVisitLedger(); 
+        if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored");
+        
+        // Hide the draft and show the wrap-up screen
+        document.getElementById('rxDraftView').style.display = 'none';
+        document.getElementById('rxPostVisitView').style.display = 'block'; 
     }
 
     // --- UNIVERSAL DOSE ENGINE (Links to drugsDb) ---

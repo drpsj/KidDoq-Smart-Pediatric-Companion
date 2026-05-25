@@ -259,9 +259,6 @@
     function triggerActiveWorkspaceBuild(pId) {
         activePatientId = pId;
         
-        // 1. Show the Master Action Bar
-        if(document.getElementById('masterActionsBar')) document.getElementById('masterActionsBar').style.display = "flex";
-        
         // 2. Un-hide the clinical workspace
         const workspace = document.getElementById('activeWorkspace');
         if(workspace) workspace.style.display = "block";
@@ -388,6 +385,21 @@
             }
         });
         container.innerHTML = html;
+    }
+
+    function closePatientFile() {
+        activePatientId = null;
+        
+        // Hide the sticky banner and tools
+        document.getElementById('activeWorkspace').style.display = 'none';
+        
+        // Reset the header
+        const headerText = document.getElementById('headerPatientText');
+        if(headerText) headerText.innerText = '';
+        
+        // Route back to the home dashboard
+        if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
+        if (typeof showSystemToast === 'function') showSystemToast("Patient file closed.");
     }
 
     async function loadPatientFromDB(id) {

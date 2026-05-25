@@ -247,11 +247,6 @@
                 <div id="aiCopilotSuggestions" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:5px;">
                     </div>
             </div>
-            
-    <div id="masterActionsBar" class="workspace-actions" style="display:none;">
-        <button id="btnMasterPrint" onclick="executePrint('comprehensive')" class="action" style="background:var(--brand-blue); color:white; border:none; font-weight:bold; margin:0;">🖨️ Print Report</button>
-        <button id="btnMasterWA" onclick="sendWACompReport()" class="action" style="background:#25D366; color:white; border:none; font-weight:bold; margin:0;">📱 WhatsApp</button>
-    </div>
 
             <div id="databaseFeatureView" class="view-content">
                 <h2 class="section-title" style="margin-bottom: 0;">🗄️ Patient Master Database</h2>
@@ -349,8 +344,8 @@
                             <div class="tool-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                                 <div>
                                     <label>Chief Complaints</label>
-                                    <div style="display:flex; gap:8px; margin-bottom:10px;">
-                                        <input type="text" id="sympInput" placeholder="e.g. Fever, Cough" list="sympList" style="flex:2; border:1px solid var(--border-soft); border-radius:6px; padding:8px;">
+                                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                                        <input type="text" id="sympInput" placeholder="Search symptom (e.g. Fever, Cough)" list="sympList" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem;">
                                         <datalist id="sympList">
                                             <option value="Fever">
                                             <option value="Cough">
@@ -360,13 +355,15 @@
                                             <option value="Wheezing">
                                             <option value="Lethargy">
                                         </datalist>
-                                        <input type="number" id="sympDurVal" placeholder="Qty" style="flex:1; border:1px solid var(--border-soft); border-radius:6px; padding:8px;">
-                                        <select id="sympDurUnit" style="flex:1; border:1px solid var(--border-soft); border-radius:6px; padding:8px;">
-                                            <option value="Days">Days</option>
-                                            <option value="Weeks">Weeks</option>
-                                            <option value="Months">Months</option>
-                                        </select>
-                                        <button class="secondary" onclick="addSymptomTag()" style="margin:0; padding:8px 12px; box-shadow:none;">➕</button>
+                                        <div style="display:flex; gap:10px;">
+                                            <input type="number" id="sympDurVal" placeholder="Qty" style="flex:1; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem;">
+                                            <select id="sympDurUnit" style="flex:1.5; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; background:white;">
+                                                <option value="Days">Days</option>
+                                                <option value="Weeks">Weeks</option>
+                                                <option value="Months">Months</option>
+                                            </select>
+                                            <button class="secondary" onclick="addSymptomTag()" style="margin:0; padding:12px 20px; box-shadow:none; border-radius:8px; background:var(--primary-light); color:var(--primary-dark); font-weight:bold;">➕ Add</button>
+                                        </div>
                                     </div>
                                     <div id="symptomTagsArea" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; min-height:42px; padding:10px; background:var(--bg-body); border-radius:8px; border:1px dashed var(--border-soft);">
                                         <span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>
@@ -391,6 +388,24 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div id="rxPostVisitView" style="display:none; text-align:center; padding:2rem 1rem; background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-soft);">
+                            <div style="font-size:3.5rem; margin-bottom:10px; animation: bounceIn 0.5s ease;">✅</div>
+                            <h3 style="color:var(--success); margin-bottom:5px; font-size:1.4rem;">Visit Finalized</h3>
+                            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:25px;">The encounter has been securely signed into the patient ledger.</p>
+                            
+                            <div style="display:flex; flex-direction:column; gap:12px; max-width:320px; margin:0 auto;">
+                                <button class="action" onclick="executePrint('rx')" style="margin:0; padding:14px; background:var(--primary); font-size:1.05rem; box-shadow:var(--shadow-md);">🖨️ Print Prescription</button>
+                                <button class="action" onclick="executePrint('comprehensive')" style="margin:0; padding:14px; background:var(--brand-blue); font-size:1.05rem; box-shadow:var(--shadow-md);">📄 Print Full Summary</button>
+                                <button class="action" onclick="sendWACompReport()" style="margin:0; padding:14px; background:#25D366; font-size:1.05rem; box-shadow:var(--shadow-md);">📱 Send via WhatsApp</button>
+                                
+                                <hr style="border:0; border-top:1px dashed var(--border-soft); margin:15px 0;">
+                                
+                                <button class="secondary" onclick="closePatientFile()" style="margin:0; padding:14px; color:var(--danger); border-color:var(--danger); background:#fef2f2; font-weight:bold;">🚪 Close Patient File</button>
+                                <button class="secondary" onclick="renderVisitLedger()" style="margin:0; padding:10px; border:none; color:var(--text-muted); background:transparent;">Return to Ledger</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
