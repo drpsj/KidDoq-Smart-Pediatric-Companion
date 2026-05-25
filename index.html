@@ -355,14 +355,15 @@
                                             <option value="Wheezing">
                                             <option value="Lethargy">
                                         </datalist>
-                                        <div style="display:flex; gap:10px;">
-                                            <input type="number" id="sympDurVal" placeholder="Qty" style="flex:1; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem;">
-                                            <select id="sympDurUnit" style="flex:1.5; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; background:white;">
+                                        
+                                        <div style="display:grid; grid-template-columns: 1fr 1.2fr auto; gap:8px;">
+                                            <input type="number" id="sympDurVal" placeholder="Qty" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; box-sizing:border-box;">
+                                            <select id="sympDurUnit" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; background:white; box-sizing:border-box;">
                                                 <option value="Days">Days</option>
                                                 <option value="Weeks">Weeks</option>
                                                 <option value="Months">Months</option>
                                             </select>
-                                            <button class="secondary" onclick="addSymptomTag()" style="margin:0; padding:12px 20px; box-shadow:none; border-radius:8px; background:var(--primary-light); color:var(--primary-dark); font-weight:bold;">➕ Add</button>
+                                            <button class="secondary" onclick="addSymptomTag()" style="margin:0; padding:0 20px; box-shadow:none; border-radius:8px; background:var(--primary-light); color:var(--primary-dark); font-weight:bold; border:none; height:100%;">➕ Add</button>
                                         </div>
                                     </div>
                                     <div id="symptomTagsArea" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; min-height:42px; padding:10px; background:var(--bg-body); border-radius:8px; border:1px dashed var(--border-soft);">
