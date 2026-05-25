@@ -228,6 +228,80 @@ function populateDrugs() {
         ledgerList.innerHTML = html;
     }
 
+    // --- PHASE 6: STRUCTURED SYMPTOMS & PREDICTIVE DDx ---
+    
+    let activeDraftSymptoms = []; // Temporary array for the active draft
+
+    function addSymptomTag() {
+        const name = document.getElementById('sympInput').value.trim();
+        const val = document.getElementById('sympDurVal').value;
+        const unit = document.getElementById('sympDurUnit').value;
+
+        if (!name || !val) {
+            if(typeof showSystemToast === 'function') showSystemToast("Please enter a symptom and duration.");
+            return;
+        }
+
+        const tagString = `${name} x ${val} ${unit}`;
+        activeDraftSymptoms.push(name.toLowerCase()); // Store for the AI engine
+        
+        // Build the visual tag
+        const tagArea = document.getElementById('symptomTagsArea');
+        document.getElementById('emptySympMsg').style.display = 'none';
+        
+        const tag = document.createElement('span');
+        tag.style.cssText = "background:var(--primary-light); color:var(--primary-dark); padding:4px 10px; border-radius:12px; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:5px;";
+        tag.innerHTML = `${tagString} <b style="cursor:pointer; color:var(--danger);" onclick="this.parentElement.remove(); evaluateDDx();">✖</b>`;
+        
+        tagArea.appendChild(tag);
+
+        // Clear inputs for the next symptom
+        document.getElementById('sympInput').value = "";
+        document.getElementById('sympDurVal').value = "";
+        
+        evaluateDDx(); // Trigger the AI brain
+    }
+
+    function evaluateDDx() {
+        const ddxArea = document.getElementById('ddxSuggestions');
+        let suggestions = [];
+
+        // THE ALGORITHM: Read the tags and predict
+        if (activeDraftSymptoms.includes('fever') && activeDraftSymptoms.includes('ear tugging')) {
+            suggestions.push('Acute Otitis Media (AOM)');
+        }
+        if (activeDraftSymptoms.includes('loose stools') && activeDraftSymptoms.includes('vomiting')) {
+            suggestions.push('Acute Gastroenteritis (AGE)');
+        }
+        if (activeDraftSymptoms.includes('fever') && activeDraftSymptoms.includes('cough')) {
+            suggestions.push('Viral URI');
+            suggestions.push('Lower Respiratory Tract Infection');
+        }
+        if (activeDraftSymptoms.includes('wheezing')) {
+            suggestions.push('Reactive Airway Disease / Asthma');
+            suggestions.push('Acute Bronchiolitis');
+        }
+
+        // Render Suggestions
+        if (suggestions.length > 0) {
+            ddxArea.style.display = 'flex';
+            // Keep the "AI Label" and append buttons
+            ddxArea.innerHTML = `<span style="font-size:0.85rem; color:var(--primary); font-weight:bold; width:100%;">✨ AI Predicted Differentials:</span>` + 
+                suggestions.map(dx => `<button type="button" class="secondary" onclick="document.getElementById('rxDiagnosis').value = '${dx}'; this.parentElement.style.display='none';" style="margin:0; padding:4px 10px; font-size:0.85rem; width:auto; border-color:var(--brand-cyan); color:var(--primary-dark); background:white;">${dx}</button>`).join("");
+        } else {
+            ddxArea.style.display = 'none';
+        }
+    }
+
+    // OVERRIDE: We must clear the symptom array when a visit is cancelled or started
+    const originalStartVisit = startNewVisit;
+    startNewVisit = function() {
+        originalStartVisit();
+        activeDraftSymptoms = [];
+        document.getElementById('symptomTagsArea').innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>`;
+        document.getElementById('ddxSuggestions').style.display = 'none';
+    };
+
     function startNewVisit() {
         document.getElementById('rxLedgerView').style.display = 'none';
         document.getElementById('rxDraftView').style.display = 'block';

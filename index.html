@@ -348,8 +348,35 @@
                             
                             <div class="tool-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                                 <div>
-                                    <label>Complaints / Differential Diagnosis</label>
-                                    <input type="text" id="rxDiagnosis" placeholder="e.g. Viral URI, Acute Otitis Media" style="margin-bottom:15px; font-weight:bold;">
+                                    <label>Chief Complaints</label>
+                                    <div style="display:flex; gap:8px; margin-bottom:10px;">
+                                        <input type="text" id="sympInput" placeholder="e.g. Fever, Cough" list="sympList" style="flex:2; border:1px solid var(--border-soft); border-radius:6px; padding:8px;">
+                                        <datalist id="sympList">
+                                            <option value="Fever">
+                                            <option value="Cough">
+                                            <option value="Vomiting">
+                                            <option value="Loose Stools">
+                                            <option value="Ear Tugging">
+                                            <option value="Wheezing">
+                                            <option value="Lethargy">
+                                        </datalist>
+                                        <input type="number" id="sympDurVal" placeholder="Qty" style="flex:1; border:1px solid var(--border-soft); border-radius:6px; padding:8px;">
+                                        <select id="sympDurUnit" style="flex:1; border:1px solid var(--border-soft); border-radius:6px; padding:8px;">
+                                            <option value="Days">Days</option>
+                                            <option value="Weeks">Weeks</option>
+                                            <option value="Months">Months</option>
+                                        </select>
+                                        <button class="secondary" onclick="addSymptomTag()" style="margin:0; padding:8px 12px; box-shadow:none;">➕</button>
+                                    </div>
+                                    <div id="symptomTagsArea" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; min-height:42px; padding:10px; background:var(--bg-body); border-radius:8px; border:1px dashed var(--border-soft);">
+                                        <span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>
+                                    </div>
+
+                                    <label>Diagnosis / DDx</label>
+                                    <input type="text" id="rxDiagnosis" placeholder="Type custom or click a suggestion below..." style="margin-bottom:8px; font-weight:bold; font-size:1.05rem;">
+                                    <div id="ddxSuggestions" style="display:none; gap:8px; margin-bottom:15px; flex-wrap:wrap; padding:10px; background:rgba(0,212,255,0.05); border:1px dashed var(--brand-cyan); border-radius:8px;">
+                                        <span style="font-size:0.85rem; color:var(--primary); font-weight:bold; width:100%;">✨ AI Predicted Differentials:</span>
+                                        </div>
                                     <label>Required Investigations / Scans</label>
                                     <textarea id="rxTests" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
                                     <label>General Advice / Care Plan</label>
