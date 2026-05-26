@@ -107,6 +107,7 @@ const drugsDb = [
     { id: "rs_21", name: "Guai+Tripro+Pseudo [Actifed Plus]", doseMg: 10, doseType: "perDay", maxMg: 400, div: 3, defaultFreq: "TID", conc: 100, vol: 5, category: "respiratory" }
 ];
 
+    // --- CLINICAL NUTRITION DATABASE ---
     const foodsDb = [
         {name:"Boiled rice", cat:"Cereals", p:8.5, c:77, f:0, k:349},
         {name:"Raw rice", cat:"Cereals", p:7.5, c:76, f:0, k:346},
@@ -147,14 +148,7 @@ const drugsDb = [
         {name:"Capsicum", cat:"Vegetables", p:1.3, c:4.3, f:0.3, k:24},
         {name:"Coriander", cat:"Condiments", p:14, c:22, f:16, k:288},
         {name:"Garlic", cat:"Condiments", p:6, c:30, f:0.1, k:145},
-        {name:"Ginger", cat:"Condiments", p:2, c:12, f:1, k:67}
-   {name:"Cauliflower", cat:"Vegetables", p:2.6, c:4, f:0.4, k:30},
-        {name:"Capsicum", cat:"Vegetables", p:1.3, c:4.3, f:0.3, k:24},
-        {name:"Coriander", cat:"Condiments", p:14, c:22, f:16, k:288},
-        {name:"Garlic", cat:"Condiments", p:6, c:30, f:0.1, k:145},
         {name:"Ginger", cat:"Condiments", p:2, c:12, f:1, k:67},
-        
-        // --- Added Pediatric Clinical Nutrition Items ---
         { name: "Breastmilk / Formula (100ml)", calsPer100: 67, proPer100: 1.5 },
         { name: "Cow's Milk / Buffalo Milk (100ml)", calsPer100: 100, proPer100: 3.5 },
         { name: "Khichdi - Rice & Moong Dal (100g)", calsPer100: 120, proPer100: 4.0 },
@@ -174,6 +168,7 @@ const drugsDb = [
     // Explicitly map these to the global window so the rest of the app can always find them
     window.foodsDb = foodsDb;
 
+    // --- VACCINE SCHEMA ---
     const baseVaccineSchema = [
         { id: "bcg", name: "BCG", window: "At Birth", group: "Infant", baseOffsetWeeks: 0, strategy: "Give ASAP." },
         { id: "opv0", name: "OPV-0", window: "At Birth", group: "Infant", baseOffsetWeeks: 0, strategy: "Max 15 days." },
@@ -202,6 +197,7 @@ const drugsDb = [
     ];
     window.baseVaccineSchema = baseVaccineSchema;
 
+    // --- MILESTONES SCHEMA ---
     const milestonesDb = {
         2: [ { id: "m2_1", domain: "Social", text: "Social smile.", sig: "Visual deficit." }, { id: "m2_2", domain: "Lang", text: "Coos.", sig: "Hearing deficit." }, { id: "m2_3", domain: "Motor", text: "Head steady.", sig: "Hypotonia." } ],
         4: [ { id: "m4_1", domain: "Social", text: "Laughs out loud.", sig: "Social delay." }, { id: "m4_2", domain: "Motor", text: "Reaches for toys.", sig: "Motor delay." }, { id: "m4_3", domain: "Motor", text: "Rolls tummy to back.", sig: "Hyper/hypotonia." } ],
