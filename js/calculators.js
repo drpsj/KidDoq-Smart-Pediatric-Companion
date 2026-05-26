@@ -145,11 +145,17 @@ let pendingPrescriptionDrug = null;
 function addPendingToRxCart() { 
     if(!activePatientId || !pendingPrescriptionDrug) return; 
     
-    const p = globalPatientsStore[activePatientId];
+    // 1. Read a safe copy from the Vault
+    let p = AppStore.getPatient(activePatientId);
     if(!p.rxList) p.rxList = [];
-    p.rxList.push(pendingPrescriptionDrug); 
-    localStorage.setItem('nis_patients', JSON.stringify(globalPatientsStore)); 
     
+    // 2. Modify the copy
+    p.rxList.push(pendingPrescriptionDrug); 
+    
+    // 3. Securely hand it back to the Vault to save
+    AppStore.savePatient(p); 
+    
+    // 4. Update UI
     if(document.getElementById('drugFormulation')) document.getElementById('drugFormulation').value = ""; 
     if(document.getElementById('calcOutputArea')) document.getElementById('calcOutputArea').innerHTML = "<div class='tool-result neutral'>Awaiting parameters.</div>"; 
     if(document.getElementById('rxAddButtonArea')) document.getElementById('rxAddButtonArea').innerHTML = ''; 
@@ -157,16 +163,20 @@ function addPendingToRxCart() {
     
     if(typeof showSystemToast === 'function') showSystemToast(`✅ Added ${pendingPrescriptionDrug.name}`);
     pendingPrescriptionDrug = null; 
-    renderRxCartList(); 
+    
+    if(typeof renderRxCartList === 'function') renderRxCartList(); 
 }
 
 function addToRxCart() { addPendingToRxCart(); }
 
 function removeDrugFromCart(idx) { 
     if(!activePatientId) return;
-    globalPatientsStore[activePatientId].rxList.splice(idx,1); 
-    localStorage.setItem('nis_patients', JSON.stringify(globalPatientsStore)); 
-    renderRxCartList(); 
+    
+    let p = AppStore.getPatient(activePatientId);
+    p.rxList.splice(idx,1); 
+    AppStore.savePatient(p); 
+    
+    if(typeof renderRxCartList === 'function') renderRxCartList(); 
 }
 
 // --- 4. INDEPENDENT DASHBOARD CALCULATOR ---
@@ -572,7 +582,9 @@ function runHomeDoseCalc() {
     // --- 5. WORKFLOW FINALIZATION ---
     window.previewDraft = async function() {
         if(!activePatientId) return;
-        const p = globalPatientsStore[activePatientId];
+        
+        // 1. Get safe copy
+        let p = AppStore.getPatient(activePatientId);
         
         const finalWt = document.getElementById('inlineCalcWeight').value;
         if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
@@ -582,7 +594,9 @@ function runHomeDoseCalc() {
         p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
         p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : "";
         
-        await DB.savePatient(p); 
+        // 2. Save to Vault (and DB if async sync is active)
+        AppStore.savePatient(p); 
+        if(typeof DB !== 'undefined') await DB.savePatient(p); 
 
         document.getElementById('rxDraftView').style.display = 'none';
         document.getElementById('rxPostVisitView').style.display = 'block';
@@ -597,7 +611,8 @@ function runHomeDoseCalc() {
 
     window.lockVisit = async function() {
         if(!activePatientId) return;
-        const p = globalPatientsStore[activePatientId];
+        
+        let p = AppStore.getPatient(activePatientId);
         if (!p.visits) p.visits = [];
         
         const newVisit = {
@@ -614,7 +629,9 @@ function runHomeDoseCalc() {
         p.rxList = []; 
         p.diagnosis = ""; p.tests = ""; p.advice = ""; p.review = ""; 
         
-        await DB.savePatient(p); 
+        // Final secure lock
+        AppStore.savePatient(p); 
+        if(typeof DB !== 'undefined') await DB.savePatient(p); 
         
         document.getElementById('rxPostVisitView').style.display = 'none';
         renderVisitLedger();
