@@ -580,3 +580,49 @@
     if (typeof renderFoodDB === 'function' && typeof window.foodsDb !== 'undefined') {
         renderFoodDB(window.foodsDb);
     }
+
+    // ==========================================
+    // 📂 PATIENT FILE LOADER (THE WORKSPACE BUILDER)
+    // ==========================================
+    window.loadPatientFromDB = function(pId) {
+        // 1. Secure Read: Ask the Vault for the patient
+        const p = AppStore.getPatient(pId);
+        if (!p) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Patient data not found in vault!");
+            return;
+        }
+
+        // 2. Lock them in as the Active Patient
+        AppStore.setActivePatient(pId);
+
+        // 3. Update the Header UI
+        const headerEl = document.getElementById('headerPatientText');
+        if (headerEl) {
+            headerEl.innerText = `👤 ${p.name} | ${p.ageYrs || 0}Y ${p.ageMos || 0}M | ${p.weight} kg`;
+        }
+
+        // 4. Use the Traffic Cop to safely unhide the workspace 
+        // (We will open the Schedule Tracker by default, but you can change this to any view ID)
+        if (typeof ViewController !== 'undefined') {
+            ViewController.switchNavTab('trackerFeatureView'); 
+        } else {
+            // Fallback just in case
+            const ws = document.getElementById('activeWorkspace');
+            if (ws) ws.style.display = 'block';
+        }
+
+        // 5. WAKE UP ALL CLINICAL ENGINES!
+        // This forces all tabs to pre-calculate their math so it's ready when you click them.
+        setTimeout(() => {
+            if (typeof calcMalnutrition === 'function') calcMalnutrition();
+            if (typeof calcNutrition === 'function') calcNutrition();
+            if (typeof renderRecallLog === 'function') renderRecallLog();
+            if (typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
+            if (typeof renderFullDatabase === 'function') renderFullDatabase(); // Highlights active patient in DB
+        }, 50);
+
+        if(typeof showSystemToast === 'function') showSystemToast(`✅ Opened ${p.name}'s File`);
+    };
+
+    // Bridge: Just in case your HTML buttons use your old function name!
+    window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;
