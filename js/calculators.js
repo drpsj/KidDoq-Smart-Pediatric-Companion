@@ -325,67 +325,54 @@ function runHomeDoseCalc() {
         if(hiddenInput) hiddenInput.value = tests.join(", ");
     }
 
-    // --- PHASE 8: INLINE DOSE CALCULATOR ---
+    // --- 1. THE INLINE DRAFT CALCULATOR (Phase 8) ---
     function populateInlineDrugs() {
         const cat = document.getElementById('inlineDrugCat').value;
         const sel = document.getElementById('inlineDrugSelect');
         sel.innerHTML = '<option value="">-- Select Drug --</option>';
         document.getElementById('inlineDoseResult').innerText = '';
-        
         if(!cat) return;
-        
         const filtered = drugsDb.filter(d => d.category === cat);
-        filtered.forEach(d => {
-            sel.innerHTML += `<option value="${d.id}">${d.name}</option>`;
-        });
+        filtered.forEach(d => { sel.innerHTML += `<option value="${d.id}">${d.name}</option>`; });
     }
 
     function calcInlineDose() {
         const drugId = document.getElementById('inlineDrugSelect').value;
         const res = document.getElementById('inlineDoseResult');
+        const freqInput = document.getElementById('inlineFreq');
         res.innerText = '';
+        if(!drugId) { freqInput.value = ''; return; }
         
-        if(!drugId || !activePatientId) return;
-        
-        const p = globalPatientsStore[activePatientId];
-        const wt = parseFloat(p.weight);
-        if(!wt || isNaN(wt)) {
-            res.innerHTML = '<span style="color:var(--danger)">⚠️ Patient weight missing!</span>';
-            return;
-        }
+        const wtBox = document.getElementById('inlineCalcWeight');
+        let wt = parseFloat(wtBox ? wtBox.value : globalPatientsStore[activePatientId].weight);
+        if(isNaN(wt)) wt = 10;
         
         const drug = drugsDb.find(d => d.id === drugId);
         if(!drug) return;
         
-        let reqMg = wt * drug.doseMgPerKg;
-        let reqVol = (reqMg / drug.formMg) * drug.formMl;
+        let math = computeClinicalMath(drug, wt);
+        let unit = getDrugUnit(drug);
+        let warnHTML = math.isMax ? ` <span style="color:var(--danger); font-size:0.8rem;">(⚠️ Adult Max Cap)</span>` : "";
         
-        res.innerHTML = `Calculated Dose: <span style="font-size:1.1rem; color:var(--primary);">${reqVol.toFixed(1)} mL</span> (${reqMg.toFixed(0)} mg)`;
+        res.innerHTML = `Calculated: <span style="font-size:1.1rem; color:var(--primary);">${math.reqVol.toFixed(1)} ${unit}</span> (${math.reqMg.toFixed(0)} mg)${warnHTML}`;
         
-        const freqInput = document.getElementById('inlineFreq');
-        if(freqInput.value === '') {
-            if(drug.category === 'Antibiotic') freqInput.value = 'BID x 5 Days';
-            if(drug.category === 'Fever/Pain') freqInput.value = 'SOS for Fever';
-        }
+        const durVal = document.getElementById('inlineDurVal').value;
+        const durUnit = document.getElementById('inlineDurUnit').value;
+        let durStr = durVal ? ` x ${durVal} ${durUnit}` : "";
+        freqInput.value = `${drug.defaultFreq}${durStr}`;
     }
 
     function addInlineDrugToCart() {
         const drugId = document.getElementById('inlineDrugSelect').value;
         const freq = document.getElementById('inlineFreq').value;
-        
-        if(!drugId || !freq) {
-            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a drug and frequency.");
-            return;
-        }
+        if(!drugId || !freq) { if(typeof showSystemToast === 'function') showSystemToast("⚠️ Select a drug & frequency."); return; }
         
         const rxObj = autoCalcFromDB(drugId, freq);
         if(rxObj) {
             const p = globalPatientsStore[activePatientId];
             if(!p.rxList) p.rxList = [];
             p.rxList.push(rxObj);
-            
             if(typeof renderRxCartList === 'function') renderRxCartList();
-            if(typeof showSystemToast === 'function') showSystemToast(`✅ Added ${rxObj.name}`);
             
             document.getElementById('inlineDrugSelect').value = '';
             document.getElementById('inlineFreq').value = '';
@@ -393,168 +380,74 @@ function runHomeDoseCalc() {
         }
     }
 
-    // --- PHASE 7: INVESTIGATION COMPILER ---
-    window.updateTestsTextarea = function() {
-        let tests = [];
-        
-        // Gather all the tapped blue chips
-        document.querySelectorAll('.investigation-chips input:checked').forEach(cb => {
-            tests.push(cb.value);
-        });
-        
-        // Add anything typed into the custom box
-        let custom = document.getElementById('rxTestsCustom');
-        if (custom && custom.value.trim() !== "") {
-            tests.push(custom.value.trim());
-        }
-        
-        // Compile them with commas and save to the hidden input for the printer
-        const hiddenInput = document.getElementById('rxTests');
-        if (hiddenInput) {
-            hiddenInput.value = tests.join(", ");
-        }
-    };
-
-    function startNewVisit() {
-        // 1. UI Swaps
-        document.getElementById('rxLedgerView').style.display = 'none';
-        document.getElementById('rxDraftView').style.display = 'block';
-        document.getElementById('draftDateText').innerText = new Date().toLocaleDateString('en-IN');
-        
-        // 2. Clear Standard Text Inputs
-        if(document.getElementById('rxDiagnosis')) document.getElementById('rxDiagnosis').value = "";
-        if(document.getElementById('rxTests')) document.getElementById('rxTests').value = "";
-        if(document.getElementById('rxAdvice')) document.getElementById('rxAdvice').value = "";
-        if(document.getElementById('rxReview')) document.getElementById('rxReview').value = "";
-        
-        // 3. Clear Prescriptions Cart
-        if(activePatientId && globalPatientsStore[activePatientId]) {
-            globalPatientsStore[activePatientId].rxList = []; 
-            if(typeof renderRxCartList === 'function') renderRxCartList();
-        }
-
-        // 4. Clear Symptoms & DDx (Phase 6)
-        if (typeof activeDraftSymptoms !== 'undefined') activeDraftSymptoms = [];
-        if(document.getElementById('symptomTagsArea')) {
-            document.getElementById('symptomTagsArea').innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>`;
-        }
-        if(document.getElementById('ddxSuggestions')) {
-            document.getElementById('ddxSuggestions').style.display = 'none';
-        }
-
-        // 5. Clear Investigations (Phase 7)
-        document.querySelectorAll('.investigation-chips input[type="checkbox"]').forEach(cb => cb.checked = false);
-        if(document.getElementById('rxTestsCustom')) {
-            document.getElementById('rxTestsCustom').value = "";
-        }
-
-        // 6. Update Inline Calc Weight Display
-        if(activePatientId && globalPatientsStore[activePatientId]) {
-            const wtDisplay = document.getElementById('inlineWtDisplay');
-            if(wtDisplay) wtDisplay.innerText = globalPatientsStore[activePatientId].weight || "--";
-        }
-    }
-
-    function cancelNewVisit() {
-        if(confirm("Discard this draft? Unsaved changes will be lost.")) {
-            renderVisitLedger();
-        }
-    }
-
-    async function finalizeVisit() {
-        if(!activePatientId) return;
+    // --- 2. THE SMART PROTOCOL ENGINE (Order Sets) ---
+    function autoCalcFromDB(drugId, freqStr = null, detailsStr = "") {
         const p = globalPatientsStore[activePatientId];
-        if (!p.visits) p.visits = [];
+        const wtBox = document.getElementById('inlineCalcWeight');
+        let wt = parseFloat(wtBox ? wtBox.value : p.weight);
+        if(isNaN(wt)) wt = parseFloat(p.weight) || 10; // Failsafe
         
-        const newVisit = {
-            date: new Date().toISOString(),
-            diagnosis: document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "",
-            tests: document.getElementById('rxTests') ? document.getElementById('rxTests').value : "",
-            advice: document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "",
-            review: document.getElementById('rxReview') ? document.getElementById('rxReview').value : "",
-            rxList: [...(p.rxList || [])] 
-        };
-        
-        p.visits.push(newVisit); 
-        p.rxList = []; 
-        
-        await DB.savePatient(p); 
-        
-        if(typeof showSystemToast === 'function') showSystemToast("Visit Finalized & Stored");
-        
-        // Hide the draft and show the wrap-up screen
-        document.getElementById('rxDraftView').style.display = 'none';
-        document.getElementById('rxPostVisitView').style.display = 'block'; 
-    }
-
-    // --- UNIVERSAL DOSE ENGINE (Links to drugsDb) ---
-    function autoCalcFromDB(drugId, freqStr, detailsStr = "") {
-        const p = globalPatientsStore[activePatientId];
-        const wt = parseFloat(p.weight) || 10;
-        
-        // 1. Find the drug in your Master Database
         const drug = drugsDb.find(d => d.id === drugId);
-        if (!drug) {
-            console.error("Drug ID not found in database: " + drugId);
-            return null;
-        }
+        if (!drug) return null;
 
-        // 2. Perform the Clinical Math: (Weight * mg/kg) / formulation_mg * formulation_ml
-        let reqMg = wt * drug.doseMgPerKg;
-        let reqVol = (reqMg / drug.formMg) * drug.formMl;
-        
-        // 3. Return the perfectly formatted prescription object
+        let math = computeClinicalMath(drug, wt);
+        let finalDetails = detailsStr;
+        if (math.isMax) finalDetails += (finalDetails ? " | " : "") + `⚠️ Max Dose Cap Enforced (${drug.maxMg}mg)`;
+
         return {
             name: drug.name,
-            vol: reqVol.toFixed(1),
-            unit: "ml",
-            freq: freqStr,
-            details: detailsStr
+            vol: math.reqVol.toFixed(1),
+            unit: getDrugUnit(drug),
+            freq: freqStr || drug.defaultFreq,
+            details: finalDetails
         };
     }
 
-    // --- PHASE 5: SMART ORDER SETS (RX TEMPLATES) ---
     function applyOrderSet(setId) {
         if(!activePatientId || !setId) return;
-        
         let p = globalPatientsStore[activePatientId];
         if (!p) return;
         if (!p.rxList) p.rxList = []; 
 
-        let dx = "";
-        let advice = "";
-        let newRx = [];
+        let dx = ""; let advice = ""; let newRx = [];
 
-        // PROTOCOL ROUTER
+        // Clear existing AI tags before applying new protocol
+        document.getElementById('symptomTagsArea').innerHTML = "";
+        activeDraftSymptoms = [];
+
+        // Helper to instantly render symptom tags
+        function injectSymp(name, val, unit) {
+            activeDraftSymptoms.push(name.toLowerCase());
+            document.getElementById('symptomTagsArea').innerHTML += `<span style="background:var(--primary-light); color:var(--primary-dark); padding:4px 10px; border-radius:12px; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:5px;">${name} x ${val} ${unit} <b style="cursor:pointer; color:var(--danger);" onclick="this.parentElement.remove(); evaluateDDx();">✖</b></span>`;
+        }
+
         if (setId === 'os_aom') {
-            dx = "Acute Otitis Media";
-            advice = "Keep ear dry. Do not insert cotton buds. Follow up in 5 days or earlier if fever spikes.";
+            dx = "Acute Otitis Media"; advice = "Keep ear dry. Do not insert cotton buds. Follow up in 5 days.";
+            injectSymp("Ear Pain", "2", "Days"); injectSymp("Fever", "2", "Days");
             newRx.push(autoCalcFromDB("ab_05", "BID x 5 Days")); // Amox-Clav 228
             newRx.push(autoCalcFromDB("ap_04", "SOS for Ear Pain / Fever")); // PCM 250
         } 
         else if (setId === 'os_uri') {
-            dx = "Viral Upper Respiratory Infection (URI)";
-            advice = "Maintain hydration. Steam inhalation twice daily. Elevate head end of bed slightly.";
-            newRx.push(autoCalcFromDB("ap_04", "SOS for Fever")); // PCM 250
-            newRx.push({ name: "Saline Nasal Drops (0.65%)", vol: "2", unit: "drops", freq: "TID in both nostrils" });
+            dx = "Viral Upper Respiratory Infection (URI)"; advice = "Maintain hydration. Steam inhalation twice daily.";
+            injectSymp("Cough", "3", "Days"); injectSymp("Runny Nose", "3", "Days");
+            newRx.push(autoCalcFromDB("ap_04", "SOS Q6H for Fever"));
+            newRx.push({ name: "Saline Nasal Drops (0.65%)", vol: "2", unit: "drops", freq: "TID in both nostrils", details: "" });
         } 
         else if (setId === 'os_age') {
-            dx = "Acute Gastroenteritis (Mild Dehydration)";
-            advice = "Strict ORS after every loose stool. Continue normal feeding. Avoid sugary juices.";
-            newRx.push({ name: "ORS Sachet", vol: "1", unit: "packet", freq: "Mix in 1L water, sip 50-100ml after every loose stool" });
+            dx = "Acute Gastroenteritis (Mild Dehydration)"; advice = "Strict ORS after every loose stool. Avoid sugary juices.";
+            injectSymp("Loose Stools", "2", "Days"); injectSymp("Vomiting", "1", "Days");
+            newRx.push({ name: "ORS Sachet", vol: "1", unit: "packet", freq: "Mix in 1L water, sip 50-100ml after loose stool", details: "" });
             newRx.push(autoCalcFromDB("gi_10", "OD x 14 Days")); // Zinc
             newRx.push(autoCalcFromDB("gi_03", "STAT for vomiting")); // Ondansetron
         } 
         else if (setId === 'os_fever') {
-            dx = "Acute Febrile Illness";
-            advice = "Tepid sponging for high fever. Ensure adequate fluid intake. Monitor for rashes.";
-            newRx.push(autoCalcFromDB("ap_04", "SOS Q6H for Fever")); // PCM 250
-            newRx.push(autoCalcFromDB("ap_11", "SOS Q8H for High Grade Fever")); // Ibuprofen 100
+            dx = "Acute Febrile Illness"; advice = "Tepid sponging for high fever. Ensure adequate fluid intake.";
+            injectSymp("Fever", "3", "Days");
+            newRx.push(autoCalcFromDB("ap_04", "SOS Q6H for Fever"));
+            newRx.push(autoCalcFromDB("ap_11", "SOS Q8H for High Grade Fever")); // Ibuprofen
         }
 
-        // Failsafe: Remove any nulls if a drug ID was typed wrong
         newRx = newRx.filter(rx => rx !== null);
-
         const dxInput = document.getElementById('rxDiagnosis');
         const adviceInput = document.getElementById('rxAdvice');
         if(dxInput) dxInput.value = dx;
@@ -564,23 +457,51 @@ function runHomeDoseCalc() {
         globalPatientsStore[activePatientId] = p; // Sync memory
         
         if(typeof renderRxCartList === 'function') renderRxCartList();
-        if(typeof showSystemToast === 'function') showSystemToast(`⚡ ${dx} Protocol Applied`);
-        
         document.getElementById('orderSetSelect').value = "";
     }
 
+    // --- 3. LIVE RX PREVIEW (Replaces Cart List) ---
     function renderRxCartList() { 
-        const container = document.getElementById('rxCartList'); if(!activePatientId) return; 
-        let list = globalPatientsStore[activePatientId].rxList || []; 
-        container.innerHTML = list.length === 0 ? "<div style='color:var(--text-muted); padding:1rem;'>Prescription pad empty.</div>" : list.map((r,i)=>`
-        <div style="background:var(--bg-body); padding:1rem; border-radius:var(--radius-md); border-left:4px solid var(--primary); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm);">
-            <div>
-                <strong style="display:block; font-size:1.05rem; color:var(--primary-dark);">${r.name}</strong>
-                <span style="font-size:0.9rem; color:var(--text-main); font-weight:600;">${r.vol} ${r.unit} — ${r.freq}</span>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">${r.details || ""}</div>
+        const container = document.getElementById('rxCartList'); 
+        if(!activePatientId) return; 
+        const p = globalPatientsStore[activePatientId];
+        let list = p.rxList || []; 
+        
+        let html = `
+            <div style="border-bottom:2px solid #1e3a8a; padding-bottom:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:flex-end;">
+                <div>
+                    <strong style="color:#1e3a8a; font-size:1.1rem;">${appSettings.clinicName || 'Clinic'}</strong><br>
+                    <span style="font-size:0.8rem; color:#555;">${appSettings.docName || 'Doctor'}</span>
+                </div>
+                <div style="text-align:right; font-size:0.75rem; color:#555; line-height:1.4;">
+                    <b>${p.name}</b><br>${p.weight} kg
+                </div>
             </div>
-            <button onclick="removeDrugFromCart(${i})" style="background:var(--danger); color:white; border:none; padding:8px 12px; border-radius:var(--radius-md); cursor:pointer; font-weight:bold;">X</button>
-        </div>`).join(""); 
+            <div style="font-size:1.4rem; color:#1e3a8a; font-family:serif; margin-bottom:10px; font-weight:bold;">Rx</div>
+        `;
+
+        if(list.length === 0) {
+            html += "<div style='color:#999; font-style:italic; font-size:0.9rem;'>Prescription pad empty. Add drugs via calculators.</div>";
+        } else {
+            html += `<div style="display:flex; flex-direction:column; gap:12px;">`;
+            list.forEach((r,i) => {
+                html += `
+                <div style="display:flex; justify-content:space-between; align-items:start; padding-bottom:8px; border-bottom:1px dashed #eee;">
+                    <div>
+                        <strong style="font-size:0.95rem; color:#333;">${i+1}. ${r.name}</strong><br>
+                        <span style="font-size:0.85rem; color:#555;">Give <b>${r.vol} ${r.unit}</b> &mdash; <i>${r.freq}</i></span>
+                        ${r.details ? `<div style="font-size:0.75rem; color:#888; margin-top:2px;">${r.details}</div>` : ''}
+                    </div>
+                    <button onclick="removeDrugFromCart(${i})" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer; font-weight:bold;">✖</button>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+
+        const dx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
+        if (dx) html += `<div style="margin-top:15px; font-size:0.85rem;"><b>Dx:</b> ${dx}</div>`;
+
+        container.innerHTML = html;
     }
 
     // --- 8. NUTRITION & 24H RECALL ---
@@ -840,4 +761,88 @@ function runHomeDoseCalc() {
         if(tsb >= limit) { resArea.innerHTML = `<b>🚨 Phototherapy Threshold Breached</b><br>TSB level of ${tsb} mg/dL is at or above safety threshold (${limit} mg/dL).`; resArea.className = "tool-result danger"; }
         else if (tsb >= limit - 2) { resArea.innerHTML = `<b>⚠️ High-Intermediate Risk Zone Warning</b><br>TSB profile (${tsb} mg/dL) is within 2 mg/dL of emergency line. Repeat in 12-24 hours.`; resArea.className = "tool-result warning"; }
         else { resArea.innerHTML = `<b>✅ Safe Baseline Zone Metrics</b><br>TSB profile stands within safe margin clearances.`; resArea.className = "tool-result"; }
+    }
+
+    // --- 4. INTEGRATED MEDS AUDIT & HOPI ---
+    let lastAuditResult = "";
+
+    function calcReverse() {
+        const wtBox = document.getElementById('inlineCalcWeight');
+        const wt = parseFloat(wtBox ? wtBox.value : globalPatientsStore[activePatientId].weight);
+        const drugId = document.getElementById('revFormulation').value;
+        const volGiven = parseFloat(document.getElementById('revVol').value); 
+        const out = document.getElementById('revOutputArea');
+        
+        if(!wt || !drugId || !volGiven || isNaN(volGiven)) { out.innerHTML = ""; lastAuditResult = ""; return; }
+        
+        const drug = drugsDb.find(d => d.id === drugId);
+        if(!drug) return;
+        if (drug.doseType === 'fixed') { 
+            out.innerHTML = `<span style="color:var(--primary)">Fixed dose: ${drug.vol} unit(s).</span>`;
+            lastAuditResult = `${drug.name}: ${volGiven} given (Fixed standard dose).`;
+            return; 
+        }
+        
+        let mgGiven = (volGiven * drug.conc) / drug.vol;
+        let targetDosePerDose = drug.doseType === 'perDay' ? (drug.doseMg / (drug.div || 1)) : drug.doseMg;
+        let mgPerKgGiven = mgGiven / wt;
+        let percent = (mgPerKgGiven / targetDosePerDose) * 100;
+        
+        let statusText = percent > 120 ? "Overdose" : (percent < 80 ? "Underdose" : "Optimal");
+        let color = percent > 120 ? "var(--danger)" : (percent < 80 ? "var(--warning)" : "var(--success)");
+        
+        out.innerHTML = `Given: <b>${mgPerKgGiven.toFixed(1)}</b> mg/kg. Target: <b>${targetDosePerDose.toFixed(1)}</b>. <span style="color:${color}; font-weight:bold;">[${statusText}]</span>`;
+        lastAuditResult = `Takes ${drug.name} (${volGiven}mL). Evaluated at ${mgPerKgGiven.toFixed(1)} mg/kg/dose (Target: ${targetDosePerDose.toFixed(1)}). Status: ${statusText}.`;
+    }
+
+    window.appendAuditToHopi = function() {
+        if(!lastAuditResult) { if(typeof showSystemToast === 'function') showSystemToast("⚠️ Enter audit details first."); return; }
+        const hopi = document.getElementById('rxHopi');
+        if(!hopi) return;
+        let val = hopi.value.trim();
+        hopi.value = val ? val + "\n" + lastAuditResult : lastAuditResult;
+        
+        // Reset the inputs
+        document.getElementById('revVol').value = "";
+        document.getElementById('revOutputArea').innerHTML = "";
+        lastAuditResult = "";
+        if(typeof showSystemToast === 'function') showSystemToast("✅ Appended to HOPI");
+    };
+
+    // --- 5. WORKFLOW FINALIZATION ---
+    function cancelNewVisit() {
+        if(confirm("Discard this draft? Unsaved changes will be lost.")) {
+            renderVisitLedger();
+        }
+    }
+
+    async function finalizeVisit() {
+        if(!activePatientId) return;
+        const p = globalPatientsStore[activePatientId];
+        if (!p.visits) p.visits = [];
+        
+        // UPDATE WEIGHT TO PROFILE PERMANENTLY
+        const finalWt = document.getElementById('inlineCalcWeight').value;
+        if(finalWt && !isNaN(parseFloat(finalWt))) {
+            p.weight = parseFloat(finalWt).toFixed(1);
+        }
+
+        const newVisit = {
+            date: new Date().toISOString(),
+            hopi: document.getElementById('rxHopi') ? document.getElementById('rxHopi').value : "",
+            diagnosis: document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "",
+            tests: document.getElementById('rxTests') ? document.getElementById('rxTests').value : "",
+            advice: document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "",
+            review: document.getElementById('rxReview') ? document.getElementById('rxReview').value : "",
+            rxList: [...(p.rxList || [])] 
+        };
+        
+        p.visits.push(newVisit); 
+        p.rxList = []; 
+        
+        await DB.savePatient(p); 
+        
+        // Hide the draft and show the wrap-up screen
+        document.getElementById('rxDraftView').style.display = 'none';
+        document.getElementById('rxPostVisitView').style.display = 'block'; 
     }
