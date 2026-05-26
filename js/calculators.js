@@ -1,33 +1,5 @@
 // --- CORE CLINICAL MATH ENGINE ---
 // This single function powers all calculators (Dashboard, Draft, Manual, Order Sets)
-function computeClinicalMath(drug, wt) {
-    if (drug.doseType === 'fixed') {
-        return { reqMg: drug.doseMg || 0, reqVol: drug.vol, isMax: false };
-    }
-    
-    // Calculate based on protocol (perDay divided, or perDose)
-    let targetMg = drug.doseType === 'perDay' ? (wt * drug.doseMg) / (drug.div || 1) : (wt * drug.doseMg);
-    let isMax = false;
-    
-    // Apply Safety Ceiling
-    if (drug.maxMg && targetMg > drug.maxMg) {
-        targetMg = drug.maxMg;
-        isMax = true;
-    }
-    
-    // Calculate final MLs
-    let reqVol = drug.conc > 0 ? (targetMg * drug.vol) / drug.conc : drug.vol;
-    
-    return { reqMg: targetMg, reqVol: reqVol, isMax: isMax };
-}
-
-function getDrugUnit(drug) {
-    let n = drug.name.toLowerCase();
-    if (n.includes('tablet') || n.includes('suppository')) return 'Tab/Supp';
-    if (n.includes('drop')) return 'Drops';
-    return 'mL';
-}
-
 // --- 1. UNIFIED DOSAGE ENGINE (For the 🧮 Dose Calc Tab) ---
 function populateDrugs() {
     const catElem = document.getElementById('drugCategory');
@@ -363,14 +335,15 @@ function runHomeDoseCalc() {
         if(!drugId) { freqInput.value = ''; return; }
         
         const wtBox = document.getElementById('inlineCalcWeight');
-        let wt = parseFloat(wtBox ? wtBox.value : globalPatientsStore[activePatientId].weight);
+        let wt = parseFloat(wtBox ? wtBox.value : AppStore.getPatient(activePatientId).weight);
         if(isNaN(wt)) wt = 10;
         
         const drug = drugsDb.find(d => d.id === drugId);
         if(!drug) return;
         
-        let math = computeClinicalMath(drug, wt);
-        let unit = getDrugUnit(drug);
+        // Use the Pure Math Engine
+        let math = ClinicalMath.computeDose(drug, wt);
+        let unit = ClinicalMath.getUnit(drug);
         let warnHTML = math.isMax ? ` <span style="color:var(--danger); font-size:0.8rem;">(⚠️ Adult Max Cap)</span>` : "";
         
         res.innerHTML = `Calculated: <span style="font-size:1.1rem; color:var(--primary);">${math.reqVol.toFixed(1)} ${unit}</span> (${math.reqMg.toFixed(0)} mg)${warnHTML}`;
@@ -401,7 +374,10 @@ function runHomeDoseCalc() {
 
     // --- 2. THE SMART PROTOCOL ENGINE (Order Sets) ---
     function autoCalcFromDB(drugId, freqStr = null, detailsStr = "") {
-        const p = globalPatientsStore[activePatientId];
+        if(!activePatientId) return null;
+        const p = AppStore.getPatient(activePatientId);
+        if(!p) return null;
+        
         const wtBox = document.getElementById('inlineCalcWeight');
         let wt = parseFloat(wtBox ? wtBox.value : p.weight);
         if(isNaN(wt)) wt = parseFloat(p.weight) || 10; 
@@ -409,14 +385,16 @@ function runHomeDoseCalc() {
         const drug = drugsDb.find(d => d.id === drugId);
         if (!drug) return null;
 
-        let math = computeClinicalMath(drug, wt);
+        // Use the Pure Math Engine
+        let math = ClinicalMath.computeDose(drug, wt);
+        
         let finalDetails = detailsStr;
         if (math.isMax) finalDetails += (finalDetails ? " | " : "") + `⚠️ Max Dose Cap Enforced (${drug.maxMg}mg)`;
 
         return {
             name: drug.name,
             vol: math.reqVol.toFixed(1),
-            unit: getDrugUnit(drug),
+            unit: ClinicalMath.getUnit(drug),
             freq: freqStr || drug.defaultFreq,
             details: finalDetails
         };
@@ -424,19 +402,21 @@ function runHomeDoseCalc() {
 
     function applyOrderSet(setId) {
         if(!activePatientId || !setId) return;
-        let p = globalPatientsStore[activePatientId];
+        
+        // 1. Secure Read: Get a safe copy of the patient
+        let p = AppStore.getPatient(activePatientId);
         if (!p) return;
         if (!p.rxList) p.rxList = []; 
 
         let dx = ""; let advice = ""; let newRx = [];
 
         function injectSymp(name, val, unit) {
-            activeDraftSymptoms.push(name.toLowerCase());
+            if(typeof activeDraftSymptoms !== 'undefined') activeDraftSymptoms.push(name.toLowerCase());
             document.getElementById('symptomTagsArea').innerHTML += `<span style="background:var(--primary-light); color:var(--primary-dark); padding:4px 10px; border-radius:12px; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:5px;">${name} x ${val} ${unit} <b style="cursor:pointer; color:var(--danger);" onclick="this.parentElement.remove(); evaluateDDx();">✖</b></span>`;
         }
 
         if (setId === 'os_aom') {
-            dx = "Acute Otitis Media"; advice = "Keep ear dry. Follow up in 5 days.";
+            dx = "Acute Otitis Media (AOM)"; advice = "Keep ear dry. Do not insert cotton buds.";
             injectSymp("Ear Pain", "2", "Days"); injectSymp("Fever", "2", "Days");
             newRx.push(autoCalcFromDB("ab_05", "BID x 5 Days")); 
             newRx.push(autoCalcFromDB("ap_04", "SOS for Ear Pain / Fever")); 
@@ -448,7 +428,7 @@ function runHomeDoseCalc() {
             newRx.push({ name: "Saline Nasal Drops (0.65%)", vol: "2", unit: "drops", freq: "TID in both nostrils", details: "" });
         } 
         else if (setId === 'os_age') {
-            dx = "Acute Gastroenteritis"; advice = "Strict ORS after every loose stool. Avoid sugary juices.";
+            dx = "Acute Gastroenteritis (AGE)"; advice = "Strict ORS after every loose stool. Avoid sugary juices.";
             injectSymp("Loose Stools", "2", "Days"); injectSymp("Vomiting", "1", "Days");
             newRx.push({ name: "ORS Sachet", vol: "1", unit: "packet", freq: "Mix in 1L water, sip 50-100ml after loose stool", details: "" });
             newRx.push(autoCalcFromDB("gi_10", "OD x 14 Days")); 
@@ -463,7 +443,7 @@ function runHomeDoseCalc() {
 
         newRx = newRx.filter(rx => rx !== null);
         
-        // SYNERGY: Append instead of overwrite
+        // CONCATENATION ENGINE: Prevents wiping out predictive DDx terms
         const dxInput = document.getElementById('rxDiagnosis');
         if (dxInput) {
             if (dxInput.value && !dxInput.value.includes(dx)) { dxInput.value = dxInput.value + " | " + dx; } 
@@ -477,7 +457,9 @@ function runHomeDoseCalc() {
         }
 
         p.rxList = p.rxList.concat(newRx);
-        globalPatientsStore[activePatientId] = p; 
+        
+        // 2. Secure Write: Hand the modified copy back to the vault
+        AppStore.savePatient(p); 
         
         if(typeof renderRxCartList === 'function') renderRxCartList();
         document.getElementById('orderSetSelect').value = "";
@@ -539,7 +521,7 @@ function runHomeDoseCalc() {
 
     window.calcReverse = function() {
         const wtBox = document.getElementById('inlineCalcWeight');
-        const wt = parseFloat(wtBox ? wtBox.value : globalPatientsStore[activePatientId].weight);
+        const wt = parseFloat(wtBox ? wtBox.value : AppStore.getPatient(activePatientId).weight);
         const drugId = document.getElementById('revFormulation').value;
         const volGiven = parseFloat(document.getElementById('revVol').value); 
         const out = document.getElementById('revOutputArea');
@@ -548,22 +530,19 @@ function runHomeDoseCalc() {
         
         const drug = drugsDb.find(d => d.id === drugId);
         if(!drug) return;
-        if (drug.doseType === 'fixed') { 
-            out.innerHTML = `<span style="color:var(--primary)">Fixed dose: ${drug.vol} unit(s).</span>`;
-            lastAuditResult = `${drug.name}: ${volGiven} given (Fixed standard dose).`;
+        
+        // Use the Pure Math Engine
+        const audit = ClinicalMath.evaluateReverseAudit(drug, wt, volGiven);
+        if (!audit) return;
+
+        if (audit.isFixed) { 
+            out.innerHTML = `<span style="color:var(--primary)">Fixed dose baseline standard format.</span>`;
+            lastAuditResult = `${drug.name}: ${volGiven} unit(s) reported (Fixed Dose configuration model).`;
             return; 
         }
         
-        let mgGiven = (volGiven * drug.conc) / drug.vol;
-        let targetDosePerDose = drug.doseType === 'perDay' ? (drug.doseMg / (drug.div || 1)) : drug.doseMg;
-        let mgPerKgGiven = mgGiven / wt;
-        let percent = (mgPerKgGiven / targetDosePerDose) * 100;
-        
-        let statusText = percent > 120 ? "Overdose" : (percent < 80 ? "Underdose" : "Optimal");
-        let color = percent > 120 ? "var(--danger)" : (percent < 80 ? "var(--warning)" : "var(--success)");
-        
-        out.innerHTML = `Given: <b>${mgPerKgGiven.toFixed(1)}</b> mg/kg. Target: <b>${targetDosePerDose.toFixed(1)}</b>. <span style="color:${color}; font-weight:bold;">[${statusText}]</span>`;
-        lastAuditResult = `Takes ${drug.name} (${volGiven}mL). Evaluated at ${mgPerKgGiven.toFixed(1)} mg/kg/dose (Target: ${targetDosePerDose.toFixed(1)}). Status: ${statusText}.`;
+        out.innerHTML = `Received: <b>${audit.mgPerKgGiven.toFixed(1)}</b> mg/kg. Target: <b>${audit.targetDosePerDose.toFixed(1)}</b>. <span style="color:${audit.statusColor}; font-weight:bold;">[${audit.statusText}]</span>`;
+        lastAuditResult = `Prior Meds: ${drug.name} (${volGiven}mL) evaluated at ${audit.mgPerKgGiven.toFixed(1)} mg/kg/dose (Target standard: ${audit.targetDosePerDose.toFixed(1)}). Clinical Status: ${audit.statusText}.`;
     };
 
     window.appendAuditToHopi = function() {
