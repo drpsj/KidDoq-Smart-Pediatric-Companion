@@ -1,26 +1,43 @@
 // --- 7. IMMUNIZATION TRACKER ---
-    function calculateAndRenderTimeline(pId) {
-        const patient = globalPatientsStore[pId]; const baseDate = new Date(patient.dob || new Date()); const today = new Date();
-        document.getElementById('timelineOutput').innerHTML = ""; document.getElementById('auditOutput').innerHTML = "";
-        let computedTimeline = {};
+    window.toggleVaccineAdministered = function(pId, vaxId, isGiven) {
+        // Secure Write via Vault
+        let p = AppStore.getPatient(pId);
+        if(!p) return;
+        if(!p.givenDates) p.givenDates = {};
         
-        baseVaccineSchema.forEach(v => {
-            if(v.condition === "je" && !patient.je) return;
-            if(v.condition === "female" && patient.gender !== "female") return;
-            let targetDate = new Date(baseDate); targetDate.setDate(targetDate.getDate() + (v.baseOffsetWeeks * 7));
-            let finalDue = new Date(targetDate); let altered = false;
-            if(v.dependsOn && computedTimeline[v.dependsOn]) {
-                const parentDate = new Date(patient.givenDates[v.dependsOn] || computedTimeline[v.dependsOn].projected);
-                const minInterval = new Date(parentDate); minInterval.setDate(minInterval.getDate() + (v.minIntervalWeeks * 7));
-                if(finalDue < minInterval) { finalDue = minInterval; altered = true; }
-            }
-            let status = patient.givenDates[v.id] ? "done" : (finalDue < today ? "overdue" : "upcoming");
-            computedTimeline[v.id] = { ...v, projected: finalDue.toISOString().split('T')[0], actual: patient.givenDates[v.id] || "", isDelayed: altered, status: status };
-        });
+        if (isGiven) {
+            p.givenDates[vaxId] = new Date().toISOString().split('T')[0]; // Mark as given today
+        } else {
+            delete p.givenDates[vaxId]; // Remove date
+        }
+        
+        AppStore.savePatient(p);
+        calculateAndRenderTimeline(pId); // Re-render the timeline
+    };
 
-        let groups = {}; Object.values(computedTimeline).forEach(item => { if(!groups[item.group]) groups[item.group] = []; groups[item.group].push(item); });
+    function calculateAndRenderTimeline(pId) {
+        // 1. Secure Read from Vault
+        const patient = AppStore.getPatient(pId);
+        if (!patient) return;
+        
+        document.getElementById('timelineOutput').innerHTML = ""; 
+        document.getElementById('auditOutput').innerHTML = "";
+        
+        // 2. Delegate the heavy lifting to the Pure Math Engine!
+        const computedTimeline = ClinicalMath.calculateVaccineTimeline(patient, baseVaccineSchema);
+        
+        // 3. Render the UI (Unchanged, just uses computedTimeline now)
+        let groups = {}; 
+        Object.values(computedTimeline).forEach(item => { 
+            if(!groups[item.group]) groups[item.group] = []; 
+            groups[item.group].push(item); 
+        });
+        
         for (const [gName, vaxList] of Object.entries(groups)) {
-            const card = document.createElement('div'); card.className = "timeline-section"; card.innerHTML = `<h3 class="section-title">${gName}</h3>`;
+            const card = document.createElement('div'); 
+            card.className = "timeline-section"; 
+            card.innerHTML = `<h3 class="section-title">${gName}</h3>`;
+            
             vaxList.forEach(v => {
                 const prettyDue = new Date(v.projected).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
                 const isDone = v.actual !== "";
@@ -43,15 +60,28 @@
         Object.values(computedTimeline).forEach(v => {
             const prettyProj = new Date(v.projected).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
             const card = document.createElement('div'); card.style.cssText = "padding:10px; border:1px solid var(--border-soft); border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;";
-            if(v.status === 'overdue') { card.innerHTML = `<div><b>${v.name}</b><br><small style="color:var(--text-muted);">Target was: ${prettyProj}</small></div> <span style="background:var(--danger); color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem;">Missed</span>`; odBox.appendChild(card); patient.upcomingVaccinesForWhatsapp.push(v.name); }
-            else if(v.status === 'done') { card.innerHTML = `<div><b>${v.name}</b><br><small style="color:var(--text-muted);">Given on: ${new Date(v.actual).toLocaleDateString('en-IN')}</small></div> <span style="background:var(--success); color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem;">Given</span>`; dnBox.appendChild(card); }
-            else { card.innerHTML = `<div><b>${v.name}</b><br><small style="color:var(--text-muted);">Due: ${prettyProj}</small></div> <span style="background:var(--primary-light); color:var(--primary-dark); padding:4px 8px; border-radius:12px; font-size:0.75rem;">Upcoming</span>`; upBox.appendChild(card); if(patient.upcomingVaccinesForWhatsapp.length < 4) patient.upcomingVaccinesForWhatsapp.push(v.name); }
+            
+            if (v.status === 'overdue') { 
+                card.innerHTML = `<div><b>${v.name}</b><br><small style="color:var(--text-muted);">Target was: ${prettyProj}</small></div> <span style="background:var(--danger); color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem;">Missed</span>`; 
+                odBox.appendChild(card); 
+                patient.upcomingVaccinesForWhatsapp.push(v.name); 
+            }
+            else if (v.status === 'done') { 
+                card.innerHTML = `<div><b>${v.name}</b><br><small style="color:var(--text-muted);">Given on: ${new Date(v.actual).toLocaleDateString('en-IN')}</small></div> <span style="background:var(--success); color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem;">Given</span>`; 
+                dnBox.appendChild(card); 
+            }
+            else { 
+                card.innerHTML = `<div><b>${v.name}</b><br><small style="color:var(--text-muted);">Due: ${prettyProj}</small></div> <span style="background:var(--primary-light); color:var(--primary-dark); padding:4px 8px; border-radius:12px; font-size:0.75rem;">Upcoming</span>`; 
+                upBox.appendChild(card); 
+                if(patient.upcomingVaccinesForWhatsapp.length < 4) patient.upcomingVaccinesForWhatsapp.push(v.name); 
+            }
         });
-        document.getElementById('auditOutput').appendChild(odBox); document.getElementById('auditOutput').appendChild(dnBox); document.getElementById('auditOutput').appendChild(upBox);
+        
+        document.getElementById('auditOutput').appendChild(odBox); 
+        document.getElementById('auditOutput').appendChild(dnBox); 
+        document.getElementById('auditOutput').appendChild(upBox);
     }
-
-    function toggleVaccineAdministered(pId, vId, c) { globalPatientsStore[pId].givenDates[vId]=c?new Date().toISOString().split('T')[0]:""; localStorage.setItem('nis_patients',JSON.stringify(globalPatientsStore)); calculateAndRenderTimeline(pId); }
-
+    
     // --- 11. MILESTONES ---
     function renderMilestoneDashboard() {
         if(!activePatientId) return;

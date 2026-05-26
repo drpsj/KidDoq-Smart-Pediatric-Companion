@@ -55,10 +55,60 @@ const ClinicalMath = (function() {
         return { mgPerKgGiven, targetDosePerDose, percent, statusText, statusColor, isFixed: false };
     }
 
+    // 4. Vaccine Timeline Engine
+    function calculateVaccineTimeline(patient, schema, todayDate = new Date()) {
+        if (!patient || !schema) return {};
+        
+        const baseDate = new Date(patient.dob || todayDate);
+        let computed = {};
+        
+        schema.forEach(v => {
+            // Filter conditions
+            if (v.condition === "je" && !patient.je) return;
+            if (v.condition === "female" && patient.gender !== "female") return;
+            
+            // Calculate base target date
+            let targetDate = new Date(baseDate);
+            targetDate.setDate(targetDate.getDate() + (v.baseOffsetWeeks * 7));
+            let finalDue = new Date(targetDate);
+            let altered = false;
+            
+            // Handle minimum intervals based on previous doses
+            if (v.dependsOn && computed[v.dependsOn]) {
+                const givenDateStr = patient.givenDates && patient.givenDates[v.dependsOn];
+                const parentDate = new Date(givenDateStr || computed[v.dependsOn].projected);
+                const minInterval = new Date(parentDate);
+                
+                minInterval.setDate(minInterval.getDate() + (v.minIntervalWeeks * 7));
+                
+                if (finalDue < minInterval) { 
+                    finalDue = minInterval; 
+                    altered = true; 
+                }
+            }
+            
+            // Determine status
+            let given = patient.givenDates && patient.givenDates[v.id];
+            let status = given ? "done" : (finalDue < todayDate ? "overdue" : "upcoming");
+            
+            // Build the final object
+            computed[v.id] = { 
+                ...v, 
+                projected: finalDue.toISOString().split('T')[0], 
+                actual: given || "", 
+                isDelayed: altered, 
+                status: status 
+            };
+        });
+        
+        return computed;
+    }
+
     // Expose the pure functions
     return {
         computeDose,
         getUnit,
-        evaluateReverseAudit
+        evaluateReverseAudit,
+        calculateVaccineTimeline // <-- ADD THIS LINE
     };
 })();
