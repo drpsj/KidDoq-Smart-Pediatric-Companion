@@ -51,12 +51,15 @@ function populateDrugs() {
 
 function calculateDose() {
     const wtElem = document.getElementById('calcWeight');
-    if (!wtElem) return; // THE GATEKEEPER: Stop if the old Dose Calc tab is deleted
-    
-    const weight = parseFloat(document.getElementById('calcWeight').value);
-    const drugId = document.getElementById('drugFormulation').value;
+    const formElem = document.getElementById('drugFormulation');
     const outputArea = document.getElementById('calcOutputArea');
     const btnArea = document.getElementById('rxAddButtonArea');
+    
+    // THE ULTIMATE GATEKEEPER: Stop immediately if ANY part of the old Dose Calc tab is missing
+    if (!wtElem || !formElem || !outputArea || !btnArea) return; 
+    
+    const weight = parseFloat(wtElem.value);
+    const drugId = formElem.value;
     
     if(!weight || drugId === "") {
         outputArea.innerHTML = "<div class='tool-result neutral'>Awaiting parameters. Ensure weight is entered.</div>";
