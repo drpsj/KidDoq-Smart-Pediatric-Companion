@@ -66,35 +66,34 @@
     
     // --- 4. CORE NAVIGATION ENGINE (KIDDOQ) ---
     function switchNavTab(tabId) {
+        // 1. Hide all views and reset nav buttons
         document.querySelectorAll('.view-content').forEach(v => { v.style.display = 'none'; v.classList.remove('active-view'); });
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
         
         const target = document.getElementById(tabId);
         const workspace = document.getElementById('activeWorkspace');
         
-        if (workspace) {
-            if (target && workspace.contains(target)) {
-                workspace.style.display = 'block';
-                let actionsBar = document.getElementById('masterActionsBar');
-                if (tabId === 'databaseFeatureView' || tabId === 'aboutFeatureView') {
-                    if(actionsBar) actionsBar.style.display = 'none';
-                } else if (activePatientId) {
-                    if(actionsBar) actionsBar.style.display = 'flex';
-                }
-            } else {
-                workspace.style.display = 'none';
-            }
+        // 2. SPECIAL HANDLING: If target is Settings/Database, hide the workspace entirely
+        if (tabId === 'aboutFeatureView' || tabId === 'databaseFeatureView') {
+            if (workspace) workspace.style.display = 'none';
+        } else if (workspace && target && workspace.contains(target)) {
+            // If it's a tool, show the workspace
+            workspace.style.display = 'block';
         }
         
-        if(target) { target.style.display = 'block'; setTimeout(() => target.classList.add('active-view'), 10); }
+        // 3. Show target and highlight nav
+        if(target) { 
+            target.style.display = 'block'; 
+            setTimeout(() => target.classList.add('active-view'), 10); 
+        }
         
         const navBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
         if(navBtn) navBtn.classList.add('active');
 
+        // 4. Trigger associated functions
         if(tabId === 'homeDashboardView' && typeof updateGreeting === 'function') updateGreeting();
         if(tabId === 'databaseFeatureView') renderFullDatabase();
         
-        // FIX: Scroll the content area smoothly, not the whole window
         const mainContent = document.querySelector('.main-content');
         if(mainContent) mainContent.scrollTop = 0;
     }
