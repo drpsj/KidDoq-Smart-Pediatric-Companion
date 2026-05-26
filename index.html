@@ -30,7 +30,7 @@
         document.addEventListener('DOMContentLoaded', () => document.head.appendChild(link));
     </script>
 
-    <<link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
     <div id="splashScreen" class="splash-screen">
@@ -339,8 +339,9 @@
                                 </select>
                             </div>
                             
-                            <div class="tool-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
-                                <div>
+                            <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:start;">
+                                
+                                <div style="flex: 1 1 320px; min-width:0;">
                                     <label>Chief Complaints</label>
                                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                                         <input type="text" id="sympInput" placeholder="Search symptom (e.g. Fever, Cough)" list="sympList" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem;">
@@ -365,24 +366,22 @@
                                     
                                     <div style="background:rgba(91,97,246,0.04); padding:12px; border-radius:8px; border:1px dashed var(--primary); margin-bottom:15px;">
                                         <h4 style="margin:0 0 8px 0; color:var(--primary); font-size:0.85rem; text-transform:uppercase;">💊 Medications Taken (Audit)</h4>
-                                        <div style="display:flex; gap:6px; margin-bottom:8px;">
-                                            <select id="revCategory" onchange="populateRevDrugs()" style="flex:1; border:1px solid var(--border-soft); border-radius:6px; padding:6px; font-size:0.85rem;">
+                                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                                            <select id="revCategory" onchange="populateRevDrugs()" style="flex:1 1 45%; border:1px solid var(--border-soft); border-radius:6px; padding:8px; font-size:0.9rem; min-width:110px;">
                                                 <option value="">-- Cat --</option><option value="antibiotics">Antibiotics</option><option value="antipyretics">Antipyretics</option><option value="antihistamines">Antihistamines</option><option value="git">Gastrointestinal</option><option value="respiratory">Respiratory</option>
                                             </select>
-                                            <select id="revFormulation" onchange="calcReverse()" style="flex:1.5; border:1px solid var(--border-soft); border-radius:6px; padding:6px; font-size:0.85rem;"><option value="">-- Drug --</option></select>
+                                            <select id="revFormulation" onchange="calcReverse()" style="flex:1 1 45%; border:1px solid var(--border-soft); border-radius:6px; padding:8px; font-size:0.9rem; min-width:130px;"><option value="">-- Drug --</option></select>
                                         </div>
-                                        <div style="display:flex; gap:6px;">
-                                            <input type="number" step="0.1" id="revVol" placeholder="Vol (mL) Given" oninput="calcReverse()" style="flex:1; border:1px solid var(--border-soft); border-radius:6px; padding:6px; font-size:0.85rem;">
-                                            <button class="secondary" onclick="appendAuditToHopi()" style="margin:0; padding:6px 12px; font-size:0.8rem; background:white;">➕ Append to HOPI</button>
+                                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                            <input type="number" step="0.1" id="revVol" placeholder="Vol (mL) Given" oninput="calcReverse()" style="flex:1 1 45%; border:1px solid var(--border-soft); border-radius:6px; padding:8px; font-size:0.9rem; min-width:110px;">
+                                            <button class="secondary" onclick="appendAuditToHopi()" style="flex:1 1 45%; margin:0; padding:8px 12px; font-size:0.8rem; background:white; min-width:130px;">➕ Append to HOPI</button>
                                         </div>
                                         <div id="revOutputArea" style="margin-top:8px; font-size:0.8rem; color:var(--text-main);"></div>
                                     </div>
 
                                     <label>Diagnosis / DDx</label>
                                     <input type="text" id="rxDiagnosis" onkeyup="if(typeof renderRxCartList === 'function') renderRxCartList()" placeholder="Type custom or click a suggestion below..." style="margin-bottom:8px; font-weight:bold; font-size:1.05rem;">
-                                    <div id="ddxSuggestions" style="display:none; gap:8px; margin-bottom:15px; flex-wrap:wrap; padding:10px; background:rgba(0,212,255,0.05); border:1px dashed var(--brand-cyan); border-radius:8px;">
-                                        <span style="font-size:0.85rem; color:var(--primary); font-weight:bold; width:100%;">✨ AI Predicted Differentials:</span>
-                                    </div>
+                                    <div id="ddxSuggestions" style="display:none; gap:8px; margin-bottom:15px; flex-wrap:wrap; padding:10px; background:rgba(0,212,255,0.05); border:1px dashed var(--brand-cyan); border-radius:8px;"></div>
                                     
                                     <label>Required Investigations / Scans</label>
                                     <style>
@@ -397,7 +396,7 @@
                                             <div style="display:flex; flex-wrap:wrap; gap:8px;" class="investigation-chips" onchange="updateTestsTextarea()">
                                                 <label class="chip-checkbox"><input type="checkbox" value="CBC"><span>CBC</span></label>
                                                 <label class="chip-checkbox"><input type="checkbox" value="CRP"><span>CRP</span></label>
-                                                <label class="chip-checkbox"><input type="checkbox" value="Dengue NS1/IgM"><span>Dengue NS1/IgM</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Dengue NS1/IgM"><span>Dengue NS1</span></label>
                                                 <label class="chip-checkbox"><input type="checkbox" value="Peripheral Smear"><span>Smear</span></label>
                                                 <label class="chip-checkbox"><input type="checkbox" value="LFT"><span>LFT</span></label>
                                                 <label class="chip-checkbox"><input type="checkbox" value="KFT/RFT"><span>RFT</span></label>
@@ -407,23 +406,25 @@
                                             </div>
                                         </div>
                                         <div style="margin-bottom:15px;">
-                                            <strong style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">☢️ Radiology / Imaging</strong>
+                                            <strong style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">☢️ Radiology & Others</strong>
                                             <div style="display:flex; flex-wrap:wrap; gap:8px;" class="investigation-chips" onchange="updateTestsTextarea()">
                                                 <label class="chip-checkbox"><input type="checkbox" value="CXR (PA View)"><span>CXR</span></label>
                                                 <label class="chip-checkbox"><input type="checkbox" value="USG Abdomen & Pelvis"><span>USG Abdomen</span></label>
                                                 <label class="chip-checkbox"><input type="checkbox" value="CT Brain (Plain)"><span>CT Brain</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Urine Routine"><span>Urine Routine</span></label>
+                                                <label class="chip-checkbox"><input type="checkbox" value="Urine Culture"><span>Urine C/S</span></label>
                                             </div>
                                         </div>
                                         <input type="text" id="rxTestsCustom" placeholder="Type other specific tests here..." onkeyup="updateTestsTextarea()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem;">
                                         <input type="hidden" id="rxTests">
                                     </div>
                                     <label>General Advice / Care Plan</label>
-                                    <textarea id="rxAdvice" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
+                                    <textarea id="rxAdvice" onkeyup="if(typeof renderRxCartList === 'function') renderRxCartList()" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
                                     <label>Next Review Date</label>
                                     <input type="date" id="rxReview">
                                 </div>
 
-                                <div style="display:flex; flex-direction:column; height:100%;">
+                                <div style="flex: 1 1 320px; min-width:0; display:flex; flex-direction:column; height:100%;">
                                     <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); margin-bottom:15px; box-shadow:var(--shadow-sm);">
                                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                                             <h4 style="margin:0; color:var(--primary);">🧮 Calculator</h4>
@@ -448,9 +449,7 @@
                                             <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:8px;">
                                                 <input type="number" id="inlineDurVal" placeholder="Qty" oninput="calcInlineDose()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem; box-sizing:border-box;">
                                                 <select id="inlineDurUnit" onchange="calcInlineDose()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem; background:white; box-sizing:border-box;">
-                                                    <option value="Days">Days</option>
-                                                    <option value="Weeks">Weeks</option>
-                                                    <option value="Months">Months</option>
+                                                    <option value="Days">Days</option><option value="Weeks">Weeks</option><option value="Months">Months</option>
                                                 </select>
                                             </div>
                                             <div style="display:flex; gap:10px;">
@@ -462,69 +461,29 @@
                                     </div>
 
                                     <h4 style="margin:0 0 10px 0; color:var(--primary);">📄 Live Rx Preview</h4>
-                                    <div id="rxCartList" style="background:#ffffff; padding:20px; border-radius:6px; border:1px solid var(--border-soft); flex-grow:1; margin-bottom:15px; min-height:300px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family:sans-serif; color:#333;">
-                                        </div>
-                                    <button class="action" onclick="finalizeVisit()" style="background:var(--success); margin:0; box-shadow:var(--shadow-md); padding:1rem; font-size:1.1rem;">💾 Sign & Finalize Visit</button>
+                                    <div id="rxCartList" style="background:#ffffff; padding:20px; border-radius:6px; border:1px solid var(--border-soft); flex-grow:1; margin-bottom:15px; min-height:320px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family:sans-serif; color:#333;"></div>
+                                    <button class="action" onclick="previewDraft()" style="background:var(--brand-blue); margin:0; box-shadow:var(--shadow-md); padding:1rem; font-size:1.1rem;">👁️ Preview & Save Draft</button>
                                 </div>
                             </div>
                         </div>
 
                         <div id="rxPostVisitView" style="display:none; text-align:center; padding:2rem 1rem; background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-soft);">
-                            <div style="font-size:3.5rem; margin-bottom:10px; animation: bounceIn 0.5s ease;">✅</div>
-                            <h3 style="color:var(--success); margin-bottom:5px; font-size:1.4rem;">Visit Finalized</h3>
-                            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:25px;">The encounter has been securely signed into the patient ledger.</p>
+                            <div style="font-size:3.5rem; margin-bottom:10px; animation: bounceIn 0.5s ease;">📄</div>
+                            <h3 style="color:var(--primary); margin-bottom:5px; font-size:1.4rem;">Encounter Summary</h3>
+                            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:25px;">Review the preview outputs below. Tap lock when ready to securely sign.</p>
                             
                             <div style="display:flex; flex-direction:column; gap:12px; max-width:320px; margin:0 auto;">
                                 <button class="action" onclick="executePrint('rx')" style="margin:0; padding:14px; background:var(--primary); font-size:1.05rem; box-shadow:var(--shadow-md);">🖨️ Print Prescription</button>
-                                <button class="action" onclick="executePrint('comprehensive')" style="margin:0; padding:14px; background:var(--brand-blue); font-size:1.05rem; box-shadow:var(--shadow-md);">📄 Print Full Summary</button>
+                                <button class="action" onclick="executePrint('comprehensive')" style="margin:0; padding:14px; background:var(--brand-cyan); color:var(--primary-dark); font-size:1.05rem; box-shadow:var(--shadow-md);">📄 Print Full Summary</button>
                                 <button class="action" onclick="sendWACompReport()" style="margin:0; padding:14px; background:#25D366; font-size:1.05rem; box-shadow:var(--shadow-md);">📱 Send via WhatsApp</button>
+                                
                                 <hr style="border:0; border-top:1px dashed var(--border-soft); margin:15px 0;">
-                                <button class="secondary" onclick="closePatientFile()" style="margin:0; padding:14px; color:var(--danger); border-color:var(--danger); background:#fef2f2; font-weight:bold;">🚪 Close Patient File</button>
-                                <button class="secondary" onclick="renderVisitLedger()" style="margin:0; padding:10px; border:none; color:var(--text-muted); background:transparent;">Return to Ledger</button>
+                                
+                                <button class="secondary" onclick="editDraft()" style="margin:0; padding:14px; font-weight:bold; color:var(--text-main); background:#fff;">✏️ Go Back & Edit</button>
+                                <button class="action" onclick="lockVisit()" style="margin:0; padding:14px; background:var(--danger); font-size:1.05rem; box-shadow:var(--shadow-md);">🔒 Sign & Lock to Ledger</button>
                             </div>
                         </div>
-
-                    </div>
-                </div>
-
-                <div id="doseManageTab" class="sub-tab-content">
-                    <div class="timeline-section tool-grid" style="grid-template-columns: 1.5fr 1fr;">
-                        <div>
-                            <h4 style="margin-top:0; color:var(--primary);">➕ Add Custom Formulation</h4>
-                            <div class="row-inputs">
-                                <div><label>Category</label><select id="newDrugCat"><option value="antibiotics">Antibiotics</option><option value="antipyretics">Antipyretics</option><option value="antihistamines">Antihistamines</option><option value="respiratory">Respiratory</option><option value="git">Gastrointestinal</option></select></div>
-                                <div><label>Drug Name & Brand</label><input type="text" id="newDrugName" placeholder="e.g. Paracetamol [Calpol]"></div>
-                            </div>
-                            <div class="row-inputs" style="margin-top:10px;">
-                                <div><label>Dose Amount</label><input type="number" id="newDrugDose" placeholder="e.g. 15"></div>
-                                <div><label>Dose Type</label><select id="newDrugType"><option value="perDose">mg/kg/dose</option><option value="perDay">mg/kg/day</option><option value="fixed">Fixed Volume (e.g. 1 Tab)</option></select></div>
-                            </div>
-                            <div class="row-inputs" style="margin-top:10px;">
-                                <div><label>Divided Into</label><input type="number" id="newDrugDiv" placeholder="e.g. 3 (for TID)"></div>
-                                <div><label>Frequency Label</label><input type="text" id="newDrugFreq" placeholder="e.g. TID"></div>
-                            </div>
-                            <div class="row-inputs" style="margin-top:10px;">
-                                <div><label>Concentration (mg)</label><input type="number" id="newDrugConc" placeholder="e.g. 250"></div>
-                                <div><label>Per Volume (mL)</label><input type="number" id="newDrugVol" placeholder="e.g. 5"></div>
-                            </div>
-                            <button class="action" style="margin-top:20px;" onclick="saveCustomDrug()">💾 Save to Database</button>
-                        </div>
-                        <div style="background:var(--bg-body); padding:1rem; border-radius:var(--radius-md);">
-                            <h4 style="margin-top:0;">Database Rules</h4>
-                            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
-                                • <b>perDose</b>: Multiplies dose directly by weight.<br>
-                                • <b>perDay</b>: Multiplies by weight, then divides by "Divided Into".<br>
-                                • <b>fixed</b>: Ignores weight, prescribes exact "Volume".<br>
-                            </p>
-                            <div style="margin-top:10px; padding:10px; background:rgba(245, 158, 11, 0.1); border-left:3px solid var(--warning); font-size:0.8rem; color:var(--text-main);">
-                                <b>⚠️ Multi-Drug Combinations (e.g. Sinarest, Ascoril):</b><br>
-                                When adding a combo drug, calculate and input the dose based <i>only</i> on the <b>Primary Active Ingredient</b> (e.g., set Sinarest dosage based on the Paracetamol mg/kg requirement).
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+                        
             <div id="certificateFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">📄 Medical Certificates</h2>
