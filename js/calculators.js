@@ -823,13 +823,18 @@ function runHomeDoseCalc() {
         let tCals = 0, tPro = 0;
         
         logs.forEach(log => {
-            tCals += log.calories; 
-            tPro += log.protein;
+            // SAFE PARSING: Protects against corrupted data saving as null
+            let cals = parseFloat(log.calories) || 0;
+            let pro = parseFloat(log.protein) || 0;
+            
+            tCals += cals; 
+            tPro += pro;
+            
             html += `<tr>
-                <td style="padding:10px; border-bottom:1px solid var(--border-soft);">${log.mealType}</td>
-                <td style="padding:10px; border-bottom:1px solid var(--border-soft);"><b>${log.foodName}</b> <span style="color:var(--text-muted); font-size:0.85rem;">(${log.qty})</span></td>
-                <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--primary);">${log.calories.toFixed(0)}</td>
-                <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--success);">${log.protein.toFixed(1)}g</td>
+                <td style="padding:10px; border-bottom:1px solid var(--border-soft);">${log.mealType || 'Meal'}</td>
+                <td style="padding:10px; border-bottom:1px solid var(--border-soft);"><b>${log.foodName || 'Unknown'}</b> <span style="color:var(--text-muted); font-size:0.85rem;">(${log.qty || ''})</span></td>
+                <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--primary);">${cals.toFixed(0)}</td>
+                <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--success);">${pro.toFixed(1)}g</td>
                 <td style="padding:10px; border-bottom:1px solid var(--border-soft); text-align:center;">
                     <button onclick="removeDietRecall('${log.id}')" style="background:rgba(239, 68, 68, 0.1); border:none; color:var(--danger); cursor:pointer; padding:5px 8px; border-radius:4px;">❌</button>
                 </td>
