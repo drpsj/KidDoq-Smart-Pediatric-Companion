@@ -859,3 +859,25 @@ function runHomeDoseCalc() {
         document.getElementById('rxDraftView').style.display = 'none';
         document.getElementById('rxPostVisitView').style.display = 'block'; 
     }
+
+    function startNewVisit() {
+        document.getElementById('rxLedgerView').style.display = 'none';
+        document.getElementById('rxDraftView').style.display = 'block';
+        document.getElementById('draftDateText').innerText = new Date().toLocaleDateString('en-IN');
+        
+        // Reset inputs
+        if(document.getElementById('rxDiagnosis')) document.getElementById('rxDiagnosis').value = "";
+        if(document.getElementById('rxTests')) document.getElementById('rxTests').value = "";
+        if(document.getElementById('rxAdvice')) document.getElementById('rxAdvice').value = "";
+        if(document.getElementById('rxReview')) document.getElementById('rxReview').value = "";
+        if(document.getElementById('rxHopi')) document.getElementById('rxHopi').value = "";
+        
+        // Update Weight
+        if(activePatientId && globalPatientsStore[activePatientId]) {
+            const wtDisplay = document.getElementById('inlineWtDisplay');
+            const wtInput = document.getElementById('inlineCalcWeight');
+            if(wtDisplay) wtDisplay.innerText = globalPatientsStore[activePatientId].weight || "--";
+            if(wtInput) wtInput.value = globalPatientsStore[activePatientId].weight || "";
+        }
+    }
+    // STOP HERE. There should be no more braces after this.
