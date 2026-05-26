@@ -627,22 +627,34 @@ function runHomeDoseCalc() {
         }
     };
 
-    function startNewVisit() {
+   function startNewVisit() {
+        // 1. Switch View
         document.getElementById('rxLedgerView').style.display = 'none';
         document.getElementById('rxDraftView').style.display = 'block';
         document.getElementById('draftDateText').innerText = new Date().toLocaleDateString('en-IN');
         
-        if(document.getElementById('rxDiagnosis')) document.getElementById('rxDiagnosis').value = "";
-        if(document.getElementById('rxTests')) document.getElementById('rxTests').value = "";
-        if(document.getElementById('rxAdvice')) document.getElementById('rxAdvice').value = "";
-        if(document.getElementById('rxReview')) document.getElementById('rxReview').value = "";
-        if(document.getElementById('rxHopi')) document.getElementById('rxHopi').value = "";
-        
-        if(activePatientId && globalPatientsStore[activePatientId]) {
-            const wtDisplay = document.getElementById('inlineWtDisplay');
-            const wtInput = document.getElementById('inlineCalcWeight');
-            if(wtDisplay) wtDisplay.innerText = globalPatientsStore[activePatientId].weight || "--";
-            if(wtInput) wtInput.value = globalPatientsStore[activePatientId].weight || "";
+        // 2. Clear Fields Safely
+        const fields = ['rxDiagnosis', 'rxTests', 'rxAdvice', 'rxReview', 'rxHopi', 'rxTestsCustom'];
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+
+        // 3. Clear Checkboxes and Symptoms Area
+        document.querySelectorAll('.investigation-chips input[type="checkbox"]').forEach(cb => cb.checked = false);
+        const sympArea = document.getElementById('symptomTagsArea');
+        if (sympArea) {
+            sympArea.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>';
         }
+        
+        // 4. Reset Weight in the new editable calculator input
+        if(activePatientId && globalPatientsStore[activePatientId]) {
+            const wtInput = document.getElementById('inlineCalcWeight');
+            if(wtInput) {
+                wtInput.value = globalPatientsStore[activePatientId].weight || "";
+            }
+        }
+
+        // 5. Refresh the Live Preview
         if(typeof renderRxCartList === 'function') renderRxCartList();
     }
