@@ -572,3 +572,11 @@
         // 5. Route to Home Dashboard on load
         if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
     });
+
+    // Boot up the Nutrition Database UI
+    if(typeof renderFoodDB === 'function' && typeof foodsDb !== 'undefined') renderFoodDB(foodsDb);
+
+    // Boot up the Nutrition Database Dropdown
+    if (typeof renderFoodDB === 'function' && typeof window.foodsDb !== 'undefined') {
+        renderFoodDB(window.foodsDb);
+    }

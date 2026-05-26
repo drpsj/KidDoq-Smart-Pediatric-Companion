@@ -149,6 +149,8 @@ const drugsDb = [
         {name:"Garlic", cat:"Condiments", p:6, c:30, f:0.1, k:145},
         {name:"Ginger", cat:"Condiments", p:2, c:12, f:1, k:67}
     ];
+    // Add this right below your foodsDb array
+window.foodsDb = foodsDb;
 
     const baseVaccineSchema = [
         { id: "bcg", name: "BCG", window: "At Birth", group: "Infant", baseOffsetWeeks: 0, strategy: "Give ASAP." },
@@ -187,3 +189,25 @@ const drugsDb = [
         24: [ { id: "m24_1", domain: "Lang", text: "2-word sentences.", sig: "Speech eval." }, { id: "m24_2", domain: "Cognitive", text: "Points to 3 body parts.", sig: "Cognitive delay." }, { id: "m24_3", domain: "Social", text: "Parallel play.", sig: "ASD risk." } ],
         36: [ { id: "m36_1", domain: "Lang", text: "3-4 word sentences.", sig: "Articulation." }, { id: "m36_2", domain: "Motor", text: "Pedals tricycle.", sig: "Coordination." }, { id: "m36_3", domain: "Motor", text: "Copies a circle.", sig: "Visual-motor." } ]
     };
+
+    // --- CLINICAL NUTRITION DATABASE ---
+// Values are approximate per 100g or 100ml based on standard pediatric dietetics
+const foodsDb = [
+    { name: "Breastmilk / Formula (100ml)", calsPer100: 67, proPer100: 1.5 },
+    { name: "Cow's Milk / Buffalo Milk (100ml)", calsPer100: 100, proPer100: 3.5 },
+    { name: "Khichdi - Rice & Moong Dal (100g)", calsPer100: 120, proPer100: 4.0 },
+    { name: "Plain Rice (100g cooked)", calsPer100: 130, proPer100: 2.7 },
+    { name: "Thick Dal / Lentils (100g cooked)", calsPer100: 116, proPer100: 9.0 },
+    { name: "Roti / Chapati (100g ~ 3 rotis)", calsPer100: 297, proPer100: 9.0 },
+    { name: "Mashed Banana (100g)", calsPer100: 89, proPer100: 1.1 },
+    { name: "Apple Puree (100g)", calsPer100: 52, proPer100: 0.3 },
+    { name: "Boiled Egg (100g ~ 2 eggs)", calsPer100: 155, proPer100: 13.0 },
+    { name: "Commercial Fortified Cereal (100g powder)", calsPer100: 412, proPer100: 15.0 },
+    { name: "Curd / Yogurt (100g)", calsPer100: 98, proPer100: 11.0 },
+    { name: "Idli (100g ~ 2 medium)", calsPer100: 144, proPer100: 4.0 },
+    { name: "Dosa (100g ~ 1 large)", calsPer100: 280, proPer100: 5.0 },
+    { name: "Upma / Suji (100g cooked)", calsPer100: 130, proPer100: 3.5 }
+];
+
+// Ensure it is globally available to the app
+window.foodsDb = foodsDb;
