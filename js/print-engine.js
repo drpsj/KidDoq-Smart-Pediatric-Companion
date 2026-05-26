@@ -74,6 +74,46 @@ function getPrintHeaderHTML(title, patientObj) {
         if (cat !== "none") body.value = text;
     }
 
+    // --- COMPACT VACCINE TABLE GENERATOR ---
+    window.generateCompactVaccineTable = function(pId) {
+        const p = AppStore.getPatient(pId);
+        if (!p) return "";
+        
+        // Calculate the timeline (assumes baseVaccineSchema is loaded)
+        const timeline = ClinicalMath.calculateVaccineTimeline(p, baseVaccineSchema); 
+        
+        let html = `
+        <style>
+            .vax-print-tbl { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 11px; margin-top: 10px; }
+            .vax-print-tbl th, .vax-print-tbl td { border: 1px solid #ccc; padding: 5px; text-align: left; }
+            .vax-print-tbl th { background-color: #f3f4f6; color: #1e3a8a; }
+            .vax-overdue { color: #d93025; font-weight: bold; }
+            .vax-done { color: #188038; font-weight: bold; }
+        </style>
+        <h4 style="margin-bottom: 5px; font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:3px;">Immunization Record (Catch-Up Adjusted)</h4>
+        <table class="vax-print-tbl">
+            <thead>
+                <tr><th style="width:40%;">Vaccine</th><th>Target Date</th><th>Date Given</th><th>Status</th></tr>
+            </thead>
+            <tbody>`;
+
+        Object.values(timeline).forEach(v => {
+            const proj = new Date(v.projected).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+            const given = v.actual ? new Date(v.actual).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : "";
+            const statusTxt = v.actual ? `<span class="vax-done">✔ Given</span>` : (v.status === 'overdue' ? `<span class="vax-overdue">⚠ Overdue</span>` : `Due`);
+
+            html += `<tr>
+                <td><b>${v.name}</b> ${v.isDelayed ? '<i>(Adjusted)</i>' : ''}</td>
+                <td>${proj}</td>
+                <td>${given}</td>
+                <td>${statusTxt}</td>
+            </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        return html;
+    };
+
     function executePrint(mode) {
         // FIX 1: Allow both 'prescription' and 'rx' to pass the gatekeeper
         if (!activePatientId && mode !== 'prescription' && mode !== 'rx' && mode !== 'certificate') { 
@@ -101,7 +141,9 @@ function getPrintHeaderHTML(title, patientObj) {
         let html = "";
 
         if (mode === 'tracker' || mode === 'comprehensive') { 
-            html += getPrintHeaderHTML("IMMUNIZATION SCHEDULE REPORT", p) + document.getElementById('timelineOutput').innerHTML; 
+            // Swap the old timeline HTML for our new Compact Table generator
+            html += getPrintHeaderHTML("IMMUNIZATION SCHEDULE REPORT", p) + generateCompactVaccineTable(activePatientId); 
+            
             if (mode === 'comprehensive') html += `<div class="page-break"></div>`; 
         }
         

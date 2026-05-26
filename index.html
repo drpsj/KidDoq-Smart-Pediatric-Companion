@@ -668,20 +668,24 @@
 
             <div id="trackerFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                    <h2 class="section-title" style="margin:0; border:none;">💉 Immunization Tracker</h2>
-                    <button onclick="executePrint('tracker')" class="secondary" style="width:auto; border-color:var(--primary); color:var(--primary);">🖨️ Print Schedule</button>
+                    <h2 class="section-title" style="margin:0; border:none;">💉 Schedule Tracker</h2>
+                    <button onclick="executePrint('tracker')" class="secondary" style="width:auto; border-color:var(--primary); color:var(--primary);">🖨️ Print Compact Chart</button>
                 </div>
                 <div class="sub-tabs-nav">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('vaxTimelineTab', this)">📅 Master Timeline</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('vaxAuditTab', this)">📊 Audit & Status</button>
+                    <button class="sub-tab-btn active" onclick="switchSubTab('vaxActiveTab', this)">📅 Active Schedule</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('vaxNISTab', this)">📘 NIS Guidelines</button>
                 </div>
-                <div id="vaxTimelineTab" class="sub-tab-content active">
-                    <div id="timelineOutput"></div>
-                </div>
-                <div id="vaxAuditTab" class="sub-tab-content">
-                    <div class="timeline-section">
-                        <div id="auditOutput" class="tool-grid"></div>
+                
+                <div id="vaxActiveTab" class="sub-tab-content active">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; align-items: start;">
+                        <div id="vaxLeftCol" style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); max-height: 700px; overflow-y: auto;"></div>
+                        <div id="vaxMidCol" style="background:rgba(239, 68, 68, 0.05); padding:15px; border-radius:8px; border:1px dashed var(--danger);"></div>
+                        <div id="vaxRightCol" style="background:rgba(91, 97, 246, 0.05); padding:15px; border-radius:8px; border:1px dashed var(--primary);"></div>
                     </div>
+                </div>
+
+                <div id="vaxNISTab" class="sub-tab-content">
+                    <div class="timeline-section" id="nisReferenceArea"></div>
                 </div>
             </div>
 
