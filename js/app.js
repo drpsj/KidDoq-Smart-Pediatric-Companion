@@ -397,6 +397,9 @@
         if(typeof calculateDose === 'function') calculateDose(); 
         if(typeof calcGrowth === 'function') calcGrowth();
         if(typeof calcMalnutrition === 'function') calcMalnutrition();
+        if(typeof calcNutrition === 'function') calcNutrition();
+        if(typeof renderRecallLog === 'function') renderRecallLog();
+        if(typeof renderFoodDB === 'function' && typeof foodsDb !== 'undefined') renderFoodDB(foodsDb);
         
         if(typeof openClinicalTool === 'function') {
             openClinicalTool('prescriptionFeatureView');
