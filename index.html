@@ -70,9 +70,9 @@
         <div style="width: 33%; display: flex; align-items: center;">
             <div id="headerAvatar" class="avatar-circle" onclick="showAuthScreen()" title="Switch User" style="display:none;"></div>
         </div>
-        <div class="brand-logo" onclick="switchNavTab('homeDashboardView')">
+        <div class="brand-logo" onclick="switchNavTab('homeDashboardView')" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
             <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 32px; height: 32px; object-fit: contain;">
-            <span class="brand-text">KidDoq</span>
+            <span class="brand-text" style="line-height: 1;">KidDoq</span>
         </div>
         <div id="headerPatientText" style="width: 33%; text-align: right; font-size: 0.9rem; font-weight: 600; color: var(--brand-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
     </header>
@@ -483,8 +483,8 @@
                                 <button class="action" onclick="lockVisit()" style="margin:0; padding:14px; background:var(--danger); font-size:1.05rem; box-shadow:var(--shadow-md);">🔒 Sign & Lock to Ledger</button>
                             </div>
                         </div>
-                        
-            <div id="certificateFeatureView" class="view-content">
+
+            </div> </div> <div id="certificateFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">📄 Medical Certificates</h2>
                     <button onclick="executePrint('certificate')" class="secondary" style="width:auto; border-color:var(--warning); color:var(--warning);">🖨️ Print Cert</button>
