@@ -1,71 +1,61 @@
 // js/patient-store.js
 
 /**
- * KidDoq Patient Data Repository
- * Currently uses localStorage, structured asynchronously to allow seamless
- * drop-in of Firebase/Supabase in the future.
+ * KidDoq Firebase Database Bridge
+ * Seamlessly connects the local AppStore to Google Cloud Firestore.
  */
 
+// 1. YOUR FIREBASE KEYS (Paste the config you copied from Phase 2 here)
+const firebaseConfig = {
+    apiKey: "AIzaSyAEjBBT-K3MA-zLD4UDoVwcyD5yMIuUbpk",
+    authDomain: "kiddoq.firebaseapp.com",
+    projectId: "kiddoq",
+    storageBucket: "kiddoq.firebasestorage.app",
+    messagingSenderId: "287851471860",
+    appId: "1:287851471860:web:8dcded798b97ce20b78fa1"
+  };
+
+// 2. INITIALIZE FIREBASE
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const firestore = firebase.firestore();
+
+// 3. THE DB OBJECT (Acts as our background Cloud Sync)
 const DB = {
-    // --- 1. CONFIGURATION (Prep for Cloud Auth) ---
-    _tenantMeta: {
-        doctorId: "doc_local_admin", // Will be replaced by Firebase Auth UID later
-        clinicId: "clinic_local_01"
-    },
-
-    // --- 2. NETWORK SIMULATION ---
-    // Simulates cloud latency to ensure UI doesn't break when moving to async backend
-    _delay: (ms = 100) => new Promise(resolve => setTimeout(resolve, ms)),
-
-    // --- 3. CORE CRUD OPERATIONS ---
-
-    // Fetch the entire patient roster (for the database search view)
+    
+    // Fetch all patients (For the main dashboard list)
     getAllPatients: async function() {
-        await this._delay();
         try {
-            return JSON.parse(localStorage.getItem('nis_patients')) || {};
-        } catch (e) {
-            console.error("Local DB Corruption Error:", e);
+            const snapshot = await firestore.collection('patients').get();
+            let patients = {};
+            snapshot.forEach(doc => {
+                patients[doc.id] = doc.data();
+            });
+            return patients;
+        } catch (error) {
+            console.error("🔥 Firebase Read Error:", error);
             return {};
         }
     },
 
-    // Fetch a specific patient by ID
-    getPatient: async function(patientId) {
-        await this._delay();
-        const patients = await this.getAllPatients();
-        return patients[patientId] || null;
-    },
-
-    // Save or update a patient record
+    // Save or update a patient record seamlessly in the background
     savePatient: async function(patientData) {
-        await this._delay();
-        const patients = await this.getAllPatients();
+        if (!patientData || !patientData.id) return null;
+        
+        try {
+            // Update the cloud timestamp
+            if (!patientData._meta) patientData._meta = {};
+            patientData._meta.lastUpdated = new Date().toISOString();
 
-        // Inject tenant metadata if it's a new record
-        if (!patientData._meta) {
-            patientData._meta = {
-                createdAt: new Date().toISOString(),
-                createdBy: this._tenantMeta.doctorId,
-                clinicId: this._tenantMeta.clinicId
-            };
+            // Push to Firestore (merge: true ensures we don't accidentally overwrite missing fields)
+            await firestore.collection('patients').doc(patientData.id).set(patientData, { merge: true });
+            
+            console.log(`☁️ Synced to Cloud: ${patientData.name}`);
+            return patientData;
+        } catch (error) {
+            console.error("🔥 Firebase Write Error:", error);
+            return null;
         }
-        patientData._meta.lastUpdated = new Date().toISOString();
-
-        patients[patientData.id] = patientData;
-        localStorage.setItem('nis_patients', JSON.stringify(patients));
-        return patientData;
-    },
-
-    // Delete a patient (Prep for privacy compliance)
-    deletePatient: async function(patientId) {
-        await this._delay();
-        const patients = await this.getAllPatients();
-        if(patients[patientId]) {
-            delete patients[patientId];
-            localStorage.setItem('nis_patients', JSON.stringify(patients));
-            return true;
-        }
-        return false;
     }
 };
