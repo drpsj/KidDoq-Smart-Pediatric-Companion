@@ -204,7 +204,7 @@
         @media screen { 
             .print-container { 
                 position: absolute !important; z-index: -9999 !important; 
-                opacity: 0 !important; pointer-events: none !important; 
+                visibility: hidden !important; pointer-events: none !important; 
             } 
         }
         @media print {
