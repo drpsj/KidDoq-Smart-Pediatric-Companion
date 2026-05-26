@@ -125,19 +125,23 @@
         saveAndRegisterPatient(true);
     }
 
-    async function saveAndRegisterPatient(isBackgroundUpdate = false) {
-        const id = activePatientId || 'p_' + Date.now();
+    // --- PATIENT REGISTRY CONTROLLER ---
+    window.saveAndRegisterPatient = async function(isBackgroundUpdate = false) {
+        // 1. Secure Read: Use AppStore for IDs
+        const activeId = AppStore.getActivePatientId();
+        let nameStr = document.getElementById('pName').value.trim() || "Anonymous";
+        const id = activeId || 'p_' + nameStr.replace(/\s+/g, '').toLowerCase() + '_' + Date.now();
+        
         let y = parseInt(document.getElementById('ageYrs').value) || 0;
         let m = parseInt(document.getElementById('ageMos').value) || 0;
-        currentPatientAgeInMonths = (y * 12) + m;
-        let nameStr = document.getElementById('pName').value.trim() || "Anonymous";
+        let currentPatientAgeInMonths = (y * 12) + m;
         
-        // 1. Fetch existing data (if any) to preserve Rx and Diet logs via the async DB
-        let existingData = await DB.getPatient(id) || {
-            givenDates: {}, achievedMilestones: {}, rxList: [], dietLogs: []
+        // 2. Fetch safely from LOCAL Vault (Instant, no network lag)
+        let existingData = AppStore.getPatient(id) || {
+            givenDates: {}, achievedMilestones: {}, rxList: [], dietLogs: [], visits: []
         };
         
-        // 2. Build the updated object
+        // 3. Build the updated object
         const patientObj = {
             ...existingData,
             id: id, 
@@ -154,28 +158,47 @@
             totalMonths: currentPatientAgeInMonths
         };
         
-        // 3. Save to the async DB
-        await DB.savePatient(patientObj);
+        // 4. INSTANT LOCAL SAVE: Tell the Vault to lock it in and set as active
+        AppStore.savePatient(patientObj);
+        AppStore.setActivePatient(id);
         
-        // 4. Update the active session variables
-        globalPatientsStore[id] = patientObj; 
-        activePatientId = id;
+        if(document.getElementById('headerPatientText')) {
+            document.getElementById('headerPatientText').innerText = `👤 ${nameStr}`;
+        }
         
-        if(document.getElementById('headerPatientText')) document.getElementById('headerPatientText').innerText = `👤 ${nameStr}`;
+        // 5. ASYNC CLOUD SYNC: Fire this off to Firebase in the background
+        if (typeof DB !== 'undefined') {
+            if(!isBackgroundUpdate && typeof showSystemToast === 'function') {
+                showSystemToast("☁️ Syncing to Cloud...");
+            }
+            // We await here to ensure cloud persistence, but local UI can proceed
+            await DB.savePatient(patientObj); 
+        }
         
+        // 6. UI Updates (Delegated safely)
         if(!isBackgroundUpdate) {
-            let modal = document.getElementById('registryModal');
-            if(modal) modal.classList.remove('active');
-            triggerActiveWorkspaceBuild(id); 
+            // Use our ViewController Traffic Cop if it exists
+            if (typeof ViewController !== 'undefined') {
+                ViewController.hideModal('registryModal');
+            } else {
+                let modal = document.getElementById('registryModal');
+                if(modal) modal.classList.remove('active');
+            }
+            
+            // Re-render the database and load the active file
+            if (typeof loadPatientFromDB === 'function') loadPatientFromDB(id);
+            if (typeof renderFullDatabase === 'function') renderFullDatabase();
+            
         } else {
+            // Background update triggers for active workspace tools
             if(document.getElementById('activeWorkspace') && document.getElementById('activeWorkspace').style.display === 'block') {
-                if(typeof calculateDose === 'function') calculateDose(); 
+                if(typeof calcInlineDose === 'function') calcInlineDose(); 
                 if(typeof calcGrowth === 'function') calcGrowth(); 
                 if(typeof calcMalnutrition === 'function') calcMalnutrition(); 
                 if(typeof calcNutrition === 'function') calcNutrition();
             }
         }
-    }
+    };
 
     function updateStickyBanner(pId) {
         const p = globalPatientsStore[pId];
