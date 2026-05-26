@@ -81,6 +81,7 @@ const drugsDb = [
     { id: "gi_07", name: "Loperamide 1mg/5ml syrup [Imodium]", doseMg: 0.1, doseType: "perDose", maxMg: 2, div: 1, defaultFreq: "BID (Avoid <2 yrs)", conc: 1, vol: 5, category: "git" },
     { id: "gi_08", name: "Lactulose 66.7g/100ml syrup [Duphalac]", doseMg: 667, doseType: "perDay", maxMg: 2000, div: 2, defaultFreq: "BID", conc: 667, vol: 1, category: "git" },
     { id: "gi_09", name: "Glycerin Suppository [Hallens]", doseMg: 1, doseType: "fixed", div: 1, defaultFreq: "PRN", conc: 1, vol: 1, category: "git" },
+    { id: "gi_10", name: "Syp Zinc (20mg/5ml)", doseMg: 20, doseType: "fixed", div: 1, defaultFreq: "OD", conc: 20, vol: 5, category: "git" },
 
     // --- RESPIRATORY ---
     { id: "rs_01", name: "Ascoril LS Junior Syrup", doseMg: 0, doseType: "fixed", div: 3, defaultFreq: "TID", conc: 0, vol: 5, category: "respiratory" },

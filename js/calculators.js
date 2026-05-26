@@ -525,34 +525,31 @@ function runHomeDoseCalc() {
         let advice = "";
         let newRx = [];
 
-        // PROTOCOL ROUTER (Now using the auto-engine!)
+        // PROTOCOL ROUTER
         if (setId === 'os_aom') {
             dx = "Acute Otitis Media";
             advice = "Keep ear dry. Do not insert cotton buds. Follow up in 5 days or earlier if fever spikes.";
-            
-            // Look how clean this is! Just call the ID from drugsDb.
-            newRx.push(autoCalcFromDB("amox_400", "BID x 5 Days"));
-            newRx.push(autoCalcFromDB("pcm_250", "SOS for Ear Pain / Fever"));
+            newRx.push(autoCalcFromDB("ab_05", "BID x 5 Days")); // Amox-Clav 228
+            newRx.push(autoCalcFromDB("ap_04", "SOS for Ear Pain / Fever")); // PCM 250
         } 
         else if (setId === 'os_uri') {
             dx = "Viral Upper Respiratory Infection (URI)";
-            advice = "Maintain hydration. Steam inhalation twice daily. Elevate head end of bed slightly. Warning signs: fast breathing, chest indrawing.";
-            newRx.push(autoCalcFromDB("pcm_250", "SOS for Fever"));
-            // Manual overrides are still allowed for things like drops/creams!
+            advice = "Maintain hydration. Steam inhalation twice daily. Elevate head end of bed slightly.";
+            newRx.push(autoCalcFromDB("ap_04", "SOS for Fever")); // PCM 250
             newRx.push({ name: "Saline Nasal Drops (0.65%)", vol: "2", unit: "drops", freq: "TID in both nostrils" });
         } 
         else if (setId === 'os_age') {
             dx = "Acute Gastroenteritis (Mild Dehydration)";
-            advice = "Strict ORS after every loose stool. Continue normal feeding/breastfeeding. Avoid sugary juices. Return immediately if lethargic or decreased urine output.";
+            advice = "Strict ORS after every loose stool. Continue normal feeding. Avoid sugary juices.";
             newRx.push({ name: "ORS Sachet", vol: "1", unit: "packet", freq: "Mix in 1L water, sip 50-100ml after every loose stool" });
-            newRx.push(autoCalcFromDB("zinc_20", "OD x 14 Days"));
-            newRx.push(autoCalcFromDB("ondan_2", "STAT for vomiting"));
+            newRx.push(autoCalcFromDB("gi_10", "OD x 14 Days")); // Zinc
+            newRx.push(autoCalcFromDB("gi_03", "STAT for vomiting")); // Ondansetron
         } 
         else if (setId === 'os_fever') {
             dx = "Acute Febrile Illness";
-            advice = "Tepid sponging for high fever. Ensure adequate fluid intake. Monitor for rashes or decreased oral intake.";
-            newRx.push(autoCalcFromDB("pcm_250", "SOS Q6H for Fever"));
-            newRx.push(autoCalcFromDB("ibu_100", "SOS Q8H for High Grade Fever"));
+            advice = "Tepid sponging for high fever. Ensure adequate fluid intake. Monitor for rashes.";
+            newRx.push(autoCalcFromDB("ap_04", "SOS Q6H for Fever")); // PCM 250
+            newRx.push(autoCalcFromDB("ap_11", "SOS Q8H for High Grade Fever")); // Ibuprofen 100
         }
 
         // Failsafe: Remove any nulls if a drug ID was typed wrong

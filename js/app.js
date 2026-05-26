@@ -480,52 +480,6 @@
         if(greetingEl) greetingEl.innerHTML = `${timeGreet}, ${docName} <span style="font-size:1.4rem;">👋</span>`;
     }
 
-    function populateHomeDrugs() {
-        const cat = document.getElementById('homeCategory').value; 
-        const formSelect = document.getElementById('homeFormulation');
-        formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
-        if(cat && drugDb[cat]) {
-            let combined = [...drugDb[cat], ...(customDrugsStore[cat] || [])];
-            combined.forEach((drug, idx) => { 
-                let opt = document.createElement('option'); opt.value = idx; 
-                opt.text = drug.name + (drug.brand ? ` [${drug.brand}]` : ""); 
-                formSelect.add(opt); 
-            });
-        }
-    }
-
-    function runHomeDoseCalc() {
-        const w = parseFloat(document.getElementById('homeWeight').value); 
-        const c = document.getElementById('homeCategory').value; 
-        const i = document.getElementById('homeFormulation').value;
-        const out = document.getElementById('homeDoseResult');
-        
-        if(!w || !c || i === "") { out.innerHTML = ""; return; }
-        
-        let combined = [...(drugDb[c] || []), ...(customDrugsStore[c] || [])];
-        const drug = combined[i]; if (!drug) return;
-        
-        let volMl = 0; let details = ""; let unitStr = drug.vol === 1 ? 'Unit/Tab' : 'mL';
-        
-        if (drug.doseType === 'fixed') {
-            volMl = drug.vol;
-        } else {
-            let targetMg = drug.doseType === 'perDay' ? (w * drug.doseMg) / (drug.div || 1) : (w * drug.doseMg);
-            if (drug.maxMg && targetMg > drug.maxMg) { targetMg = drug.maxMg; details = `Max cap: ${drug.maxMg}mg`; } 
-            else { details = `${targetMg.toFixed(1)} mg/dose`; }
-            volMl = (targetMg * (drug.vol || 1)) / (drug.conc || 1); 
-        }
-        
-        out.innerHTML = `
-            <div style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); border-radius:12px; padding:16px; margin-top:10px;">
-                <div style="font-size:0.75rem; color:rgba(255,255,255,0.8); text-transform:uppercase;">Administer</div>
-                <div style="font-size:2.2rem; font-weight:800; color:white; line-height:1;">${volMl.toFixed(1)} <span style="font-size:1rem; font-weight:600;">${unitStr}</span></div>
-                <div style="font-size:0.95rem; font-weight:600; color:var(--brand-cyan); margin-top:5px;">${drug.freq}</div>
-                ${details ? `<div style="font-size:0.75rem; color:rgba(255,255,255,0.6); margin-top:4px;">Target: ${details}</div>` : ''}
-            </div>
-        `;
-    }
-
     // --- PHASE 4: DOCTOR AUTHENTICATION ENGINE ---
     let doctorProfiles = JSON.parse(localStorage.getItem('kiddoq_profiles')) || [];
     let activeDoctorId = localStorage.getItem('kiddoq_active_doctor') || null;
