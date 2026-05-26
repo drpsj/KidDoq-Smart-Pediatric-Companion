@@ -19,7 +19,7 @@
         { id: 'growthFeatureView', name: 'Growth Curves', icon: 'icon-growth.png' },
         { id: 'trackerFeatureView', name: 'Vaccination', icon: 'icon-vax.png' },
         { id: 'erFeatureView', name: 'ER & Resus', icon: 'icon-er.png' },
-        { id: 'milestoneFeatureView', name: 'Milestones', icon: 'icon-miles.jpg' },
+        { id: 'milestoneFeatureView', name: 'Milestones', icon: 'icon-miles.png' },
         { id: 'malnutritionFeatureView', name: 'Triage & MAC', icon: 'icon-triage.png' },
         { id: 'nutritionFeatureView', name: 'Diet Recall', icon: 'icon-diet.png' },
         { id: 'jaundiceFeatureView', name: 'Jaundice', icon: 'icon-jaundice.png' },
