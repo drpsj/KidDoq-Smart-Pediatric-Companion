@@ -1,14 +1,13 @@
-// --- 2. GLOBAL STATE ---
-    let appSettings;
-    try { appSettings = JSON.parse(localStorage.getItem('clinic_settings')) || { docName: "Dr. Peter Suraj Joseph", qual: "MBBS, MD (Pediatrics)", regNo: "", clinicName: "Pediatric Clinical Hub", tagline: "", phone: "", address: "", logo: "", isDark: false }; } catch(e) { appSettings = { docName: "Dr. Peter Suraj Joseph", qual: "MBBS, MD (Pediatrics)", regNo: "", clinicName: "Pediatric Clinical Hub", tagline: "", phone: "", address: "", logo: "", isDark: false }; }
+// --- 2. GLOBAL STATE (Secured via AppStore) ---
+    // LEGACY BRIDGE: We keep these variable names so older files don't crash,
+    // but they now pull their initial state directly from the secure Vault.
+    let appSettings = AppStore.getSettings();
+    let globalPatientsStore = AppStore.getAllPatients(); 
+    let activePatientId = AppStore.getActivePatientId(); 
 
-    let globalPatientsStore;
-    try { globalPatientsStore = JSON.parse(localStorage.getItem('nis_patients')) || {}; } catch(e) { globalPatientsStore = {}; }
-    
     let customDrugsStore;
     try { customDrugsStore = JSON.parse(localStorage.getItem('custom_drugs')) || { "antibiotics": [], "antipyretics": [], "antihistamines": [], "git": [], "respiratory": [] }; } catch(e) { customDrugsStore = { "antibiotics": [], "antipyretics": [], "antihistamines": [], "git": [], "respiratory": [] }; }
 
-    let activePatientId = null; 
     let currentPatientAgeInMonths = 0; 
     let wtChartInstance = null; 
     let htChartInstance = null;
@@ -386,7 +385,8 @@
     }
 
     function closePatientFile() {
-        activePatientId = null;
+        AppStore.clearActivePatient(); // Tell the Vault
+        activePatientId = null; // Update the legacy bridge
         
         // Hide the sticky banner and tools
         document.getElementById('activeWorkspace').style.display = 'none';
@@ -401,15 +401,17 @@
     }
 
     async function loadPatientFromDB(id) {
-        activePatientId = id;
+        AppStore.setActivePatient(id); // Tell the Vault
+        activePatientId = id; // Update the legacy bridge
         
-        let p = await DB.getPatient(id);
+        // Fetch securely from the vault (No more fake network delays!)
+        let p = AppStore.getPatient(id);
         if (!p) {
             if(typeof showSystemToast === 'function') showSystemToast("⚠️ Error loading patient data.");
             return;
         }
         
-        // 🚨 THE CRITICAL FIX: Sync the downloaded patient to active memory 🚨
+        // Sync the legacy bridge for older scripts
         if(typeof globalPatientsStore !== 'undefined') globalPatientsStore[id] = p;
         
         document.getElementById('pName').value = p.name || "";
@@ -439,7 +441,6 @@
         
         if(typeof openClinicalTool === 'function') {
             openClinicalTool('prescriptionFeatureView');
-            // FIX: Using safe double quotes for the selector
             let ledgerTabBtn = document.querySelector('[onclick*="rxNotesTab"]');
             if(ledgerTabBtn) switchSubTab('rxNotesTab', ledgerTabBtn);
         }
