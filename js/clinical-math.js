@@ -104,11 +104,36 @@ const ClinicalMath = (function() {
         return computed;
     }
 
+    // 5. Anthropometry & Malnutrition Engine
+    function calculateExpectedWeight(ageYrs, ageMos) {
+        if (ageYrs === 0 && ageMos === 0) return null;
+        if (ageYrs < 1) return (ageMos + 9) / 2;
+        if (ageYrs >= 1 && ageYrs <= 6) return (ageYrs * 2) + 8;
+        if (ageYrs >= 7 && ageYrs <= 12) return ((ageYrs * 7) - 5) / 2;
+        return null;
+    }
+
+    function evaluateMAC(macCm) {
+        if (!macCm || macCm <= 0) return null;
+        if (macCm < 11.5) return { status: "Severe Acute Malnutrition (SAM)", color: "var(--danger)" };
+        if (macCm >= 11.5 && macCm <= 12.5) return { status: "Moderate Acute Malnutrition (MAM)", color: "var(--warning)" };
+        return { status: "Normal Nutritional Status", color: "var(--success)" };
+    }
+
+    function classifyWellcomeTrust(wfaPercent, hasOedema) {
+        if (wfaPercent > 80) return "Normal / Well Nourished";
+        if (wfaPercent >= 60 && wfaPercent <= 80) return hasOedema ? "Kwashiorkor" : "Underweight";
+        return hasOedema ? "Marasmic-Kwashiorkor" : "Marasmus";
+    }
+
     // Expose the pure functions
     return {
         computeDose,
         getUnit,
         evaluateReverseAudit,
-        calculateVaccineTimeline // <-- ADD THIS LINE
+        calculateVaccineTimeline,
+        calculateExpectedWeight, // <-- NEW
+        evaluateMAC,             // <-- NEW
+        classifyWellcomeTrust    // <-- NEW
     };
 })();

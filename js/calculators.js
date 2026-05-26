@@ -654,3 +654,59 @@ function runHomeDoseCalc() {
         // 5. Refresh the Live Preview
         if(typeof renderRxCartList === 'function') renderRxCartList();
     }
+
+    // --- MALNUTRITION & ANTHROPOMETRY CONTROLLER ---
+    window.evalMAC = function(macVal) {
+        const out = document.getElementById('macOutput');
+        if (!out) return;
+        
+        // 1. Delegate math to the Pure Math Engine
+        const result = ClinicalMath.evaluateMAC(parseFloat(macVal));
+        
+        // 2. Update UI
+        if (!result) { 
+            out.innerHTML = ""; 
+            return; 
+        }
+        out.innerHTML = `MAC Status: <span style="color:${result.color};">${result.status}</span>`;
+    };
+
+    window.calcMalnutrition = function() {
+        if (!activePatientId) return;
+        
+        // 1. Secure Read from Vault
+        const p = AppStore.getPatient(activePatientId);
+        if (!p) return;
+
+        const out = document.getElementById('malnGridOutput');
+        if (!out) return;
+
+        const ageYrs = parseInt(p.ageYrs) || 0;
+        const ageMos = parseInt(p.ageMos) || 0;
+        const actualWt = parseFloat(p.weight) || 0;
+        const hasOedema = document.getElementById('malnOedemaToggle') ? document.getElementById('malnOedemaToggle').checked : false;
+
+        // 2. Ask the Math Engine for Expected Weight
+        const expectedWt = ClinicalMath.calculateExpectedWeight(ageYrs, ageMos);
+        
+        if (!expectedWt || actualWt === 0) {
+            out.innerHTML = "Awaiting complete age and weight parameters...";
+            return;
+        }
+
+        // Calculate Percentages
+        const wfaPercent = (actualWt / expectedWt) * 100;
+        
+        // 3. Ask the Math Engine for Classifications
+        const wellcomeClass = ClinicalMath.classifyWellcomeTrust(wfaPercent, hasOedema);
+
+        // 4. Render UI safely
+        out.innerHTML = `
+            <div style="margin-bottom:10px;">Expected Weight (Weech): <b>${expectedWt.toFixed(1)} kg</b></div>
+            <div style="margin-bottom:10px;">Actual Weight for Age: <b>${wfaPercent.toFixed(1)}%</b></div>
+            <div style="padding:10px; border-radius:6px; background:rgba(91,97,246,0.1); border:1px solid var(--primary);">
+                Wellcome Trust Classification:<br>
+                <b style="font-size:1.1rem; color:var(--primary-dark);">${wellcomeClass}</b>
+            </div>
+        `;
+    };
