@@ -215,26 +215,72 @@ function getPrintHeaderHTML(title, patientObj) {
         }, 500);
     }
 
-    function sendWACompReport() {
-        if(!activePatientId) { 
+    // --- WHATSAPP AUTOMATION ENGINE ---
+    window.sendWACompReport = function() {
+        // 1. Secure Read from Vault
+        const activeId = AppStore.getActivePatientId();
+        if(!activeId) { 
             if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!"); 
             return; 
         }
-        const p = globalPatientsStore[activePatientId];
-        let txt = `*Pediatric Clinical Report*\\nName: ${p.name}\\nAge: ${p.ageYrs}Y ${p.ageMos}M\\nWeight: ${p.weight} kg\\n\\n`;
-        if(p.diagnosis) txt += `*Diagnosis:* ${p.diagnosis}\\n\\n`;
-        if(p.rxList && p.rxList.length > 0) {
-            txt += `*Active Prescriptions:*\\n`;
-            p.rxList.forEach((rx, i) => { txt += `${i+1}. ${rx.name} - ${rx.vol} ${rx.unit || 'mL'} (${rx.freq})\\n`; });
-            txt += `\\n`;
+        
+        const p = AppStore.getPatient(activeId);
+        const settings = AppStore.getSettings(); // Pull doctor info from settings vault
+        if (!p) return;
+
+        // 2. Build the Message (Using WhatsApp Markdown: *bold*, _italic_)
+        let msg = `🏥 *${settings.clinicName || 'Pediatric Clinical Hub'}*\n`;
+        msg += `👨‍⚕️ *${settings.docName || 'Doctor'}*\n`;
+        msg += `-----------------------------------\n\n`;
+        
+        msg += `👤 *Patient:* ${p.name}\n`;
+        msg += `📅 *Age/Wt:* ${p.ageYrs || 0}Y ${p.ageMos || 0}M | ${p.weight} kg\n\n`;
+
+        if (p.diagnosis) {
+            msg += `🩺 *Diagnosis:* ${p.diagnosis}\n\n`;
         }
-        if(p.upcomingVaccinesForWhatsapp && p.upcomingVaccinesForWhatsapp.length > 0) {
-            txt += `*Upcoming Vaccines:*\\n${p.upcomingVaccinesForWhatsapp.join(", ")}\\n\\n`;
+
+        if (p.rxList && p.rxList.length > 0) {
+            msg += `💊 *Active Prescriptions:*\n`;
+            p.rxList.forEach((rx, i) => { 
+                msg += `${i+1}. *${rx.name}*\n   ↳ ${rx.vol} ${rx.unit || 'mL'} (${rx.freq})\n`;
+                if (rx.details) msg += `   ℹ️ _${rx.details}_\n`;
+            });
+            msg += `\n`;
         }
-        if(p.advice) txt += `*Advice:*\\n${p.advice}\\n\\n`;
-        if(p.tests) txt += `*Investigations:*\\n${p.tests}\\n\\n`;
-        if(p.review) txt += `*Next Review:* ${new Date(p.review).toLocaleDateString('en-IN')}\\n\\n`;
-        txt += `Please visit the clinic for your detailed follow-up.`;
-        const targetPhone = p.phone ? p.phone.replace(/[^0-9]/g, "") : "";
-        window.open(`https://wa.me/${targetPhone}?text=${encodeURIComponent(txt)}`, '_blank');
-    }
+
+        if (p.advice) {
+            msg += `💡 *Care & Advice:*\n${p.advice}\n\n`;
+        }
+
+        if (p.tests) {
+            msg += `🩸 *Investigations:* ${p.tests}\n\n`;
+        }
+
+        // Connects perfectly to the Vaccine Engine we built earlier!
+        if (p.upcomingVaccinesForWhatsapp && p.upcomingVaccinesForWhatsapp.length > 0) {
+            msg += `💉 *Upcoming Vaccines:*\n- ${p.upcomingVaccinesForWhatsapp.join('\n- ')}\n\n`;
+        }
+
+        if (p.review) {
+            const reviewDate = new Date(p.review).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            msg += `🔄 *Next Review:* ${reviewDate}\n\n`;
+        }
+
+        msg += `_Note: This is an auto-generated clinical summary._`;
+
+        // 3. Format the Phone Number safely
+        let phone = p.phone ? p.phone.replace(/\D/g, '') : ""; // Strip non-numeric characters
+        // If it's exactly 10 digits, assume India (+91)
+        if (phone && phone.length === 10) {
+            phone = "91" + phone;
+        }
+
+        // 4. Encode and Dispatch to WhatsApp API
+        const encodedMsg = encodeURIComponent(msg);
+        const waLink = phone ? `https://wa.me/${phone}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
+
+        // Launch in a new tab (Will trigger WhatsApp Web on PC, or WhatsApp App on Mobile)
+        window.open(waLink, '_blank');
+        if(typeof showSystemToast === 'function') showSystemToast("📱 Opening WhatsApp...");
+    };
