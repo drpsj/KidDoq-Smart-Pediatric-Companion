@@ -159,7 +159,7 @@
         document.getElementById('dob').value = ""; document.getElementById('ageYrs').value = ""; document.getElementById('ageMos').value = "";
         document.getElementById('pWeight').value = ""; document.getElementById('htCm').value = ""; document.getElementById('hcCm').value = "";
         if(document.getElementById('jeEndemic')) document.getElementById('jeEndemic').checked = false; 
-        document.getElementById('calcWeight').value = ""; document.getElementById('fluidWeight').value = ""; document.getElementById('crashWeight').value = "";
+        if(document.getElementById('calcWeight')) document.getElementById('calcWeight').value = ""; document.getElementById('fluidWeight').value = ""; document.getElementById('crashWeight').value = "";
         
         switchMainFeature('homeDashboardView'); 
         
@@ -426,7 +426,7 @@
         if(document.getElementById('rxDiagnosis')) document.getElementById('rxDiagnosis').value = p.diagnosis || "";
         
         currentPatientAgeInMonths = p.totalMonths || 0;
-        document.getElementById('calcWeight').value = p.weight || "";
+        if(document.getElementById('calcWeight')) document.getElementById('calcWeight').value = p.weight || "";
         if(document.getElementById('headerPatientText')) document.getElementById('headerPatientText').innerText = `👤 ${p.name}`;
         
         if (typeof triggerActiveWorkspaceBuild === 'function') triggerActiveWorkspaceBuild(id);

@@ -30,8 +30,13 @@ function getDrugUnit(drug) {
 
 // --- 1. UNIFIED DOSAGE ENGINE (For the 🧮 Dose Calc Tab) ---
 function populateDrugs() {
-    const cat = document.getElementById('drugCategory').value;
+    const catElem = document.getElementById('drugCategory');
+    if (!catElem) return; // Failsafe: Exit if the old UI tab is deleted
+    
+    const cat = catElem.value;
     const formSelect = document.getElementById('drugFormulation');
+    if (!formSelect) return;
+    
     formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
     if(!cat) return;
     
