@@ -50,6 +50,9 @@ function populateDrugs() {
 }
 
 function calculateDose() {
+    const wtElem = document.getElementById('calcWeight');
+    if (!wtElem) return; // THE GATEKEEPER: Stop if the old Dose Calc tab is deleted
+    
     const weight = parseFloat(document.getElementById('calcWeight').value);
     const drugId = document.getElementById('drugFormulation').value;
     const outputArea = document.getElementById('calcOutputArea');

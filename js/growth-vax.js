@@ -124,12 +124,20 @@
     }
 
     function calcGrowth() {
-        const wt = parseFloat(document.getElementById('pWeight').value || document.getElementById('calcWeight').value || 10);
-        let htObj = document.getElementById('htCm'); let htOnTheGoObj = document.getElementById('triageHt');
+        // Safe check for the weight boxes
+        const pWtElem = document.getElementById('pWeight');
+        const cWtElem = document.getElementById('calcWeight');
+        const wt = parseFloat((pWtElem ? pWtElem.value : 0) || (cWtElem ? cWtElem.value : 0) || 10);
+        
+        let htObj = document.getElementById('htCm'); 
+        let htOnTheGoObj = document.getElementById('triageHt');
         const ht = parseFloat( (htObj && htObj.value) ? htObj.value : (htOnTheGoObj ? htOnTheGoObj.value : 0) );
+        
         let totalM = activePatientId ? globalPatientsStore[activePatientId].totalMonths : (parseInt(document.getElementById('calcQuickAge') ? document.getElementById('calcQuickAge').value : 0) || 0);
         let pGender = document.getElementById('gender') ? document.getElementById('gender').value : 'male';
-        if(!ht || isNaN(ht)) return; drawGrowthCharts(totalM, wt, ht, pGender);
+        
+        if(!ht || isNaN(ht)) return; 
+        drawGrowthCharts(totalM, wt, ht, pGender);
     }
 
     function syncGrowthFieldsAndCalc() { let v = document.getElementById('htCmOnTheGo').value; document.getElementById('htCm').value = v; if(activePatientId) saveAndRegisterPatient(true); else calcGrowth(); }
