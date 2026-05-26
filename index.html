@@ -559,7 +559,11 @@
             </div>
 
             <div id="nutritionFeatureView" class="view-content">
-                <h2 class="section-title">🍎 Nutrition Tracker & 24h Recall</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">🍎 Nutrition Tracker & 24h Recall</h2>
+                    <button onclick="executePrint('nutrition')" class="secondary" style="width:auto; border-color:var(--success); color:var(--success);">🖨️ Print Diet Plan</button>
+                </div>
+                
                 <div class="sub-tabs-nav">
                     <button class="sub-tab-btn active" onclick="switchSubTab('nutriCalcTab', this)">🧮 ICMR Target Metrics</button>
                     <button class="sub-tab-btn" onclick="switchSubTab('nutriRecallTab', this)">🍽️ 24h Diet Recall Board</button>
@@ -578,6 +582,7 @@
                     </div>
                     <div id="recallListArea" style="margin-top:1.5rem;"></div>
                 </div>
+</div>
                 <div id="nutriDBTab" class="sub-tab-content">
                     <div class="timeline-section" style="margin-bottom:1rem; padding:1rem; font-size:0.85rem; line-height:1.5;">
                         <h4 style="margin:0 0 10px 0; color:var(--primary);">Key Micronutrient Dietary Sources</h4>

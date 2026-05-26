@@ -114,7 +114,80 @@ function getPrintHeaderHTML(title, patientObj) {
         return html;
     };
 
-    function executePrint(mode) {
+    // --- NUTRITION & DIET CHART GENERATOR ---
+    window.generateNutritionReport = function(pId) {
+        const p = AppStore.getPatient(pId);
+        if (!p) return "<p>No patient data found.</p>";
+
+        // Fallbacks in case diet data hasn't been filled out yet
+        const logs = p.dietLogs || [];
+        const advice = p.advice || "Follow a balanced, age-appropriate diet as discussed.";
+        
+        let html = `
+        <style>
+            .diet-print-wrapper { font-family: sans-serif; font-size: 12px; color: #333; }
+            .diet-section-title { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 4px; margin-top: 20px; font-size: 14px; text-transform: uppercase; }
+            .diet-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+            .diet-table th, .diet-table td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+            .diet-table th { background-color: #f3f4f6; color: #1e3a8a; font-weight: bold; }
+            .diet-advice-box { background-color: #f8fafc; border: 1px dashed #94a3b8; padding: 12px; border-radius: 6px; margin-top: 15px; font-style: italic; }
+        </style>
+        
+        <div class="diet-print-wrapper">
+            <h3 class="diet-section-title">🍽️ 24-Hour Dietary Recall Log</h3>`;
+
+        if (logs.length > 0) {
+            html += `
+            <table class="diet-table">
+                <thead>
+                    <tr><th style="width:15%;">Meal</th><th style="width:35%;">Food Item</th><th>Est. Calories</th><th>Est. Protein (g)</th></tr>
+                </thead>
+                <tbody>`;
+            
+            let totalCals = 0;
+            let totalPro = 0;
+            
+            logs.forEach(log => {
+                const cals = parseFloat(log.calories) || 0;
+                const pro = parseFloat(log.protein) || 0;
+                totalCals += cals;
+                totalPro += pro;
+                
+                html += `<tr>
+                    <td><b>${log.mealType || '-'}</b></td>
+                    <td>${log.foodName || '-'} <i>(${log.qty || ''})</i></td>
+                    <td>${cals.toFixed(0)} kcal</td>
+                    <td>${pro.toFixed(1)} g</td>
+                </tr>`;
+            });
+
+            html += `
+                <tr style="background-color:#eff6ff; font-weight:bold;">
+                    <td colspan="2" style="text-align:right;">24h Total Intake:</td>
+                    <td>${totalCals.toFixed(0)} kcal</td>
+                    <td>${totalPro.toFixed(1)} g</td>
+                </tr>
+                </tbody>
+            </table>`;
+        } else {
+            html += `<p style="color:#6b7280; font-style:italic;">No dietary recall logged for this visit.</p>`;
+        }
+
+        html += `
+            <h3 class="diet-section-title">💡 Doctor's Nutritional Advice</h3>
+            <div class="diet-advice-box">
+                ${advice.replace(/\n/g, '<br>')}
+            </div>
+            
+            <div style="margin-top:20px; font-size:10px; color:#6b7280; text-align:center;">
+                *Caloric and protein requirements are based on ICMR/NIN guidelines for Indian children. Please consult the doctor before making drastic dietary changes.
+            </div>
+        </div>`;
+
+        return html;
+    };
+
+    window.executePrint = function(mode) {
         // FIX 1: Allow both 'prescription' and 'rx' to pass the gatekeeper
         if (!activePatientId && mode !== 'prescription' && mode !== 'rx' && mode !== 'certificate') { 
             if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select or add a patient first!"); 
@@ -122,7 +195,9 @@ function getPrintHeaderHTML(title, patientObj) {
         }
         const engine = document.getElementById('printEngine'); 
         
-        let p = globalPatientsStore[activePatientId];
+        // Use AppStore if available, fallback to global store just in case
+        let p = (typeof AppStore !== 'undefined' ? AppStore.getPatient(activePatientId) : globalPatientsStore[activePatientId]);
+        
         if (!p) {
             p = {
                 name: document.getElementById('pName').value || "____________________",
@@ -139,6 +214,12 @@ function getPrintHeaderHTML(title, patientObj) {
         }
         
         let html = "";
+
+        // --- 🍎 NEW: NUTRITION & DIET PLAN ---
+        if (mode === 'nutrition') {
+            html += getPrintHeaderHTML("PEDIATRIC NUTRITION & DIET PLAN", p);
+            html += generateNutritionReport(activePatientId);
+        }
 
         if (mode === 'tracker' || mode === 'comprehensive') { 
             // Swap the old timeline HTML for our new Compact Table generator
@@ -199,16 +280,19 @@ function getPrintHeaderHTML(title, patientObj) {
             html += getPrintHeaderHTML(cTitle, p);
             let cBodyText = document.getElementById('certBody') ? document.getElementById('certBody').value : "No content provided.";
             cBodyText = cBodyText.replace(/\n/g, '<br>');
-            let sigHtml = appSettings.signature ? `<img src="${appSettings.signature}" style="max-height:60px; margin-bottom:5px;"><br>` : `<br><br><br>`;
+            
+            // Access appSettings securely if possible
+            const sigSettings = typeof AppStore !== 'undefined' ? AppStore.getSettings() : (typeof appSettings !== 'undefined' ? appSettings : {});
+            let sigHtml = sigSettings.signature ? `<img src="${sigSettings.signature}" style="max-height:60px; margin-bottom:5px;"><br>` : `<br><br><br>`;
             
             html += `<div style="line-height:2; font-size:16px; margin-top:20px; text-align:justify; font-family:sans-serif;">${cBodyText}</div>`;
-            html += `<div style="margin-top: 80px; width: 250px; text-align: center; float:right; font-family:sans-serif;">${sigHtml}<b>${appSettings.docName || 'Doctor'}</b><br>Authorized Signature</div><div style="clear:both;"></div>`;
+            html += `<div style="margin-top: 80px; width: 250px; text-align: center; float:right; font-family:sans-serif;">${sigHtml}<b>${sigSettings.docName || 'Doctor'}</b><br>Authorized Signature</div><div style="clear:both;"></div>`;
         }
 
         if (mode === 'comprehensive') {
             html += getPrintHeaderHTML("COMPREHENSIVE CLINICAL SUMMARY", p);
             
-            let maln = extractToolResult('malnGridOutput'); 
+            let maln = typeof extractToolResult === 'function' ? extractToolResult('malnGridOutput') : ""; 
             if(maln) html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Triage & Anthropometry</h3>${maln}`;
             
             html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">Longitudinal Medical History</h3>`;
@@ -231,7 +315,9 @@ function getPrintHeaderHTML(title, patientObj) {
             
             html += `<div class="page-break"></div>`;
             html += getPrintHeaderHTML("IMMUNIZATION STATUS", p);
-            html += document.getElementById('timelineOutput').innerHTML; 
+            
+            // FIX 3: Replaced the old DOM pull with the clean, compact table for the comprehensive printout!
+            html += generateCompactVaccineTable(activePatientId); 
         }
 
         html += `
@@ -255,7 +341,7 @@ function getPrintHeaderHTML(title, patientObj) {
             window.print();
             if (wasDarkMode) document.body.classList.add('dark-mode');
         }, 500);
-    }
+    };
 
     // --- WHATSAPP AUTOMATION ENGINE ---
     window.sendWACompReport = function() {
