@@ -455,11 +455,13 @@ window.loadPatientFromDB = function(pId) {
     setTimeout(() => {
         if (typeof renderVisitLedger === 'function') renderVisitLedger(); 
         if (typeof calcMalnutrition === 'function') calcMalnutrition();
+        if (typeof renderSensory === 'function') renderSensory();
         if (typeof calcNutrition === 'function') calcNutrition();
         if (typeof renderRecallLog === 'function') renderRecallLog();
         if (typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
         if (typeof renderMilestoneDashboard === 'function') renderMilestoneDashboard();
         if (typeof updateCopilot === 'function') updateCopilot(pId);
+        
         
         // Auto-fill values across tools
         if(document.getElementById('calcWeight')) document.getElementById('calcWeight').value = p.weight || "";
@@ -476,5 +478,23 @@ window.loadPatientFromDB = function(pId) {
     if(typeof showSystemToast === 'function') showSystemToast(`✅ Opened ${p.name}'s File`);
 };
 
+// --- DATABASE RESTORE ENGINE ---
+window.restoreDatabase = function(input) {
+    if (!input.files || !input.files[0]) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            localStorage.setItem('nis_patients', JSON.stringify(imported));
+            globalPatientsStore = imported; // Sync memory
+            if (typeof renderFullDatabase === 'function') renderFullDatabase();
+            if (typeof showSystemToast === 'function') showSystemToast("✅ Database Restored Successfully!");
+        } catch(err) { 
+            if (typeof showSystemToast === 'function') showSystemToast("⚠️ Invalid backup file."); 
+        }
+    };
+    reader.readAsText(input.files[0]);
+    input.value = ""; // Clear the input so you can upload the same file again if needed
+};
 // Unified Legacy Bridge
 window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;

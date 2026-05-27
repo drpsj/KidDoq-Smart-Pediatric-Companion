@@ -1,0 +1,1 @@
+self.addEventListener('fetch', () => {}); // Minimal worker to enable PWA offline caching

@@ -711,6 +711,39 @@ function populateHomeDrugs() {
         `;
     };
 
+    // --- SENSORY SCREENING CONTROLLER ---
+    window.renderSensory = function() {
+        const out = document.getElementById('sensoryOutputArea');
+        if (!out) return;
+
+        const items = [
+            { cat: "Vision", text: "Fixes and follows moving objects" },
+            { cat: "Vision", text: "Recognizes familiar faces" },
+            { cat: "Hearing", text: "Startles to loud noises" },
+            { cat: "Hearing", text: "Turns head towards sound" },
+            { cat: "Speech/Social", text: "Responds to name" },
+            { cat: "Speech/Social", text: "Engages in reciprocal play" }
+        ];
+        
+        let html = `<div style="display:grid; gap:10px;">`;
+        items.forEach((item, i) => {
+            html += `
+            <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm);">
+                <div>
+                    <small style="color:var(--primary); font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">${item.cat}</small>
+                    <div style="font-size:1.05rem; margin-top:4px; font-weight:500;">${item.text}</div>
+                </div>
+                <select style="width:auto; padding:8px 12px; border:2px solid var(--border-soft); border-radius:6px; font-weight:bold;">
+                    <option value="pending">-- Assess --</option>
+                    <option value="pass">✅ Pass</option>
+                    <option value="concern">🚨 Concern</option>
+                </select>
+            </div>`;
+        });
+        html += `</div>`;
+        out.innerHTML = html;
+    };
+
     // ==========================================
     // 🍎 NUTRITION & DIET CONTROLLER
     // ==========================================
