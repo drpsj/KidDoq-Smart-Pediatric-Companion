@@ -575,11 +575,23 @@
                 <div id="nutriRecallTab" class="sub-tab-content">
                     <div class="timeline-section tool-grid">
                         <div style="background:var(--bg-body); padding:1rem; border-radius:8px; border:1px solid var(--border-soft);">
-                            <label>Meal Window</label><select id="recallMeal"><option>Breakfast</option><option>Morning Snack</option><option>Lunch</option><option>Evening Snack</option><option>Dinner</option></select>
-                            <label>Target Food Matrix Item</label><select id="recallFood"></select>
-                            <label>Mass/Vol Loaded (g/ml)</label><input type="number" id="recallQty">
-                            <button class="action" style="background:var(--success);" onclick="addDietRecall()">➕ Append Entry</button>
-                        </div>
+    <label>Meal Window</label>
+    <select id="recallMeal">
+        <option>Breakfast</option>
+        <option>Morning Snack</option>
+        <option>Lunch</option>
+        <option>Evening Snack</option>
+        <option>Dinner</option>
+    </select>
+    
+    <label>Target Food Matrix Item</label>
+    <select id="recallFood" onchange="updateLivePreview()"></select>
+    
+    <label>Mass/Vol Loaded (g/ml)</label>
+    <input type="number" id="recallQty" oninput="updateLivePreview()">
+    
+    <button class="action" style="background:var(--success);" onclick="addDietRecall()">➕ Append Entry</button>
+</div>
                         <div id="recallSummaryArea" class="tool-result neutral">Staging balances lookup panel.</div>
                     </div>
                     <div id="recallListArea" style="margin-top:1.5rem;"></div>

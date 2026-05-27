@@ -796,6 +796,29 @@ function runHomeDoseCalc() {
         renderRecallLog(); // Re-render the board
     };
 
+    window.updateLivePreview = function() {
+        const food = document.getElementById('recallFood').value;
+        const qty = parseFloat(document.getElementById('recallQty').value);
+        const out = document.getElementById('recallSummaryArea');
+        
+        if (!food || !qty || isNaN(qty)) {
+            out.innerHTML = "Awaiting quantity to calculate macros...";
+            out.className = "tool-result neutral";
+            return;
+        }
+
+        const foodItem = (typeof window.foodsDb !== 'undefined' ? window.foodsDb.find(f => f.name === food) : null) || { k: 100, p: 2 };
+        const cals = (foodItem.k / 100) * qty;
+        const pro = (foodItem.p / 100) * qty;
+
+        out.innerHTML = `
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">Live Estimation</div>
+            <h3 style="margin:5px 0; color:var(--primary);">${cals.toFixed(0)} kcal</h3>
+            <div style="color:var(--success); font-weight:bold;">${pro.toFixed(1)}g Protein</div>
+        `;
+        out.className = "tool-result";
+    };
+
     // 3. Tab 2: Render the 24h Recall Board
     window.renderRecallLog = function() {
         const pId = AppStore.getActivePatientId();
