@@ -618,46 +618,6 @@ window.restoreDatabase = function(input) {
         renderLiveComprehensiveSummary();
     };
 
-    window.renderLiveComprehensiveSummary = function() {
-        const pId = AppStore.getActivePatientId();
-        const p = AppStore.getPatient(pId);
-        const container = document.getElementById('liveSummaryPreview');
-        let html = `<div style="font-family:sans-serif; color:#333;">`;
-        
-        html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Draft (Unsaved)</h3>`;
-        
-        if (p.diagnosis) html += `<div style="margin-bottom:10px;"><b>Diagnosis:</b> ${p.diagnosis}</div>`;
-        if (p.rxList && p.rxList.length > 0) {
-            html += `<div style="margin-bottom:10px;"><b>Medications:</b><ul style="margin:5px 0; padding-left:20px;">`;
-            p.rxList.forEach(rx => { html += `<li style="margin-bottom:5px;"><b>${rx.name}</b> - ${rx.vol} ${rx.unit} (<i>${rx.freq}</i>)</li>`; });
-            html += `</ul></div>`;
-        }
-        if (p.tests) html += `<div style="margin-bottom:10px;"><b>Investigations:</b> ${p.tests.replace(/\n/g, '<br>')}</div>`;
-        if (p.advice) html += `<div style="margin-bottom:10px;"><b>Advice:</b> ${p.advice.replace(/\n/g, '<br>')}</div>`;
-        
-        let maln = typeof extractToolResult === 'function' ? extractToolResult('malnGridOutput') : ""; 
-        if(maln) html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Triage</h3>${maln}`;
-
-        if (p.dietLogs && p.dietLogs.length > 0 && typeof generateNutritionReport === 'function') {
-            html += `<div style="margin-top:20px;">${generateNutritionReport(pId)}</div>`;
-        }
-        
-        let todayStr = new Date().toISOString().split('T')[0];
-        let todaysVax = [];
-        if(p.givenDates) {
-            for (const [vaxId, date] of Object.entries(p.givenDates)) {
-                if (date === todayStr) todaysVax.push(vaxId);
-            }
-        }
-        if (todaysVax.length > 0) {
-            html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Vaccines Administered Today</h3>
-                     <ul style="padding-left:20px;">${todaysVax.map(v => `<li><b>${v.toUpperCase()}</b></li>`).join('')}</ul>`;
-        }
-
-        html += `</div>`;
-        container.innerHTML = html;
-    };
-
     // --- 1. HISTORICAL LEDGER CONTROLLER ---
     window.openHistoricalEncounters = function(btnElem) {
         if (!AppStore.getActivePatientId()) {
@@ -684,11 +644,19 @@ window.restoreDatabase = function(input) {
         }
 
         let html = "";
+        
+        // 1. PINNED PATIENT HEADER AT THE TOP
+        html += `<div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary); margin-bottom: 20px;">
+                    <h2 style="margin: 0 0 5px 0; color: var(--primary-dark); font-size: 1.3rem;">${p.name}</h2>
+                    <div style="font-size: 0.95rem; color: var(--primary-dark); font-weight:600;">
+                        ${p.ageYrs || 0}Y ${p.ageMos || 0}M | ${p.gender ? p.gender.toUpperCase() : 'Gender N/A'}
+                    </div>
+                 </div>`;
+
+        // 2. HISTORICAL ENCOUNTERS FEED
         [...p.visits].reverse().forEach((visit) => {
             const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
             let rxHtml = visit.rxList && visit.rxList.length > 0 ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit})`).join("<br>") : "";
-            
-            // Format historical diet/vaccines if they exist in this snapshot
             let dietHtml = visit.dietLogs && visit.dietLogs.length > 0 ? `<div style="font-size:0.85rem; color:#10b981; margin-top:5px;"><b>Diet Logged:</b> ${visit.dietLogs.length} items</div>` : "";
             let vaxHtml = visit.vaccinesGiven && visit.vaccinesGiven.length > 0 ? `<div style="font-size:0.85rem; color:#5b61f6; margin-top:5px;"><b>Vaccines Given:</b> ${visit.vaccinesGiven.join(', ')}</div>` : "";
 
@@ -700,11 +668,62 @@ window.restoreDatabase = function(input) {
                 </div>
                 ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
                 <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications.</span>'}</div>
-                ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
-                ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-muted);"><b>Advice:</b> ${visit.advice}</div>` : ''}
+                ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
+                ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-main); background: #fef3c7; padding:8px; border-radius:4px; border-left:3px solid #f59e0b;"><b>Advice / Next Steps:</b><br>${visit.advice}</div>` : ''}
                 ${dietHtml} ${vaxHtml}
             </div>`;
         });
+        container.innerHTML = html;
+    };
+
+    window.renderLiveComprehensiveSummary = function() {
+        const pId = AppStore.getActivePatientId();
+        const p = AppStore.getPatient(pId);
+        const container = document.getElementById('liveSummaryPreview');
+        let html = `<div style="font-family:sans-serif; color:#333;">`;
+        
+        // 1. PINNED PATIENT HEADER AT THE TOP
+        html += `<div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary); margin-bottom: 20px;">
+                    <h2 style="margin: 0 0 5px 0; color: var(--primary-dark); font-size: 1.3rem;">${p.name}</h2>
+                    <div style="font-size: 0.95rem; color: var(--primary-dark); font-weight:600;">
+                        ${p.ageYrs || 0}Y ${p.ageMos || 0}M | Wt: ${p.weight || '--'} kg | ${p.gender ? p.gender.toUpperCase() : ''}
+                    </div>
+                 </div>`;
+        
+        html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Draft (Unsaved)</h3>`;
+        
+        if (p.diagnosis) html += `<div style="margin-bottom:10px;"><b>Diagnosis:</b> ${p.diagnosis}</div>`;
+        if (p.rxList && p.rxList.length > 0) {
+            html += `<div style="margin-bottom:10px;"><b>Medications:</b><ul style="margin:5px 0; padding-left:20px;">`;
+            p.rxList.forEach(rx => { html += `<li style="margin-bottom:5px;"><b>${rx.name}</b> - ${rx.vol} ${rx.unit} (<i>${rx.freq}</i>)</li>`; });
+            html += `</ul></div>`;
+        }
+        if (p.tests) html += `<div style="margin-bottom:10px;"><b>Investigations:</b> ${p.tests.replace(/\n/g, '<br>')}</div>`;
+        
+        // ADVICE / NEXT STEPS AT THE BOTTOM OF CLINICAL BLOCK
+        if (p.advice) html += `<div style="margin-bottom:15px; background: #fef3c7; padding:10px; border-radius:4px; border-left:4px solid #f59e0b;"><b>Advice / Next Steps:</b><br>${p.advice.replace(/\n/g, '<br>')}</div>`;
+        
+        // ADDITIONAL DATA BLOCKS
+        let maln = typeof extractToolResult === 'function' ? extractToolResult('malnGridOutput') : ""; 
+        if(maln) html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Triage</h3>${maln}`;
+
+        if (p.dietLogs && p.dietLogs.length > 0 && typeof generateNutritionReport === 'function') {
+            html += `<div style="margin-top:20px;">${generateNutritionReport(pId)}</div>`;
+        }
+        
+        let todayStr = new Date().toISOString().split('T')[0];
+        let todaysVax = [];
+        if(p.givenDates) {
+            for (const [vaxId, date] of Object.entries(p.givenDates)) {
+                if (date === todayStr) todaysVax.push(vaxId);
+            }
+        }
+        if (todaysVax.length > 0) {
+            html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Vaccines Administered Today</h3>
+                     <ul style="padding-left:20px;">${todaysVax.map(v => `<li><b>${v.toUpperCase()}</b></li>`).join('')}</ul>`;
+        }
+
+        html += `</div>`;
         container.innerHTML = html;
     };
 
@@ -821,6 +840,58 @@ window.restoreDatabase = function(input) {
         
         // Automatically bounce the user over to the Historical Ledger tab to see the saved entry
         openHistoricalEncounters(document.querySelectorAll('.nav-item')[2]);
+    };
+
+    // --- BULLETPROOF ROUTING OVERRIDES ---
+    window.openClinicalTool = function(toolId) {
+        // 1. Check for active patient
+        if (!AppStore.getActivePatientId()) {
+            if (typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+            if(typeof ViewController !== 'undefined') ViewController.switchNavTab('databaseFeatureView');
+            return;
+        }
+        
+        // 2. Hide all views manually
+        document.querySelectorAll('.view-content').forEach(v => {
+            v.style.display = 'none';
+            v.classList.remove('active-view');
+        });
+        
+        // 3. Force show the workspace and requested tool
+        const workspace = document.getElementById('activeWorkspace');
+        if (workspace) workspace.style.display = 'block';
+        
+        const target = document.getElementById(toolId);
+        if (target) {
+            target.style.display = 'block';
+            setTimeout(() => target.classList.add('active-view'), 10);
+        }
+    };
+
+    window.switchSubTab = function(tabId, btnElement) {
+        // Find the parent container using a safer fallback method
+        let parentView = btnElement.closest('.view-content') || document.querySelector('.active-view');
+        let navContainer = btnElement.parentElement;
+        
+        if (!parentView) return;
+
+        // Strip 'active' class from siblings
+        if (navContainer) {
+            Array.from(navContainer.children).forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        // Hide all sub-tabs in this view, then show the target
+        parentView.querySelectorAll('.sub-tab-content').forEach(content => {
+            content.classList.remove('active');
+            content.style.display = 'none';
+        });
+
+        const targetTab = document.getElementById(tabId);
+        if (targetTab) {
+            targetTab.classList.add('active');
+            targetTab.style.display = 'block';
+        }
     };
 // Unified Legacy Bridge
 window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;
