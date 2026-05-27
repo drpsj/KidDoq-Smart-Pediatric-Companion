@@ -779,6 +779,17 @@
 <script src="js/view-controller.js?v=3"></script>
 
 <script src="js/app.js?v=3"></script>
-
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(registration => {
+                console.log('✅ Offline Engine Active (Scope: ', registration.scope, ')');
+            }).catch(err => {
+                console.log('⚠️ Offline Engine Failed: ', err);
+            });
+        });
+    }
+</script>
+    
 </body>
 </html>
