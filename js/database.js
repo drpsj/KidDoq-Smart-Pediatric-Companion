@@ -149,20 +149,21 @@ const drugsDb = [
         {name:"Coriander", cat:"Condiments", p:14, c:22, f:16, k:288},
         {name:"Garlic", cat:"Condiments", p:6, c:30, f:0.1, k:145},
         {name:"Ginger", cat:"Condiments", p:2, c:12, f:1, k:67},
-        { name: "Breastmilk / Formula (100ml)", calsPer100: 67, proPer100: 1.5 },
-        { name: "Cow's Milk / Buffalo Milk (100ml)", calsPer100: 100, proPer100: 3.5 },
-        { name: "Khichdi - Rice & Moong Dal (100g)", calsPer100: 120, proPer100: 4.0 },
-        { name: "Plain Rice (100g cooked)", calsPer100: 130, proPer100: 2.7 },
-        { name: "Thick Dal / Lentils (100g cooked)", calsPer100: 116, proPer100: 9.0 },
-        { name: "Roti / Chapati (100g ~ 3 rotis)", calsPer100: 297, proPer100: 9.0 },
-        { name: "Mashed Banana (100g)", calsPer100: 89, proPer100: 1.1 },
-        { name: "Apple Puree (100g)", calsPer100: 52, proPer100: 0.3 },
-        { name: "Boiled Egg (100g ~ 2 eggs)", calsPer100: 155, proPer100: 13.0 },
-        { name: "Commercial Fortified Cereal (100g powder)", calsPer100: 412, proPer100: 15.0 },
-        { name: "Curd / Yogurt (100g)", calsPer100: 98, proPer100: 11.0 },
-        { name: "Idli (100g ~ 2 medium)", calsPer100: 144, proPer100: 4.0 },
-        { name: "Dosa (100g ~ 1 large)", calsPer100: 280, proPer100: 5.0 },
-        { name: "Upma / Suji (100g cooked)", calsPer100: 130, proPer100: 3.5 }
+        // --- Standardized Pediatric Clinical Nutrition Items ---
+        { name: "Breastmilk / Formula (100ml)", cat: "Pediatric Diet", p: 1.5, c: 7.0, f: 3.5, k: 67 },
+        { name: "Cow's Milk / Buffalo Milk (100ml)", cat: "Pediatric Diet", p: 3.5, c: 5.0, f: 6.5, k: 100 },
+        { name: "Khichdi - Rice & Moong Dal (100g)", cat: "Pediatric Diet", p: 4.0, c: 20.0, f: 2.0, k: 120 },
+        { name: "Plain Rice (100g cooked)", cat: "Pediatric Diet", p: 2.7, c: 28.0, f: 0.3, k: 130 },
+        { name: "Thick Dal / Lentils (100g cooked)", cat: "Pediatric Diet", p: 9.0, c: 20.0, f: 0.5, k: 116 },
+        { name: "Roti / Chapati (100g ~ 3 rotis)", cat: "Pediatric Diet", p: 9.0, c: 60.0, f: 2.0, k: 297 },
+        { name: "Mashed Banana (100g)", cat: "Pediatric Diet", p: 1.1, c: 23.0, f: 0.3, k: 89 },
+        { name: "Apple Puree (100g)", cat: "Pediatric Diet", p: 0.3, c: 14.0, f: 0.2, k: 52 },
+        { name: "Boiled Egg (100g ~ 2 eggs)", cat: "Pediatric Diet", p: 13.0, c: 1.1, f: 11.0, k: 155 },
+        { name: "Commercial Fortified Cereal (100g powder)", cat: "Pediatric Diet", p: 15.0, c: 65.0, f: 10.0, k: 412 },
+        { name: "Curd / Yogurt (100g)", cat: "Pediatric Diet", p: 11.0, c: 4.0, f: 4.0, k: 98 },
+        { name: "Idli (100g ~ 2 medium)", cat: "Pediatric Diet", p: 4.0, c: 30.0, f: 1.0, k: 144 },
+        { name: "Dosa (100g ~ 1 large)", cat: "Pediatric Diet", p: 5.0, c: 55.0, f: 5.0, k: 280 },
+        { name: "Upma / Suji (100g cooked)", cat: "Pediatric Diet", p: 3.5, c: 25.0, f: 1.5, k: 130 }
     ];
 
     // Explicitly map these to the global window so the rest of the app can always find them

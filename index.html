@@ -567,9 +567,11 @@
                 <div class="sub-tabs-nav">
                     <button class="sub-tab-btn active" onclick="switchSubTab('nutriCalcTab', this)">🧮 ICMR Target Metrics</button>
                     <button class="sub-tab-btn" onclick="switchSubTab('nutriRecallTab', this)">🍽️ 24h Diet Recall Board</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('nutriDBTab', this); renderFoodDB(foodsDb);">📊 Reference Matrix</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('nutriDBTab', this); renderFoodDB(window.foodsDb);">📊 Reference Matrix</button>
                 </div>
+                
                 <div id="nutriCalcTab" class="sub-tab-content active"><div class="timeline-section"><div id="nutriTargetArea"></div></div></div>
+                
                 <div id="nutriRecallTab" class="sub-tab-content">
                     <div class="timeline-section tool-grid">
                         <div style="background:var(--bg-body); padding:1rem; border-radius:8px; border:1px solid var(--border-soft);">
@@ -582,7 +584,7 @@
                     </div>
                     <div id="recallListArea" style="margin-top:1.5rem;"></div>
                 </div>
-</div>
+
                 <div id="nutriDBTab" class="sub-tab-content">
                     <div class="timeline-section" style="margin-bottom:1rem; padding:1rem; font-size:0.85rem; line-height:1.5;">
                         <h4 style="margin:0 0 10px 0; color:var(--primary);">Key Micronutrient Dietary Sources</h4>
@@ -602,7 +604,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> ```
 
             <div id="malnutritionFeatureView" class="view-content">
                 <h2 class="section-title">🩺 Malnutrition & Anthropometry</h2>

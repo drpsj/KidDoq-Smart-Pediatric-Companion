@@ -753,7 +753,7 @@ function runHomeDoseCalc() {
         `;
     };
 
-    // 2. Tab 2: Add item to 24h Recall Log
+   // 2. Tab 2: Add item to 24h Recall Log
     window.addDietRecall = function() {
         const pId = AppStore.getActivePatientId();
         if (!pId) {
@@ -770,11 +770,11 @@ function runHomeDoseCalc() {
             return;
         }
 
-        // Lookup food in foodsDb (Fallback to 100kcal/2g if not found)
-        const foodItem = (typeof foodsDb !== 'undefined' ? foodsDb.find(f => f.name === food) : null) || { calsPer100: 100, proPer100: 2 };
+        // UNIFIED FORMAT: Look up food in foodsDb using the short keys (k, p, c, f)
+        const foodItem = (typeof window.foodsDb !== 'undefined' ? window.foodsDb.find(f => f.name === food) : null) || { k: 100, p: 2 };
         
-        const cals = (foodItem.calsPer100 / 100) * qty;
-        const pro = (foodItem.proPer100 / 100) * qty;
+        const cals = (foodItem.k / 100) * qty;
+        const pro = (foodItem.p / 100) * qty;
 
         const p = AppStore.getPatient(pId);
         if (!p.dietLogs) p.dietLogs = [];
@@ -866,23 +866,21 @@ function runHomeDoseCalc() {
     window.renderFoodDB = function(db) {
         if (!db || db.length === 0) return;
         
-        // 1. Populate the Reference Matrix Tab
-        const out = document.getElementById('nutriDBTab');
-        if (out) {
-            let html = `<div style="padding:15px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-soft);">
-                <h3 style="margin-top:0; color:var(--primary-dark); font-size:1.1rem; border-bottom:1px solid var(--border-soft); padding-bottom:8px;">📊 Clinical Nutrition Database</h3>
-                <table class="theory-table" style="width:100%; font-size:0.9rem; text-align:left; margin-top:10px;">
-                <thead><tr style="background:var(--bg-body);"><th style="padding:8px;">Food Item</th><th style="padding:8px;">Kcal / 100g</th><th style="padding:8px;">Protein / 100g</th></tr></thead><tbody>`;
-            
+        // 1. Populate the Reference Matrix Table Body (Safely targets the tbody!)
+        const tbody = document.getElementById('foodTableBody');
+        if (tbody) {
+            let html = "";
             db.forEach(f => {
                 html += `<tr>
                     <td style="padding:8px; border-bottom:1px solid var(--border-soft);"><b>${f.name}</b></td>
-                    <td style="padding:8px; border-bottom:1px solid var(--border-soft); color:var(--primary);">${f.calsPer100} kcal</td>
-                    <td style="padding:8px; border-bottom:1px solid var(--border-soft); color:var(--success);">${f.proPer100} g</td>
+                    <td style="padding:8px; border-bottom:1px solid var(--border-soft);">${f.cat || '-'}</td>
+                    <td style="padding:8px; border-bottom:1px solid var(--border-soft); color:var(--success);">${f.p} g</td>
+                    <td style="padding:8px; border-bottom:1px solid var(--border-soft);">${f.c || 0} g</td>
+                    <td style="padding:8px; border-bottom:1px solid var(--border-soft);">${f.f || 0} g</td>
+                    <td style="padding:8px; border-bottom:1px solid var(--border-soft); color:var(--primary);">${f.k} kcal</td>
                 </tr>`;
             });
-            html += `</tbody></table></div>`;
-            out.innerHTML = html;
+            tbody.innerHTML = html;
         }
 
         // 2. Populate the Dropdown for the 24h Recall Tracker
