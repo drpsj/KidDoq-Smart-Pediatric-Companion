@@ -21,13 +21,13 @@ function populateDrugs() {
     });
 }
 
+// --- FIX: Updated Main Dose Calculator ---
 function calculateDose() {
     const wtElem = document.getElementById('calcWeight');
     const formElem = document.getElementById('drugFormulation');
     const outputArea = document.getElementById('calcOutputArea');
     const btnArea = document.getElementById('rxAddButtonArea');
     
-    // THE ULTIMATE GATEKEEPER: Stop immediately if ANY part of the old Dose Calc tab is missing
     if (!wtElem || !formElem || !outputArea || !btnArea) return; 
     
     const weight = parseFloat(wtElem.value);
@@ -41,16 +41,15 @@ function calculateDose() {
     const drug = drugsDb.find(d => d.id === drugId);
     if (!drug) return;
     
-    // The Universal Math
-    let math = computeClinicalMath(drug, weight);
-    let unit = getDrugUnit(drug);
+    // CONNECTED TO NEW MATH ENGINE
+    let math = ClinicalMath.computeDose(drug, weight);
+    let unit = ClinicalMath.getUnit(drug);
     
     let durVal = document.getElementById('calcDuration') ? document.getElementById('calcDuration').value : "";
     let durStr = durVal ? ` x ${durVal} Days` : "";
     let finalFreq = `${drug.defaultFreq}${durStr}`;
     let warnHTML = math.isMax ? `<br><span style="color:var(--danger); font-size:0.85rem;">⚠️ Adult Max Cap Enforced (${drug.maxMg}mg)</span>` : "";
     
-    // Build the Display Card
     outputArea.innerHTML = `
         <div class="result-card">
             <p style="margin-top:0; color:var(--text-muted); font-weight:700; font-size:0.75rem; text-transform:uppercase;">Administer Volume</p>
@@ -61,7 +60,6 @@ function calculateDose() {
             </div>
         </div>`;
     
-    // Prepare it for the Cart
     pendingPrescriptionDrug = { name: drug.name, vol: math.reqVol.toFixed(1), freq: finalFreq, details: math.isMax ? "Max dose cap" : "", unit: unit };
     
     if(activePatientId) {
@@ -69,6 +67,32 @@ function calculateDose() {
     } else {
         btnArea.innerHTML = `<div style="text-align:center; color:var(--warning); font-size:0.85rem; padding-top:10px;">Independent Calculation Active.</div>`;
     }
+}
+
+// --- FIX: Updated Home Quick Calculator ---
+function runHomeDoseCalc() {
+    const wt = parseFloat(document.getElementById('homeWeight').value);
+    const drugId = document.getElementById('homeFormulation').value;
+    const res = document.getElementById('homeDoseResult');
+
+    if(!wt || !drugId) { res.innerHTML = ''; return; }
+    const drug = drugsDb.find(d => d.id === drugId);
+    if(!drug) return;
+
+    // CONNECTED TO NEW MATH ENGINE
+    let math = ClinicalMath.computeDose(drug, wt);
+    let unit = ClinicalMath.getUnit(drug);
+    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:5px;">⚠️ Adult Max Cap Enforced</div>` : "";
+
+    res.innerHTML = `
+        <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--primary); text-align:center; box-shadow:var(--shadow-md);">
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Calculated Quantity</div>
+            <div style="font-size:2.8rem; color:var(--primary); font-weight:800; margin:5px 0;">${math.reqVol.toFixed(1)} <span style="font-size:1.2rem;">${unit}</span></div>
+            <div style="font-size:1rem; color:var(--text-main); font-weight:700; background:rgba(91,97,246,0.1); padding:5px 10px; border-radius:4px; display:inline-block;">${drug.defaultFreq}</div>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
+            ${warnHTML}
+        </div>
+    `;
 }
 
 // --- 2. REVERSE AUDIT ENGINE ---
@@ -160,30 +184,6 @@ function populateHomeDrugs() {
     
     const filtered = drugsDb.filter(d => d.category === cat);
     filtered.forEach(d => { formSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`; });
-}
-
-function runHomeDoseCalc() {
-    const wt = parseFloat(document.getElementById('homeWeight').value);
-    const drugId = document.getElementById('homeFormulation').value;
-    const res = document.getElementById('homeDoseResult');
-
-    if(!wt || !drugId) { res.innerHTML = ''; return; }
-    const drug = drugsDb.find(d => d.id === drugId);
-    if(!drug) return;
-
-    let math = computeClinicalMath(drug, wt);
-    let unit = getDrugUnit(drug);
-    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:5px;">⚠️ Adult Max Cap Enforced</div>` : "";
-
-    res.innerHTML = `
-        <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--primary); text-align:center; box-shadow:var(--shadow-md);">
-            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Calculated Quantity</div>
-            <div style="font-size:2.8rem; color:var(--primary); font-weight:800; margin:5px 0;">${math.reqVol.toFixed(1)} <span style="font-size:1.2rem;">${unit}</span></div>
-            <div style="font-size:1rem; color:var(--text-main); font-weight:700; background:rgba(91,97,246,0.1); padding:5px 10px; border-radius:4px; display:inline-block;">${drug.defaultFreq}</div>
-            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
-            ${warnHTML}
-        </div>
-    `;
 }
 
 // --- EHR STATE MACHINE LOGIC ---
@@ -918,3 +918,131 @@ function runHomeDoseCalc() {
             });
         }
     };
+
+    // ==========================================
+// RESTORED CLINICAL TOOLS (ER, PRAM, JAUNDICE)
+// ==========================================
+
+window.calcCrash = function() {
+    const wt = parseFloat(document.getElementById('crashWeight').value);
+    const out = document.getElementById('crashOutputArea');
+    if(!wt || isNaN(wt)) { out.innerHTML = "Input physical vectors to map lines."; out.className="tool-result neutral"; return; }
+    
+    let defib1 = wt * 2; let defib2 = wt * 4;
+    let ns = wt * 20; let adr = wt * 0.1;
+    
+    out.innerHTML = `
+        <div style="display:grid; gap:10px; text-align:left;">
+            <div style="background:var(--bg-body); padding:10px; border-radius:6px; border-left:4px solid var(--danger);">
+                <b>⚡ Defibrillation:</b> ${defib1.toFixed(0)} Joules &rarr; ${defib2.toFixed(0)} Joules
+            </div>
+            <div style="background:var(--bg-body); padding:10px; border-radius:6px; border-left:4px solid var(--info);">
+                <b>💧 Fluid Bolus (NS/RL):</b> ${ns.toFixed(0)} mL (over 10-20 mins)
+            </div>
+            <div style="background:var(--bg-body); padding:10px; border-radius:6px; border-left:4px solid var(--warning);">
+                <b>💉 Adrenaline (1:10,000):</b> ${adr.toFixed(2)} mL (IV/IO)
+            </div>
+        </div>
+    `;
+    out.className = "tool-result danger";
+};
+
+window.calcFluids = function() {
+    const wt = parseFloat(document.getElementById('fluidWeight').value);
+    const dehyd = parseFloat(document.getElementById('fluidDehydration').value);
+    const out = document.getElementById('fluidResultArea');
+    if(!wt || isNaN(wt)) { out.innerHTML = "Compile inputs parameter block."; out.className="tool-result neutral"; return; }
+
+    let maint = 0;
+    if (wt <= 10) maint = wt * 100;
+    else if (wt <= 20) maint = 1000 + ((wt - 10) * 50);
+    else maint = 1500 + ((wt - 20) * 20);
+
+    let deficit = wt * (dehyd * 10); // Wt * % * 10 = mL
+    let total = maint + deficit;
+
+    out.innerHTML = `
+        <div style="text-align:center;">
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">24H Fluid Requirement</div>
+            <h2 style="color:var(--info); margin:10px 0;">${total.toFixed(0)} mL / day</h2>
+            <div style="font-size:0.95rem;">Maintenance: <b>${maint.toFixed(0)} mL</b> + Deficit: <b>${deficit.toFixed(0)} mL</b></div>
+            <div style="font-size:0.95rem; margin-top:5px; color:var(--primary); font-weight:bold;">Flow Rate: ${(total/24).toFixed(1)} mL/hr</div>
+        </div>
+    `;
+    out.className = "tool-result";
+};
+
+window.calcGIR = function() {
+    const wt = parseFloat(document.getElementById('girWt').value);
+    const rate = parseFloat(document.getElementById('girRate').value);
+    const dex = parseFloat(document.getElementById('girDex').value);
+    const out = document.getElementById('girOutput');
+    
+    if(!wt || !rate || !dex || isNaN(wt)) { out.innerHTML = ""; out.className="tool-result neutral"; return; }
+    
+    let gir = (rate * dex) / (wt * 6);
+    out.innerHTML = `GIR: <b>${gir.toFixed(2)}</b> mg/kg/min`;
+    out.className = "tool-result success";
+};
+
+window.calcAPGAR = function() {
+    const hr = parseInt(document.getElementById('apgarHR').value);
+    const resp = parseInt(document.getElementById('apgarResp').value);
+    const tone = parseInt(document.getElementById('apgarTone').value);
+    const ref = parseInt(document.getElementById('apgarReflex').value);
+    const col = parseInt(document.getElementById('apgarColor').value);
+    const out = document.getElementById('apgarOutput');
+    
+    let total = hr + resp + tone + ref + col;
+    let color = total >= 7 ? "var(--success)" : (total >= 4 ? "var(--warning)" : "var(--danger)");
+    
+    out.innerHTML = `Total Score: <span style="font-size:1.4rem; color:${color}; font-weight:bold;">${total}/10</span>`;
+};
+
+window.calcPRAM = function() {
+    const o2 = parseInt(document.getElementById('pramO2').value);
+    const sup = parseInt(document.getElementById('pramSupra').value);
+    const sca = parseInt(document.getElementById('pramScalene').value);
+    const air = parseInt(document.getElementById('pramAir').value);
+    const whz = parseInt(document.getElementById('pramWheeze').value);
+    const out = document.getElementById('pramResultArea');
+    
+    let total = o2 + sup + sca + air + whz;
+    let sev = "Mild"; let color = "var(--success)";
+    if (total >= 4 && total <= 7) { sev = "Moderate"; color = "var(--warning)"; }
+    if (total >= 8) { sev = "Severe"; color = "var(--danger)"; }
+    
+    out.innerHTML = `
+        <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">PRAM Score</div>
+        <h2 style="margin:5px 0;">${total} / 12</h2>
+        <div style="font-size:1.1rem; font-weight:bold; color:${color};">${sev} Exacerbation</div>
+    `;
+    out.className = "tool-result";
+};
+
+window.calcJaundice = function() {
+    const hrs = parseFloat(document.getElementById('jaunHours').value);
+    const tsb = parseFloat(document.getElementById('jaunTSB').value);
+    const risk = document.getElementById('jaunRisk').value;
+    const out = document.getElementById('jaunResultArea');
+    
+    if(!hrs || !tsb || isNaN(hrs)) { out.innerHTML = "Awaiting data entry to map standard Bhutani bands."; out.className="tool-result neutral"; return; }
+    
+    // Simplified heuristic estimation based on AAP/Bhutani bands
+    let threshold = 15; 
+    if (risk === 'high') threshold = (hrs/24) * 2.5 + 5.5; 
+    else if (risk === 'med') threshold = (hrs/24) * 3 + 7;
+    else threshold = (hrs/24) * 3 + 9;
+    
+    let msg = tsb >= threshold ? "⚠️ Phototherapy Indicated" : "✅ Below Phototherapy Threshold";
+    let colorClass = tsb >= threshold ? "danger" : "success";
+    
+    out.innerHTML = `
+        <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">Risk Analysis Assessment</div>
+        <h2 style="margin:5px 0;">${msg}</h2>
+        <div style="font-size:0.9rem;">Estimated Threshold for this age/risk: ~${threshold.toFixed(1)} mg/dL</div>
+    `;
+    out.className = "tool-result " + colorClass;
+};
+
+    
