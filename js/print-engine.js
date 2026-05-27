@@ -187,6 +187,36 @@ function getPrintHeaderHTML(title, patientObj) {
         return html;
     };
 
+    window.generateMilestonesReport = function(pId) {
+        const p = AppStore.getPatient(pId);
+        if (!p) return "<p>No patient data found.</p>";
+        const achieved = p.achievedMilestones || {};
+        
+        let html = `<style>
+            .ms-tbl { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 11px; margin-top: 10px; }
+            .ms-tbl th, .ms-tbl td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            .ms-tbl th { background-color: #f3f4f6; color: #1e3a8a; }
+        </style>
+        <h3 style="color:#1e3a8a; font-family:sans-serif; border-bottom:2px solid #e5e7eb; padding-bottom:5px;">Developmental Milestones Progress</h3>
+        <table class="ms-tbl">
+            <thead><tr><th style="width:15%">Age (Mos)</th><th style="width:15%">Domain</th><th>Milestone Marker</th><th style="width:15%">Status</th></tr></thead>
+            <tbody>`;
+
+        Object.keys(window.milestonesDb).forEach(age => {
+            window.milestonesDb[age].forEach((m, idx) => {
+                let status = achieved[m.id] ? '<span style="color:#188038; font-weight:bold;">✔ Achieved</span>' : '<span style="color:#64748b;">Pending</span>';
+                html += `<tr>
+                    <td><b>${idx === 0 ? age + ' Mos' : ''}</b></td>
+                    <td>${m.domain}</td>
+                    <td>${m.text}</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+        });
+        html += `</tbody></table>`;
+        return html;
+    };
+
     window.executePrint = function(mode) {
         // 1. Ask the Vault securely for the ID
         const currentPId = typeof AppStore !== 'undefined' ? AppStore.getActivePatientId() : null;
@@ -217,6 +247,11 @@ function getPrintHeaderHTML(title, patientObj) {
         }
         
         let html = "";
+        
+        if (mode === 'milestones') {
+            html += getPrintHeaderHTML("DEVELOPMENTAL MILESTONES REPORT", p);
+            html += generateMilestonesReport(currentPId);
+        }
 
         if (mode === 'nutrition') {
             html += getPrintHeaderHTML("PEDIATRIC NUTRITION & DIET PLAN", p);

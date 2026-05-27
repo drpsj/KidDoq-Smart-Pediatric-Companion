@@ -354,24 +354,6 @@ function populateHomeDrugs() {
         freqInput.value = `${drug.defaultFreq}${durStr}`;
     }
 
-    function addInlineDrugToCart() {
-        const drugId = document.getElementById('inlineDrugSelect').value;
-        const freq = document.getElementById('inlineFreq').value;
-        if(!drugId || !freq) { if(typeof showSystemToast === 'function') showSystemToast("⚠️ Select a drug & frequency."); return; }
-        
-        const rxObj = autoCalcFromDB(drugId, freq);
-        if(rxObj) {
-            const p = globalPatientsStore[activePatientId];
-            if(!p.rxList) p.rxList = [];
-            p.rxList.push(rxObj);
-            if(typeof renderRxCartList === 'function') renderRxCartList();
-            
-            document.getElementById('inlineDrugSelect').value = '';
-            document.getElementById('inlineFreq').value = '';
-            document.getElementById('inlineDoseResult').innerHTML = '';
-        }
-    }
-
     // --- 2. THE SMART PROTOCOL ENGINE (Order Sets) ---
     function autoCalcFromDB(drugId, freqStr = null, detailsStr = "") {
         if(!activePatientId) return null;
@@ -465,11 +447,13 @@ function populateHomeDrugs() {
         document.getElementById('orderSetSelect').value = "";
     }
 
-    // --- 3. LIVE RX PREVIEW ---
+    // --- 3. LIVE RX PREVIEW (FIXED) ---
     window.renderRxCartList = function() { 
         const container = document.getElementById('rxCartList'); 
         if(!activePatientId) return; 
-        const p = globalPatientsStore[activePatientId];
+        
+        // FIX: Pull directly from the Vault, NOT the global memory store
+        const p = AppStore.getPatient(activePatientId);
         let list = p.rxList || []; 
         
         let html = `
@@ -494,7 +478,7 @@ function populateHomeDrugs() {
                 <div style="display:flex; justify-content:space-between; align-items:start; padding-bottom:8px; border-bottom:1px dashed #eee;">
                     <div>
                         <strong style="font-size:0.95rem; color:#333;">${i+1}. ${r.name}</strong><br>
-                        <span style="font-size:0.85rem; color:#555;">Give <b>${r.vol} ${r.unit}</b> &mdash; <i>${r.freq}</i></span>
+                        <span style="font-size:0.85rem; color:#555;">Give <b style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${r.vol} ${r.unit}</b> — <i>${r.freq}</i></span>
                         ${r.details ? `<div style="font-size:0.75rem; color:#888; margin-top:2px;">${r.details}</div>` : ''}
                     </div>
                     <button onclick="removeDrugFromCart(${i})" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer; font-weight:bold;">✖</button>
@@ -506,7 +490,6 @@ function populateHomeDrugs() {
         const dx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
         if (dx) html += `<div style="margin-top:15px; font-size:0.85rem; border-top:1px dashed #eee; padding-top:10px;"><b>Dx:</b> ${dx}</div>`;
         
-        // FIX: Display Investigations and Advice in Live Preview
         const tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
         if (tests) html += `<div style="margin-top:10px; font-size:0.85rem;"><b>Investigations:</b> ${tests}</div>`;
         
@@ -515,6 +498,29 @@ function populateHomeDrugs() {
 
         container.innerHTML = html;
     };
+
+    function addInlineDrugToCart() {
+        const drugId = document.getElementById('inlineDrugSelect').value;
+        const freq = document.getElementById('inlineFreq').value;
+        if(!drugId || !freq) { if(typeof showSystemToast === 'function') showSystemToast("⚠️ Select a drug & frequency."); return; }
+        
+        const rxObj = autoCalcFromDB(drugId, freq);
+        if(rxObj) {
+            // FIX: Write strictly to the Vault
+            const p = AppStore.getPatient(activePatientId);
+            if(!p.rxList) p.rxList = [];
+            p.rxList.push(rxObj);
+            
+            AppStore.savePatient(p); // Actually save it!
+            globalPatientsStore[activePatientId] = p; // Keep legacy variable in sync just in case
+            
+            if(typeof renderRxCartList === 'function') renderRxCartList();
+            
+            document.getElementById('inlineDrugSelect').value = '';
+            document.getElementById('inlineFreq').value = '';
+            document.getElementById('inlineDoseResult').innerHTML = '';
+        }
+    }
 
     // --- 4. INTEGRATED MEDS AUDIT & HOPI ---
     let lastAuditResult = "";

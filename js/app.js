@@ -478,6 +478,53 @@ window.loadPatientFromDB = function(pId) {
     if(typeof showSystemToast === 'function') showSystemToast(`✅ Opened ${p.name}'s File`);
 };
 
+window.openEncounterSummary = function(btnElem) {
+        if (!AppStore.getActivePatientId()) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first to view summaries!");
+            return;
+        }
+        
+        // Use your existing ViewController to switch views safely
+        if(typeof ViewController !== 'undefined') ViewController.switchNavTab('encounterSummaryGlobalView');
+        
+        if (btnElem) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btnElem.classList.add('active');
+        }
+        renderGlobalVisitLedger();
+    };
+
+    window.renderGlobalVisitLedger = function() {
+        const pId = AppStore.getActivePatientId();
+        if(!pId) return;
+        const p = AppStore.getPatient(pId);
+        const container = document.getElementById('globalLedgerContainer');
+
+        if (!p.visits || p.visits.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px dashed var(--border-soft);">No historical encounters recorded for this patient.</div>`;
+            return;
+        }
+
+        let html = "";
+        [...p.visits].reverse().forEach((visit) => {
+            const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            let rxHtml = visit.rxList ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit}) - <i>${rx.freq}</i>`).join("<br>") : "";
+
+            html += `
+            <div style="border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:1.2rem; margin-bottom:15px; background:var(--bg-surface); box-shadow:var(--shadow-sm);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border-soft); padding-bottom:8px;">
+                    <b style="color:var(--primary-dark); font-size:1.05rem;">${dateStr}</b>
+                    <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Clinical Encounter</span>
+                </div>
+                ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
+                <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications prescribed.</span>'}</div>
+                ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
+                ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-muted);"><b>Advice:</b> ${visit.advice}</div>` : ''}
+            </div>`;
+        });
+        container.innerHTML = html;
+    };
+
 // --- DATABASE RESTORE ENGINE ---
 window.restoreDatabase = function(input) {
     if (!input.files || !input.files[0]) return;
