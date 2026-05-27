@@ -195,15 +195,6 @@
             </div>
             <div id="homeQuickToolsGrid" class="tools-grid"></div>
         </div> 
-
-        <div id="encounterSummaryGlobalView" class="view-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                <h2 class="section-title" style="margin:0; border:none;">📄 Encounter Summary Review</h2>
-                <div style="display:flex; gap:10px;">
-                    <button class="secondary" onclick="editDraft()" style="margin:0; font-weight:bold; background:#fff;">✏️ Edit Draft</button>
-                    <button class="action" onclick="lockVisit()" style="margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock</button>
-                </div>
-            </div>
             
             <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
                 <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
@@ -287,17 +278,7 @@
                 <div id="fullDatabaseList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:15px;"></div>
             </div>
         </div>
-        <div id="historicalEncountersView" class="view-content">
-            <h2 class="section-title">📂 Historical Ledger</h2>
-            <div id="historicalLedgerContainer"></div>
-        </div>
-
-        <div id="encounterSummaryGlobalView" class="view-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
-                <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
-            </div>
-            
+        
             <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
                 <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
                     </div>
@@ -381,6 +362,61 @@
                 <div id="aiCopilotSuggestions" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:5px;"></div>
             </div>
 
+            <div id="historicalEncountersView" class="view-content">
+            <h2 class="section-title">📂 Historical Ledger</h2>
+            <div id="historicalLedgerContainer"></div>
+        </div>
+
+        <div id="encounterSummaryGlobalView" class="view-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
+                <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
+            </div>
+            
+            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
+                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
+                    </div>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary);">
+                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
+                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
+                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
+                        <button class="action" onclick="executePrint('milestones')" style="margin:0 0 10px 0; width:100%; padding:12px; border:1px solid var(--primary); color:var(--primary-dark); background:white;">🖨️ Print Milestones</button>
+                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 WhatsApp Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="historicalEncountersView" class="view-content">
+            <h2 class="section-title">📂 Historical Ledger</h2>
+            <div id="historicalLedgerContainer"></div>
+        </div>
+
+        <div id="encounterSummaryGlobalView" class="view-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
+                <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
+            </div>
+            
+            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
+                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
+                    </div>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary);">
+                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
+                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
+                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
+                        <button class="action" onclick="executePrint('milestones')" style="margin:0 0 10px 0; width:100%; padding:12px; border:1px solid var(--primary); color:var(--primary-dark); background:white;">🖨️ Print Milestones</button>
+                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 WhatsApp Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- ER FEATURE VIEW CONTINUES NORMALLY -->
             <div id="erFeatureView" class="view-content">
                 <h2 class="section-title" style="color:var(--danger)">🚨 ER & NICU Resuscitation</h2>
                 <div class="sub-tabs-nav">
