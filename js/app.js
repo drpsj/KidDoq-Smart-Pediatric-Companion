@@ -594,17 +594,23 @@
 
         // 2. Lock them in as the Active Patient
         AppStore.setActivePatient(pId);
+        window.activePatientId = pId; // FIX: Updates the legacy bridge so the Print Engine works!
 
-        // 3. Update the Header UI
+        // 3. Update the Header UI & Sticky Banner
         const headerEl = document.getElementById('headerPatientText');
         if (headerEl) {
             headerEl.innerText = `👤 ${p.name} | ${p.ageYrs || 0}Y ${p.ageMos || 0}M | ${p.weight} kg`;
         }
+        if (typeof updateStickyBanner === 'function') updateStickyBanner(pId);
 
-        // 4. Use the Traffic Cop to safely unhide the workspace 
-        // (We will open the Schedule Tracker by default, but you can change this to any view ID)
+        // 4. Use the Traffic Cop to safely unhide the workspace
         if (typeof ViewController !== 'undefined') {
-            ViewController.switchNavTab('trackerFeatureView'); 
+            // FIX: Open the Rx & Encounters tool by default
+            ViewController.openClinicalTool('prescriptionFeatureView');
+            
+            // Force it to open the Ledger/Notes sub-tab specifically
+            let ledgerTabBtn = document.querySelector('[onclick*="rxNotesTab"]');
+            if(ledgerTabBtn) ViewController.switchSubTab('rxNotesTab', ledgerTabBtn);
         } else {
             // Fallback just in case
             const ws = document.getElementById('activeWorkspace');
@@ -612,13 +618,14 @@
         }
 
         // 5. WAKE UP ALL CLINICAL ENGINES!
-        // This forces all tabs to pre-calculate their math so it's ready when you click them.
         setTimeout(() => {
+            if (typeof renderVisitLedger === 'function') renderVisitLedger(); // Populates past encounters
             if (typeof calcMalnutrition === 'function') calcMalnutrition();
             if (typeof calcNutrition === 'function') calcNutrition();
             if (typeof renderRecallLog === 'function') renderRecallLog();
             if (typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
-            if (typeof renderFullDatabase === 'function') renderFullDatabase(); // Highlights active patient in DB
+            if (typeof renderFullDatabase === 'function') renderFullDatabase();
+            if (typeof updateCopilot === 'function') updateCopilot(pId);
         }, 50);
 
         if(typeof showSystemToast === 'function') showSystemToast(`✅ Opened ${p.name}'s File`);
