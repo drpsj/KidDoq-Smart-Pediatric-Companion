@@ -33,7 +33,13 @@
     <link rel="stylesheet" href="css/style.css?v=3">
     <script>
     if ('serviceWorker' in navigator) {
-        r('sw.js');
+        navigator.serviceWorker.register('./sw.js')
+            .then(function(registration) {
+                console.log('Service Worker Registered Successfully', registration.scope);
+            })
+            .catch(function(error) {
+                console.log('Service Worker Registration Failed', error);
+            });
     }
 </script>
 </head>
