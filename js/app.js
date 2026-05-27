@@ -1,7 +1,5 @@
 // js/app.js
 
-// --- 2. GLOBAL STATE (Secured via AppStore) ---
-// FIX: Changed 'let' to 'var' to prevent variable shadowing bugs
 var appSettings = AppStore.getSettings();
 var globalPatientsStore = AppStore.getAllPatients(); 
 var activePatientId = AppStore.getActivePatientId(); 
@@ -13,7 +11,6 @@ let currentPatientAgeInMonths = 0;
 let wtChartInstance = null; 
 let htChartInstance = null;
 
-// --- 2.5 QUICK ACCESS ENGINE ---
 const masterToolRegistry = [
     { id: 'prescriptionFeatureView', name: 'Rx & Dosing', icon: 'icon-rx.png' },
     { id: 'certificateFeatureView', name: 'Certificates', icon: 'icon-cert.png' },
@@ -77,7 +74,6 @@ function showSystemToast(msg) {
     }, 3000);
 }
 
-// --- 5. PATIENT REGISTRY ---
 function getExpectedWeight(totalM) {
     if (!totalM) return 0;
     let y = Math.floor(totalM / 12);
@@ -88,16 +84,19 @@ function getExpectedWeight(totalM) {
 }
 
 function prepNewPatient() {
+    AppStore.clearActivePatient();
     activePatientId = null;
     document.getElementById('pName').value = ""; document.getElementById('pPhone').value = "";
     document.getElementById('dob').value = ""; document.getElementById('ageYrs').value = ""; document.getElementById('ageMos').value = "";
     document.getElementById('pWeight').value = ""; document.getElementById('htCm').value = ""; document.getElementById('hcCm').value = "";
     if(document.getElementById('jeEndemic')) document.getElementById('jeEndemic').checked = false; 
-    if(document.getElementById('calcWeight')) document.getElementById('calcWeight').value = ""; document.getElementById('fluidWeight').value = ""; document.getElementById('crashWeight').value = "";
+    if(document.getElementById('calcWeight')) document.getElementById('calcWeight').value = ""; 
+    if(document.getElementById('fluidWeight')) document.getElementById('fluidWeight').value = ""; 
+    if(document.getElementById('crashWeight')) document.getElementById('crashWeight').value = "";
     
-    switchMainFeature('homeDashboardView'); 
+    if(typeof ViewController !== 'undefined') ViewController.switchNavTab('homeDashboardView');
     
-    if(document.getElementById('masterActionsBar')) document.getElementById('masterActionsBar').style.display = "none";
+    if(document.getElementById('activeWorkspace')) document.getElementById('activeWorkspace').style.display = "none";
     if(document.getElementById('headerPatientText')) document.getElementById('headerPatientText').innerText = "👤 Patient";
 }
 
@@ -125,7 +124,6 @@ function estimateWeightFromAge() {
     saveAndRegisterPatient(true);
 }
 
-// --- PATIENT REGISTRY CONTROLLER ---
 window.saveAndRegisterPatient = async function(isBackgroundUpdate = false) {
     const activeId = AppStore.getActivePatientId();
     let nameStr = document.getElementById('pName').value.trim() || "Anonymous";
@@ -172,7 +170,7 @@ window.saveAndRegisterPatient = async function(isBackgroundUpdate = false) {
 };
 
 function updateStickyBanner(pId) {
-    const p = AppStore.getPatient(pId) || globalPatientsStore[pId];
+    const p = AppStore.getPatient(pId) || AppStore.getAllPatients()[pId];
     if(!p) return;
     document.getElementById('bannerPName').innerText = p.name;
     document.getElementById('bannerPAge').innerText = `${p.ageYrs}Y ${p.ageMos}M`;
@@ -181,7 +179,6 @@ function updateStickyBanner(pId) {
     document.getElementById('bannerPGender').innerText = genderStr;
 }
 
-// --- SYSTEM SETTINGS & DATABASE MANAGER ENGINE ---
 function toggleDarkMode(isDark) {
     if(isDark) { document.body.classList.add('dark-mode'); }
     else { document.body.classList.remove('dark-mode'); }
@@ -243,7 +240,7 @@ function renderFullDatabase() {
     const container = document.getElementById('fullDatabaseList');
     if(!container) return;
     const query = document.getElementById('dbSearchInput').value.toLowerCase();
-    const patientKeys = Object.keys(globalPatientsStore).reverse(); 
+    const patientKeys = Object.keys(AppStore.getAllPatients()).reverse(); 
     
     if(patientKeys.length === 0) {
         container.innerHTML = `
@@ -258,7 +255,7 @@ function renderFullDatabase() {
     
     let html = "";
     patientKeys.forEach(id => {
-        let p = globalPatientsStore[id];
+        let p = AppStore.getPatient(id);
         if (p.name.toLowerCase().includes(query) || (p.phone && p.phone.includes(query))) {
             html += `
             <div style="background:var(--bg-surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); padding:1.5rem; box-shadow:var(--shadow-sm);">
@@ -278,23 +275,22 @@ function renderFullDatabase() {
     container.innerHTML = html;
 }
 
-// FIX: Dedicated function to properly shut down the Vault
 function closePatientFile() {
-    AppStore.clearActivePatient(); // Safely close vault
-    activePatientId = null; // Sync global
+    AppStore.clearActivePatient(); 
+    activePatientId = null; 
     document.getElementById('activeWorkspace').style.display = 'none';
     const headerText = document.getElementById('headerPatientText');
     if(headerText) headerText.innerText = '';
-    if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
+    if (typeof ViewController !== 'undefined') ViewController.switchNavTab('homeDashboardView');
     if (typeof showSystemToast === 'function') showSystemToast("Patient file closed.");
 }
 
 function exportDatabase() {
-    if(Object.keys(globalPatientsStore).length === 0) {
+    if(Object.keys(AppStore.getAllPatients()).length === 0) {
         if(typeof showSystemToast === "function") showSystemToast("⚠️ Database is empty!");
         return;
     }
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalPatientsStore));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(AppStore.getAllPatients()));
     const dlAnchorElem = document.createElement('a');
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", `Pediatric_Hub_Backup_${new Date().toISOString().split('T')[0]}.json`);
@@ -314,7 +310,6 @@ function updateGreeting() {
     if(greetingEl) greetingEl.innerHTML = `${timeGreet}, ${docName} <span style="font-size:1.4rem;">👋</span>`;
 }
 
-// --- DOCTOR AUTHENTICATION ENGINE ---
 let doctorProfiles = JSON.parse(localStorage.getItem('kiddoq_profiles')) || [];
 let activeDoctorId = localStorage.getItem('kiddoq_active_doctor') || null;
 
@@ -352,7 +347,7 @@ function createNewDoctorProfile() {
 }
 
 function updateCopilot(pId) {
-    const p = AppStore.getPatient(pId) || globalPatientsStore[pId];
+    const p = AppStore.getPatient(pId);
     const container = document.getElementById('aiCopilotSuggestions');
     if(!p || !container) return;
 
@@ -394,7 +389,6 @@ function loginAsDoctor(docId) {
     if(typeof updateGreeting === 'function') updateGreeting();
 }
 
-// --- MASTER INITIALIZATION ENGINE ---
 document.addEventListener("DOMContentLoaded", function() {
     if (typeof applySettingsToUI === 'function') applySettingsToUI();
     if (typeof populateDrugs === 'function') populateDrugs();
@@ -406,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if(activeDoctorId && doctorProfiles.length > 0) {
         loginAsDoctor(activeDoctorId);
-        if (typeof switchNavTab === 'function') switchNavTab('homeDashboardView');
+        if (typeof ViewController !== 'undefined') ViewController.switchNavTab('homeDashboardView');
     } else {
         showAuthScreen();
     }
@@ -417,14 +411,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 2000);
 });
 
-// Boot up the Nutrition Database UI
 if (typeof renderFoodDB === 'function' && typeof window.foodsDb !== 'undefined') {
     renderFoodDB(window.foodsDb);
 }
 
-// ==========================================
-// 📂 THE ULTIMATE PATIENT FILE LOADER
-// ==========================================
 window.loadPatientFromDB = function(pId) {
     const p = AppStore.getPatient(pId);
     if (!p) {
@@ -432,17 +422,13 @@ window.loadPatientFromDB = function(pId) {
         return;
     }
 
-    // FIX: Lock them into Vault AND properly sync legacy variables!
     AppStore.setActivePatient(pId);
     activePatientId = pId; 
-    globalPatientsStore[pId] = p; 
 
-    // Update Header & Banner UI
     const headerEl = document.getElementById('headerPatientText');
     if (headerEl) headerEl.innerText = `👤 ${p.name} | ${p.ageYrs || 0}Y ${p.ageMos || 0}M | ${p.weight} kg`;
     if (typeof updateStickyBanner === 'function') updateStickyBanner(pId);
 
-    // FIX: Safe Workspace Navigation directly to Encounters
     if (typeof ViewController !== 'undefined') {
         ViewController.openClinicalTool('prescriptionFeatureView');
         setTimeout(() => {
@@ -451,7 +437,6 @@ window.loadPatientFromDB = function(pId) {
         }, 50);
     }
 
-    // WAKE UP ALL CLINICAL ENGINES
     setTimeout(() => {
         if (typeof renderVisitLedger === 'function') renderVisitLedger(); 
         if (typeof calcMalnutrition === 'function') calcMalnutrition();
@@ -462,8 +447,6 @@ window.loadPatientFromDB = function(pId) {
         if (typeof renderMilestoneDashboard === 'function') renderMilestoneDashboard();
         if (typeof updateCopilot === 'function') updateCopilot(pId);
         
-        
-        // Auto-fill values across tools
         if(document.getElementById('calcWeight')) document.getElementById('calcWeight').value = p.weight || "";
         document.getElementById('pName').value = p.name || "";
         document.getElementById('pPhone').value = p.phone || "";
@@ -478,54 +461,6 @@ window.loadPatientFromDB = function(pId) {
     if(typeof showSystemToast === 'function') showSystemToast(`✅ Opened ${p.name}'s File`);
 };
 
-window.openEncounterSummary = function(btnElem) {
-        if (!AppStore.getActivePatientId()) {
-            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first to view summaries!");
-            return;
-        }
-        
-        // Use your existing ViewController to switch views safely
-        if(typeof ViewController !== 'undefined') ViewController.switchNavTab('encounterSummaryGlobalView');
-        
-        if (btnElem) {
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btnElem.classList.add('active');
-        }
-        renderGlobalVisitLedger();
-    };
-
-    window.renderGlobalVisitLedger = function() {
-        const pId = AppStore.getActivePatientId();
-        if(!pId) return;
-        const p = AppStore.getPatient(pId);
-        const container = document.getElementById('globalLedgerContainer');
-
-        if (!p.visits || p.visits.length === 0) {
-            container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px dashed var(--border-soft);">No historical encounters recorded for this patient.</div>`;
-            return;
-        }
-
-        let html = "";
-        [...p.visits].reverse().forEach((visit) => {
-            const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-            let rxHtml = visit.rxList ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit}) - <i>${rx.freq}</i>`).join("<br>") : "";
-
-            html += `
-            <div style="border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:1.2rem; margin-bottom:15px; background:var(--bg-surface); box-shadow:var(--shadow-sm);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border-soft); padding-bottom:8px;">
-                    <b style="color:var(--primary-dark); font-size:1.05rem;">${dateStr}</b>
-                    <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Clinical Encounter</span>
-                </div>
-                ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
-                <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications prescribed.</span>'}</div>
-                ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
-                ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-muted);"><b>Advice:</b> ${visit.advice}</div>` : ''}
-            </div>`;
-        });
-        container.innerHTML = html;
-    };
-
-// --- DATABASE RESTORE ENGINE ---
 window.restoreDatabase = function(input) {
     if (!input.files || !input.files[0]) return;
     let reader = new FileReader();
@@ -533,7 +468,11 @@ window.restoreDatabase = function(input) {
         try {
             const imported = JSON.parse(e.target.result);
             localStorage.setItem('nis_patients', JSON.stringify(imported));
-            globalPatientsStore = imported; // Sync memory
+            
+            // Sync memory for global state
+            for (let id in imported) {
+                AppStore.savePatient(imported[id]);
+            }
             if (typeof renderFullDatabase === 'function') renderFullDatabase();
             if (typeof showSystemToast === 'function') showSystemToast("✅ Database Restored Successfully!");
         } catch(err) { 
@@ -541,10 +480,9 @@ window.restoreDatabase = function(input) {
         }
     };
     reader.readAsText(input.files[0]);
-    input.value = ""; // Clear the input so you can upload the same file again if needed
+    input.value = ""; 
 };
 
-// --- 1. HISTORICAL LEDGER CONTROLLER ---
 window.openHistoricalEncounters = function(btnElem) {
     if (!AppStore.getActivePatientId()) {
         if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
@@ -571,8 +509,6 @@ window.renderHistoricalLedger = function() {
 
     let html = "";
     
-    // Removed the inline header because the Sticky Banner will handle it now!
-
     [...p.visits].reverse().forEach((visit) => {
         const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
         let rxHtml = visit.rxList && visit.rxList.length > 0 ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit})`).join("<br>") : "";
@@ -595,7 +531,6 @@ window.renderHistoricalLedger = function() {
     container.innerHTML = html;
 };
 
-// --- 2. ACTIVE SUMMARY PREVIEW CONTROLLER ---
 window.openActiveSummary = function(btnElem) {
     if (!AppStore.getActivePatientId()) {
         if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
@@ -625,8 +560,6 @@ window.renderLiveComprehensiveSummary = function() {
     const p = AppStore.getPatient(pId);
     const container = document.getElementById('liveSummaryPreview');
     let html = `<div style="font-family:sans-serif; color:#333;">`;
-    
-    // Removed the inline header because the Sticky Banner handles it!
     
     html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Draft (Unsaved)</h3>`;
     
@@ -663,7 +596,6 @@ window.renderLiveComprehensiveSummary = function() {
     container.innerHTML = html;
 };
 
-// --- BULLETPROOF ROUTING OVERRIDES (This fixes your tools!) ---
 window.openClinicalTool = function(toolId) {
     if (!AppStore.getActivePatientId()) {
         if (typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
@@ -709,5 +641,4 @@ window.switchSubTab = function(tabId, btnElement) {
     }
 };
 
-// Unified Legacy Bridge
 window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;
