@@ -105,16 +105,28 @@
     }
 
     // --- 11. MILESTONES ---
-    function renderMilestoneDashboard() {
-        if(!activePatientId) return;
-        const patient = globalPatientsStore[activePatientId]; const achieved = patient.achievedMilestones || {};
+    window.renderMilestoneDashboard = function() {
+        // 1. Secure read from Vault
+        const pId = AppStore.getActivePatientId();
+        if(!pId) return;
+
+        const patient = AppStore.getPatient(pId);
+        const achieved = patient.achievedMilestones || {};
+        const ageInMonths = patient.totalMonths || 0; // Securely grabs age instead of using global variable
+
         const availableAges = Object.keys(milestonesDb).map(Number).sort((a,b)=>a-b);
         let currentBracket = 0; let upcomingBracket = 0;
-        for(let i=0; i<availableAges.length; i++){ if(currentPatientAgeInMonths >= availableAges[i]) currentBracket = availableAges[i]; else break; }
-        upcomingBracket = availableAges.find(age => age > currentPatientAgeInMonths) || null;
+        
+        for(let i=0; i<availableAges.length; i++){ 
+            if(ageInMonths >= availableAges[i]) currentBracket = availableAges[i]; 
+            else break; 
+        }
+        upcomingBracket = availableAges.find(age => age > ageInMonths) || null;
         
         const evalContainer = document.getElementById('msEvalContainer');
-        if (currentBracket === 0) { evalContainer.innerHTML = "<p>Patient under milestone tracker bracket parameters.</p>"; } else {
+        if (currentBracket === 0) { 
+            evalContainer.innerHTML = "<p>Patient under milestone tracker bracket parameters.</p>"; 
+        } else {
             let evalHTML = "";
             availableAges.forEach(age => {
                 if (age <= currentBracket) {
@@ -138,9 +150,20 @@
         document.getElementById('msCompletedContainer').innerHTML = completedHTML || "<p>No milestones recorded.</p>";
         document.getElementById('msMissedContainer').innerHTML = missedHTML || "<div style='padding:1.5rem; background:rgba(16, 185, 129, 0.1); border:1px solid #16a34a; border-radius:var(--radius-lg); color:#166534; font-weight:bold;'>✅ All verification targets achieved.</div>";
         document.getElementById('msUpcomingContainer').innerHTML = upcomingBracket ? `<h4 style="margin:1rem 0 0.5rem 0; color:var(--primary); font-size:1.1rem; border-bottom:1px solid var(--border-soft); padding-bottom:5px;">Targeting: ${upcomingBracket} Months</h4>` + milestonesDb[upcomingBracket].map(m => `<div style="padding:1rem; border:1px solid var(--border-soft); border-radius:var(--radius-md); margin-bottom:0.75rem; background:var(--bg-surface); font-size:0.95rem; box-shadow:var(--shadow-sm);"><span style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); text-transform:uppercase;">${m.domain}</span><div style="font-weight:600; margin-top:5px; color:var(--text-main);">${m.text}</div></div>`).join("") : "<p>Advanced baseline clearance parameters.</p>";
-    }
+    };
 
-    function toggleMilestone(mId, isChecked) { globalPatientsStore[activePatientId].achievedMilestones[mId] = isChecked; localStorage.setItem('nis_patients', JSON.stringify(globalPatientsStore)); renderMilestoneDashboard(); }
+    window.toggleMilestone = function(mId, isChecked) {
+        // 2. Secure Write to Vault
+        const pId = AppStore.getActivePatientId();
+        if(!pId) return;
+        
+        let p = AppStore.getPatient(pId);
+        if(!p.achievedMilestones) p.achievedMilestones = {};
+        p.achievedMilestones[mId] = isChecked;
+        
+        AppStore.savePatient(p);
+        renderMilestoneDashboard();
+    };
     
     function buildMilestoneReference() {
         let tableHTML = `<table class="theory-table"><thead><tr><th>Age Bracket</th><th>Domain</th><th>Milestone Marker</th></tr></thead><tbody>`;

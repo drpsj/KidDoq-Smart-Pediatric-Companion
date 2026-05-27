@@ -188,15 +188,18 @@ function getPrintHeaderHTML(title, patientObj) {
     };
 
     window.executePrint = function(mode) {
-        // FIX 1: Allow both 'prescription' and 'rx' to pass the gatekeeper
-        if (!activePatientId && mode !== 'prescription' && mode !== 'rx' && mode !== 'certificate') { 
+        // 1. Ask the Vault securely for the ID
+        const currentPId = typeof AppStore !== 'undefined' ? AppStore.getActivePatientId() : null;
+
+        // 2. The Gatekeeper
+        if (!currentPId && mode !== 'prescription' && mode !== 'rx' && mode !== 'certificate') { 
             if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select or add a patient first!"); 
             return; 
         }
         const engine = document.getElementById('printEngine'); 
         
-        // Use AppStore if available, fallback to global store just in case
-        let p = (typeof AppStore !== 'undefined' ? AppStore.getPatient(activePatientId) : globalPatientsStore[activePatientId]);
+        // 3. Secure read from the vault
+        let p = AppStore.getPatient(currentPId);
         
         if (!p) {
             p = {
@@ -215,20 +218,16 @@ function getPrintHeaderHTML(title, patientObj) {
         
         let html = "";
 
-        // --- 🍎 NEW: NUTRITION & DIET PLAN ---
         if (mode === 'nutrition') {
             html += getPrintHeaderHTML("PEDIATRIC NUTRITION & DIET PLAN", p);
-            html += generateNutritionReport(activePatientId);
+            html += generateNutritionReport(currentPId);
         }
 
         if (mode === 'tracker' || mode === 'comprehensive') { 
-            // Swap the old timeline HTML for our new Compact Table generator
-            html += getPrintHeaderHTML("IMMUNIZATION SCHEDULE REPORT", p) + generateCompactVaccineTable(activePatientId); 
-            
+            html += getPrintHeaderHTML("IMMUNIZATION SCHEDULE REPORT", p) + generateCompactVaccineTable(currentPId); 
             if (mode === 'comprehensive') html += `<div class="page-break"></div>`; 
         }
         
-        // FIX 2: Listen for BOTH 'prescription' and 'rx' triggers
         if (mode === 'prescription' || mode === 'rx') {
             html += getPrintHeaderHTML("PRESCRIPTION", p);
             
@@ -281,8 +280,8 @@ function getPrintHeaderHTML(title, patientObj) {
             let cBodyText = document.getElementById('certBody') ? document.getElementById('certBody').value : "No content provided.";
             cBodyText = cBodyText.replace(/\n/g, '<br>');
             
-            // Access appSettings securely if possible
-            const sigSettings = typeof AppStore !== 'undefined' ? AppStore.getSettings() : (typeof appSettings !== 'undefined' ? appSettings : {});
+            // Access appSettings securely
+            const sigSettings = typeof AppStore !== 'undefined' ? AppStore.getSettings() : {};
             let sigHtml = sigSettings.signature ? `<img src="${sigSettings.signature}" style="max-height:60px; margin-bottom:5px;"><br>` : `<br><br><br>`;
             
             html += `<div style="line-height:2; font-size:16px; margin-top:20px; text-align:justify; font-family:sans-serif;">${cBodyText}</div>`;
@@ -316,8 +315,7 @@ function getPrintHeaderHTML(title, patientObj) {
             html += `<div class="page-break"></div>`;
             html += getPrintHeaderHTML("IMMUNIZATION STATUS", p);
             
-            // FIX 3: Replaced the old DOM pull with the clean, compact table for the comprehensive printout!
-            html += generateCompactVaccineTable(activePatientId); 
+            html += generateCompactVaccineTable(currentPId); 
         }
 
         html += `
