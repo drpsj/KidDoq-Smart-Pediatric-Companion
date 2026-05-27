@@ -417,4 +417,74 @@
     flex-shrink: 0;
 }
 
+/* =========================================
+   KIDDOQ MOBILE DIAGNOSTIC FIXES
+   ========================================= */
+
+@media (max-width: 1023px) {
+    /* FIX 1: The iOS Auto-Zoom Bug */
+    /* Forces all inputs to be exactly 16px on mobile so the screen never zooms in unexpectedly */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+
+    /* FIX 2: Squished Row Inputs */
+    /* Prevents side-by-side inputs from crushing each other on narrow screens */
+    .row-inputs { 
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; 
+    }
+
+    /* FIX 3: Horizontal Table Blowouts */
+    /* Forces tables to scroll internally instead of stretching the whole app page */
+    .theory-table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap; /* Keeps table cells from crunching text */
+    }
+
+    /* FIX 4: Tool Grid & Button Text Wrapping */
+    .tools-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
+        gap: 12px !important;
+    }
+    .tool-btn { padding: 15px 5px !important; }
+    .tool-icon-wrapper { width: 50px !important; height: 50px !important; }
+    .tool-btn span { font-size: 0.8rem !important; }
+
+    /* FIX 5: Safe Area Insets (For iPhones with the bottom swipe bar) */
+    .main-nav {
+        padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    }
+    .main-content {
+        padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+    }
+
+    /* FIX 6: Floating Action Button & Toast Overlap */
+    .fab {
+        bottom: calc(85px + env(safe-area-inset-bottom)) !important;
+        right: 15px !important;
+        width: 55px !important; height: 55px !important;
+    }
+    #systemToastContainer {
+        bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+        right: 15px !important;
+        left: 15px !important; /* Centers toasts on mobile */
+        align-items: center;
+    }
+
+    /* FIX 7: Modal Keyboard Squeeze */
+    /* Prevents the modal from becoming 10px tall when the mobile keyboard pops up */
+    .modal-content {
+        max-height: 85vh !important; /* Uses vh instead of dvh to stabilize keyboard popups */
+        padding: 20px 15px !important;
+    }
+
+    /* FIX 8: Live Rx Preview alignment */
+    #rxCartList {
+        min-height: auto !important;
+    }
+}
+
         
