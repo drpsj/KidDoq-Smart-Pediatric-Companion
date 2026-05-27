@@ -116,19 +116,23 @@
 
 <div class="app-shell home-active">
     <nav class="main-nav">
-        <button class="nav-item" style="width: 25%;" onclick="switchMainFeature('databaseFeatureView', this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchMainFeature('databaseFeatureView', this)">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             Patients
         </button>
-        <button class="nav-item active" style="width: 25%;" onclick="switchNavTab('toolsTab')">
+        <button class="nav-item active" style="width: 20%;" onclick="switchNavTab('toolsTab')">
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             Tools
         </button>
-        <button class="nav-item" style="width: 25%;" onclick="openEncounterSummary(this)">
+        <button class="nav-item" style="width: 20%;" onclick="openHistoricalEncounters(this)">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Ledger
+        </button>
+        <button class="nav-item" style="width: 20%;" onclick="openActiveSummary(this)">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             Summary
         </button>
-        <button class="nav-item" style="width: 25%;" onclick="switchNavTab('aboutFeatureView')">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('aboutFeatureView')">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             Settings
         </button>
@@ -187,8 +191,30 @@
         </div> 
 
         <div id="encounterSummaryGlobalView" class="view-content">
-            <h2 class="section-title">📂 Historical Encounter Summary</h2>
-            <div id="globalLedgerContainer"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 class="section-title" style="margin:0; border:none;">📄 Encounter Summary Review</h2>
+                <div style="display:flex; gap:10px;">
+                    <button class="secondary" onclick="editDraft()" style="margin:0; font-weight:bold; background:#fff;">✏️ Edit Draft</button>
+                    <button class="action" onclick="lockVisit()" style="margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock</button>
+                </div>
+            </div>
+            
+            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
+                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
+                    </div>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary); margin-bottom:10px;">
+                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
+                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
+                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
+                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 Send via WhatsApp</button>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); text-align:center;">
+                        Verify all details in the preview window before locking the visit to the historical ledger.
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div id="toolsTab" class="view-content">
@@ -253,6 +279,32 @@
                     <button class="action" onclick="exportDatabase()" style="width:auto; margin:0; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); padding:10px 20px;">📥 Backup Database</button>
                 </div>
                 <div id="fullDatabaseList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:15px;"></div>
+            </div>
+        </div>
+        <div id="historicalEncountersView" class="view-content">
+            <h2 class="section-title">📂 Historical Ledger</h2>
+            <div id="historicalLedgerContainer"></div>
+        </div>
+
+        <div id="encounterSummaryGlobalView" class="view-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
+                <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
+            </div>
+            
+            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
+                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
+                    </div>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary);">
+                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
+                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
+                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
+                        <button class="action" onclick="executePrint('milestones')" style="margin:0 0 10px 0; width:100%; padding:12px; border:1px solid var(--primary); color:var(--primary-dark); background:white;">🖨️ Print Milestones</button>
+                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 WhatsApp Report</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -520,30 +572,10 @@
 
                                     <h4 style="margin:0 0 10px 0; color:var(--primary);">📄 Live Rx Preview</h4>
                                     <div id="rxCartList" style="background:#ffffff; padding:20px; border-radius:6px; border:1px solid var(--border-soft); flex-grow:1; margin-bottom:15px; min-height:320px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family:sans-serif; color:#333;"></div>
-                                    <button class="action" onclick="previewDraft()" style="background:var(--brand-blue); margin:0; box-shadow:var(--shadow-md); padding:1rem; font-size:1.1rem;">👁️ Preview & Save Draft</button>
+                                    <button class="action" onclick="openActiveSummary(this)" style="background:var(--brand-blue); margin:0; box-shadow:var(--shadow-md); padding:1rem; font-size:1.1rem;">👁️ Preview & Save Draft</button>
                                 </div>
                             </div>
                         </div>
-
-                        <div id="rxPostVisitView" style="display:none; text-align:center; padding:2rem 1rem; background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-soft);">
-                            <div style="font-size:3.5rem; margin-bottom:10px; animation: bounceIn 0.5s ease;">📄</div>
-                            <h3 style="color:var(--primary); margin-bottom:5px; font-size:1.4rem;">Encounter Summary</h3>
-                            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:25px;">Review the preview outputs below. Tap lock when ready to securely sign.</p>
-                            
-                            <div style="display:flex; flex-direction:column; gap:12px; max-width:320px; margin:0 auto;">
-                                <button class="action" onclick="executePrint('rx')" style="margin:0; padding:14px; background:var(--primary); font-size:1.05rem; box-shadow:var(--shadow-md);">🖨️ Print Prescription</button>
-                                <button class="action" onclick="executePrint('comprehensive')" style="margin:0; padding:14px; background:var(--brand-cyan); color:var(--primary-dark); font-size:1.05rem; box-shadow:var(--shadow-md);">📄 Print Full Summary</button>
-                                <button class="action" onclick="sendWACompReport()" style="margin:0; padding:14px; background:#25D366; font-size:1.05rem; box-shadow:var(--shadow-md);">📱 Send via WhatsApp</button>
-                                
-                                <hr style="border:0; border-top:1px dashed var(--border-soft); margin:15px 0;">
-                                
-                                <button class="secondary" onclick="editDraft()" style="margin:0; padding:14px; font-weight:bold; color:var(--text-main); background:#fff;">✏️ Go Back & Edit</button>
-                                <button class="action" onclick="lockVisit()" style="margin:0; padding:14px; background:var(--danger); font-size:1.05rem; box-shadow:var(--shadow-md);">🔒 Sign & Lock to Ledger</button>
-                            </div> 
-                        </div> 
-                    </div> 
-                </div> 
-            </div> 
 
             <div id="certificateFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">

@@ -543,5 +543,284 @@ window.restoreDatabase = function(input) {
     reader.readAsText(input.files[0]);
     input.value = ""; // Clear the input so you can upload the same file again if needed
 };
+
+// --- 1. HISTORICAL LEDGER CONTROLLER ---
+    window.openHistoricalEncounters = function(btnElem) {
+        if (!AppStore.getActivePatientId()) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+            return;
+        }
+        if(typeof ViewController !== 'undefined') ViewController.switchNavTab('historicalEncountersView');
+        if (btnElem) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btnElem.classList.add('active');
+        }
+        renderHistoricalLedger();
+    };
+
+    window.renderHistoricalLedger = function() {
+        const pId = AppStore.getActivePatientId();
+        if(!pId) return;
+        const p = AppStore.getPatient(pId);
+        const container = document.getElementById('historicalLedgerContainer');
+
+        if (!p.visits || p.visits.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px dashed var(--border-soft);">No historical encounters recorded. Lock an active visit to start the ledger.</div>`;
+            return;
+        }
+
+        let html = "";
+        [...p.visits].reverse().forEach((visit) => {
+            const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            let rxHtml = visit.rxList && visit.rxList.length > 0 ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit})`).join("<br>") : "";
+            
+            let dietHtml = visit.dietLogs && visit.dietLogs.length > 0 ? `<div style="font-size:0.85rem; color:#10b981; margin-top:5px;"><b>Diet Logged:</b> ${visit.dietLogs.length} items</div>` : "";
+            let vaxHtml = visit.vaccinesGiven && visit.vaccinesGiven.length > 0 ? `<div style="font-size:0.85rem; color:#5b61f6; margin-top:5px;"><b>Vaccines Given:</b> ${visit.vaccinesGiven.join(', ')}</div>` : "";
+
+            html += `
+            <div style="border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:1.2rem; margin-bottom:15px; background:var(--bg-surface); box-shadow:var(--shadow-sm);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border-soft); padding-bottom:8px;">
+                    <b style="color:var(--primary-dark); font-size:1.05rem;">${dateStr}</b>
+                    <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Wt: ${visit.weight || '--'} kg</span>
+                </div>
+                ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
+                <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications.</span>'}</div>
+                ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
+                ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-muted);"><b>Advice:</b> ${visit.advice}</div>` : ''}
+                ${dietHtml} ${vaxHtml}
+            </div>`;
+        });
+        container.innerHTML = html;
+    };
+
+    // --- 2. ACTIVE SUMMARY PREVIEW CONTROLLER ---
+    window.openActiveSummary = function(btnElem) {
+        if (!AppStore.getActivePatientId()) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+            return;
+        }
+        
+        let p = AppStore.getPatient(AppStore.getActivePatientId());
+        const finalWt = document.getElementById('inlineCalcWeight') ? document.getElementById('inlineCalcWeight').value : null;
+        if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
+
+        p.diagnosis = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : p.diagnosis;
+        p.tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : p.tests;
+        p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : p.advice;
+        p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : p.review;
+        AppStore.savePatient(p); 
+
+        if(typeof ViewController !== 'undefined') ViewController.switchNavTab('encounterSummaryGlobalView');
+        if (btnElem) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btnElem.classList.add('active');
+        }
+        renderLiveComprehensiveSummary();
+    };
+
+    window.renderLiveComprehensiveSummary = function() {
+        const pId = AppStore.getActivePatientId();
+        const p = AppStore.getPatient(pId);
+        const container = document.getElementById('liveSummaryPreview');
+        let html = `<div style="font-family:sans-serif; color:#333;">`;
+        
+        html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Draft (Unsaved)</h3>`;
+        
+        if (p.diagnosis) html += `<div style="margin-bottom:10px;"><b>Diagnosis:</b> ${p.diagnosis}</div>`;
+        if (p.rxList && p.rxList.length > 0) {
+            html += `<div style="margin-bottom:10px;"><b>Medications:</b><ul style="margin:5px 0; padding-left:20px;">`;
+            p.rxList.forEach(rx => { html += `<li style="margin-bottom:5px;"><b>${rx.name}</b> - ${rx.vol} ${rx.unit} (<i>${rx.freq}</i>)</li>`; });
+            html += `</ul></div>`;
+        }
+        if (p.tests) html += `<div style="margin-bottom:10px;"><b>Investigations:</b> ${p.tests.replace(/\n/g, '<br>')}</div>`;
+        if (p.advice) html += `<div style="margin-bottom:10px;"><b>Advice:</b> ${p.advice.replace(/\n/g, '<br>')}</div>`;
+        
+        let maln = typeof extractToolResult === 'function' ? extractToolResult('malnGridOutput') : ""; 
+        if(maln) html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Triage</h3>${maln}`;
+
+        if (p.dietLogs && p.dietLogs.length > 0 && typeof generateNutritionReport === 'function') {
+            html += `<div style="margin-top:20px;">${generateNutritionReport(pId)}</div>`;
+        }
+        
+        let todayStr = new Date().toISOString().split('T')[0];
+        let todaysVax = [];
+        if(p.givenDates) {
+            for (const [vaxId, date] of Object.entries(p.givenDates)) {
+                if (date === todayStr) todaysVax.push(vaxId);
+            }
+        }
+        if (todaysVax.length > 0) {
+            html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Vaccines Administered Today</h3>
+                     <ul style="padding-left:20px;">${todaysVax.map(v => `<li><b>${v.toUpperCase()}</b></li>`).join('')}</ul>`;
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+    };
+
+    // --- 1. HISTORICAL LEDGER CONTROLLER ---
+    window.openHistoricalEncounters = function(btnElem) {
+        if (!AppStore.getActivePatientId()) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+            return;
+        }
+        if(typeof ViewController !== 'undefined') ViewController.switchNavTab('historicalEncountersView');
+        if (btnElem) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btnElem.classList.add('active');
+        }
+        renderHistoricalLedger();
+    };
+
+    window.renderHistoricalLedger = function() {
+        const pId = AppStore.getActivePatientId();
+        if(!pId) return;
+        const p = AppStore.getPatient(pId);
+        const container = document.getElementById('historicalLedgerContainer');
+
+        if (!p.visits || p.visits.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px dashed var(--border-soft);">No historical encounters recorded. Lock an active visit to start the ledger.</div>`;
+            return;
+        }
+
+        let html = "";
+        [...p.visits].reverse().forEach((visit) => {
+            const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            let rxHtml = visit.rxList && visit.rxList.length > 0 ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit})`).join("<br>") : "";
+            
+            // Format historical diet/vaccines if they exist in this snapshot
+            let dietHtml = visit.dietLogs && visit.dietLogs.length > 0 ? `<div style="font-size:0.85rem; color:#10b981; margin-top:5px;"><b>Diet Logged:</b> ${visit.dietLogs.length} items</div>` : "";
+            let vaxHtml = visit.vaccinesGiven && visit.vaccinesGiven.length > 0 ? `<div style="font-size:0.85rem; color:#5b61f6; margin-top:5px;"><b>Vaccines Given:</b> ${visit.vaccinesGiven.join(', ')}</div>` : "";
+
+            html += `
+            <div style="border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:1.2rem; margin-bottom:15px; background:var(--bg-surface); box-shadow:var(--shadow-sm);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border-soft); padding-bottom:8px;">
+                    <b style="color:var(--primary-dark); font-size:1.05rem;">${dateStr}</b>
+                    <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Wt: ${visit.weight || '--'} kg</span>
+                </div>
+                ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
+                <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications.</span>'}</div>
+                ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
+                ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-muted);"><b>Advice:</b> ${visit.advice}</div>` : ''}
+                ${dietHtml} ${vaxHtml}
+            </div>`;
+        });
+        container.innerHTML = html;
+    };
+
+    // --- 2. ACTIVE SUMMARY & LOCK CONTROLLER ---
+    window.openActiveSummary = function(btnElem) {
+        if (!AppStore.getActivePatientId()) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+            return;
+        }
+        
+        // Save any pending text inputs from the Rx Pad to the Vault before previewing
+        let p = AppStore.getPatient(AppStore.getActivePatientId());
+        const finalWt = document.getElementById('inlineCalcWeight') ? document.getElementById('inlineCalcWeight').value : null;
+        if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
+
+        p.diagnosis = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : p.diagnosis;
+        p.tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : p.tests;
+        p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : p.advice;
+        p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : p.review;
+        AppStore.savePatient(p); 
+
+        if(typeof ViewController !== 'undefined') ViewController.switchNavTab('encounterSummaryGlobalView');
+        if (btnElem) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btnElem.classList.add('active');
+        }
+        renderLiveComprehensiveSummary();
+    };
+
+    window.renderLiveComprehensiveSummary = function() {
+        const pId = AppStore.getActivePatientId();
+        const p = AppStore.getPatient(pId);
+        const container = document.getElementById('liveSummaryPreview');
+        let html = `<div style="font-family:sans-serif; color:#333;">`;
+        
+        html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Draft (Unsaved)</h3>`;
+        
+        if (p.diagnosis) html += `<div style="margin-bottom:10px;"><b>Diagnosis:</b> ${p.diagnosis}</div>`;
+        if (p.rxList && p.rxList.length > 0) {
+            html += `<div style="margin-bottom:10px;"><b>Medications:</b><ul style="margin:5px 0; padding-left:20px;">`;
+            p.rxList.forEach(rx => { html += `<li style="margin-bottom:5px;"><b>${rx.name}</b> - ${rx.vol} ${rx.unit} (<i>${rx.freq}</i>)</li>`; });
+            html += `</ul></div>`;
+        }
+        if (p.tests) html += `<div style="margin-bottom:10px;"><b>Investigations:</b> ${p.tests}</div>`;
+        if (p.advice) html += `<div style="margin-bottom:10px;"><b>Advice:</b> ${p.advice}</div>`;
+        
+        // 1. Triage & Anthropometry Snapshot
+        let maln = typeof extractToolResult === 'function' ? extractToolResult('malnGridOutput') : ""; 
+        if(maln) html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Triage</h3>${maln}`;
+
+        // 2. ONLY Today's Diet Logs
+        if (p.dietLogs && p.dietLogs.length > 0 && typeof generateNutritionReport === 'function') {
+            html += `<div style="margin-top:20px;">${generateNutritionReport(pId)}</div>`;
+        }
+        
+        // 3. ONLY Today's Vaccines
+        let todayStr = new Date().toISOString().split('T')[0];
+        let todaysVax = [];
+        if(p.givenDates) {
+            for (const [vaxId, date] of Object.entries(p.givenDates)) {
+                if (date === todayStr) todaysVax.push(vaxId); // Only grab vaccines stamped with today's date
+            }
+        }
+        if (todaysVax.length > 0) {
+            html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; margin-top:20px;">Vaccines Administered Today</h3>
+                     <ul style="padding-left:20px;">${todaysVax.map(v => `<li><b>${v.toUpperCase()}</b></li>`).join('')}</ul>`;
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+    };
+
+    window.lockVisit = async function() {
+        if(!AppStore.getActivePatientId()) return;
+        let p = AppStore.getPatient(AppStore.getActivePatientId());
+        if (!p.visits) p.visits = [];
+        
+        // 1. Scan for Vaccines given specifically today
+        let todayStr = new Date().toISOString().split('T')[0];
+        let todaysVax = [];
+        if(p.givenDates) {
+            for (const [vaxId, date] of Object.entries(p.givenDates)) {
+                if (date === todayStr) todaysVax.push(vaxId);
+            }
+        }
+        
+        // 2. Create the immutable snapshot
+        const newVisit = {
+            id: 'v_' + Date.now(),
+            date: new Date().toISOString(),
+            weight: p.weight || "",
+            htCm: p.htCm || "",
+            hopi: document.getElementById('rxHopi') ? document.getElementById('rxHopi').value : "",
+            diagnosis: p.diagnosis || "",
+            tests: p.tests || "",
+            advice: p.advice || "",
+            review: p.review || "",
+            rxList: [...(p.rxList || [])], // Copy active meds
+            dietLogs: [...(p.dietLogs || [])], // Copy active diet
+            vaccinesGiven: todaysVax // Copy today's vaccines
+        };
+        
+        p.visits.push(newVisit); 
+        
+        // 3. Clear out the active staging buffers for the NEXT visit
+        p.rxList = []; 
+        p.dietLogs = []; 
+        p.diagnosis = ""; p.tests = ""; p.advice = ""; p.review = ""; 
+        
+        // 4. Save and Sync
+        AppStore.savePatient(p); 
+        if(typeof DB !== 'undefined') await DB.savePatient(p); 
+        if(typeof showSystemToast === 'function') showSystemToast("✅ Visit securely locked to historical ledger.");
+        
+        // Automatically bounce the user over to the Historical Ledger tab to see the saved entry
+        openHistoricalEncounters(document.querySelectorAll('.nav-item')[2]);
+    };
 // Unified Legacy Bridge
 window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;

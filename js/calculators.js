@@ -564,63 +564,75 @@ function populateHomeDrugs() {
         if(typeof showSystemToast === 'function') showSystemToast("✅ Appended to HOPI");
     };
 
-    // --- 5. WORKFLOW FINALIZATION ---
-    window.previewDraft = async function() {
-        if(!activePatientId) return;
-        
-        // 1. Get safe copy
-        let p = AppStore.getPatient(activePatientId);
-        
-        const finalWt = document.getElementById('inlineCalcWeight').value;
-        if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
-
-        p.diagnosis = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
-        p.tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
-        p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
-        p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : "";
-        
-        // 2. Save to Vault (and DB if async sync is active)
-        AppStore.savePatient(p); 
-        if(typeof DB !== 'undefined') await DB.savePatient(p); 
-
-        document.getElementById('rxDraftView').style.display = 'none';
-        document.getElementById('rxPostVisitView').style.display = 'block';
-        window.scrollTo(0,0);
+    // Safely redirect any old "Preview" buttons to our new Summary Tab
+    window.previewDraft = function() {
+        if(typeof openActiveSummary === 'function') {
+            // Find the summary nav button to highlight it
+            let summaryBtn = document.querySelectorAll('.nav-item')[3]; 
+            openActiveSummary(summaryBtn);
+        }
     };
 
     window.editDraft = function() {
-        document.getElementById('rxPostVisitView').style.display = 'none';
-        document.getElementById('rxDraftView').style.display = 'block';
-        window.scrollTo(0,0);
+        if(typeof ViewController !== 'undefined') {
+            // Jump back to tools, then specifically to the Rx pad
+            ViewController.switchNavTab('toolsTab');
+            ViewController.openClinicalTool('prescriptionFeatureView');
+            // Ensure the first sub-tab (Clinical Pad) is open
+            let rxNotesTabBtn = document.querySelector('[onclick*="rxNotesTab"]');
+            if(rxNotesTabBtn) ViewController.switchSubTab('rxNotesTab', rxNotesTabBtn);
+        }
     };
 
     window.lockVisit = async function() {
-        if(!activePatientId) return;
-        
-        let p = AppStore.getPatient(activePatientId);
+        if(!AppStore.getActivePatientId()) return;
+        let p = AppStore.getPatient(AppStore.getActivePatientId());
         if (!p.visits) p.visits = [];
         
+        // Scan for Vaccines given specifically today
+        let todayStr = new Date().toISOString().split('T')[0];
+        let todaysVax = [];
+        if(p.givenDates) {
+            for (const [vaxId, date] of Object.entries(p.givenDates)) {
+                if (date === todayStr) todaysVax.push(vaxId);
+            }
+        }
+        
+        // Create the immutable historical snapshot
         const newVisit = {
+            id: 'v_' + Date.now(),
             date: new Date().toISOString(),
+            weight: p.weight || "",
+            htCm: p.htCm || "",
             hopi: document.getElementById('rxHopi') ? document.getElementById('rxHopi').value : "",
             diagnosis: p.diagnosis || "",
             tests: p.tests || "",
             advice: p.advice || "",
             review: p.review || "",
-            rxList: [...(p.rxList || [])] 
+            rxList: [...(p.rxList || [])], // Copy active meds
+            dietLogs: [...(p.dietLogs || [])], // Copy active diet
+            vaccinesGiven: todaysVax // Copy today's vaccines
         };
         
         p.visits.push(newVisit); 
-        p.rxList = []; 
-        p.diagnosis = ""; p.tests = ""; p.advice = ""; p.review = ""; 
         
-        // Final secure lock
+        // Clear out the active staging buffers for the NEXT visit
+        p.rxList = []; 
+        p.dietLogs = []; 
+        p.diagnosis = ""; p.tests = ""; p.advice = ""; p.review = ""; 
+        if(document.getElementById('rxDiagnosis')) document.getElementById('rxDiagnosis').value = "";
+        if(document.getElementById('rxTests')) document.getElementById('rxTests').value = "";
+        if(document.getElementById('rxAdvice')) document.getElementById('rxAdvice').value = "";
+        if(document.getElementById('rxReview')) document.getElementById('rxReview').value = "";
+        
+        // Save and Sync
         AppStore.savePatient(p); 
         if(typeof DB !== 'undefined') await DB.savePatient(p); 
+        if(typeof showSystemToast === 'function') showSystemToast("✅ Visit securely locked to historical ledger.");
         
-        document.getElementById('rxPostVisitView').style.display = 'none';
-        renderVisitLedger();
-        if(typeof showSystemToast === 'function') showSystemToast("✅ Visit permanently locked to ledger.");
+        // Bounce the user over to the Historical Ledger tab to see the saved entry
+        let ledgerBtn = document.querySelectorAll('.nav-item')[2]; 
+        if(typeof openHistoricalEncounters === 'function') openHistoricalEncounters(ledgerBtn);
     };
 
     window.cancelNewVisit = function() {
