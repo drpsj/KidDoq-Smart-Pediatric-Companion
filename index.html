@@ -31,17 +31,6 @@
     </script>
 
     <link rel="stylesheet" href="css/style.css?v=3">
-    <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-            .then(function(registration) {
-                console.log('Service Worker Registered Successfully', registration.scope);
-            })
-            .catch(function(error) {
-                console.log('Service Worker Registration Failed', error);
-            });
-    }
-</script>
 </head>
 <body>
     <div id="splashScreen" class="splash-screen">
@@ -60,8 +49,7 @@
             <h2 style="margin:0; font-size: 1.6rem; color:var(--text-main); letter-spacing:-0.5px;">Welcome to KidDoq</h2>
             <p style="color:var(--text-muted); font-size:0.95rem; margin-top:5px;">Select your physician profile</p>
             
-            <div id="doctorProfileList" class="profile-list">
-                </div>
+            <div id="doctorProfileList" class="profile-list"></div>
             
             <button class="secondary" onclick="document.getElementById('newDoctorForm').style.display='block'" style="width:100%; border-style:dashed;">➕ Create New Profile</button>
             
@@ -139,7 +127,7 @@
             Summary
         </button>
         <button class="nav-item" style="width: 20%;" onclick="switchNavTab('aboutFeatureView')">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             Settings
         </button>
     </nav>
@@ -195,25 +183,7 @@
             </div>
             <div id="homeQuickToolsGrid" class="tools-grid"></div>
         </div> 
-            
-            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
-                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
-                    </div>
-                
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary); margin-bottom:10px;">
-                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
-                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
-                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
-                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 Send via WhatsApp</button>
-                    </div>
-                    <div style="font-size:0.85rem; color:var(--text-muted); text-align:center;">
-                        Verify all details in the preview window before locking the visit to the historical ledger.
-                    </div>
-                </div>
-            </div>
-        </div>
-        
+
         <div id="toolsTab" class="view-content">
             <div class="section-header" style="margin-bottom:20px;">
                 <h3 style="font-size:1.3rem;">🧰 Clinical Modules</h3>
@@ -276,22 +246,6 @@
                     <button class="action" onclick="exportDatabase()" style="width:auto; margin:0; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); padding:10px 20px;">📥 Backup Database</button>
                 </div>
                 <div id="fullDatabaseList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:15px;"></div>
-            </div>
-        </div>
-        
-            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
-                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
-                    </div>
-                
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary);">
-                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
-                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
-                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
-                        <button class="action" onclick="executePrint('milestones')" style="margin:0 0 10px 0; width:100%; padding:12px; border:1px solid var(--primary); color:var(--primary-dark); background:white;">🖨️ Print Milestones</button>
-                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 WhatsApp Report</button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -363,60 +317,32 @@
             </div>
 
             <div id="historicalEncountersView" class="view-content">
-            <h2 class="section-title">📂 Historical Ledger</h2>
-            <div id="historicalLedgerContainer"></div>
-        </div>
-
-        <div id="encounterSummaryGlobalView" class="view-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
-                <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
+                <h2 class="section-title">📂 Historical Ledger</h2>
+                <div id="historicalLedgerContainer"></div>
             </div>
-            
-            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
-                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
-                    </div>
+
+            <div id="encounterSummaryGlobalView" class="view-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
+                    <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
+                </div>
                 
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary);">
-                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
-                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
-                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
-                        <button class="action" onclick="executePrint('milestones')" style="margin:0 0 10px 0; width:100%; padding:12px; border:1px solid var(--primary); color:var(--primary-dark); background:white;">🖨️ Print Milestones</button>
-                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 WhatsApp Report</button>
+                <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
+                    <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary);">
+                            <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
+                            <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
+                            <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
+                            <button class="action" onclick="executePrint('milestones')" style="margin:0 0 10px 0; width:100%; padding:12px; border:1px solid var(--primary); color:var(--primary-dark); background:white;">🖨️ Print Milestones</button>
+                            <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 WhatsApp Report</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="historicalEncountersView" class="view-content">
-            <h2 class="section-title">📂 Historical Ledger</h2>
-            <div id="historicalLedgerContainer"></div>
-        </div>
-
-        <div id="encounterSummaryGlobalView" class="view-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
-                <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
-            </div>
-            
-            <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
-                <div id="liveSummaryPreview" style="background:#fff; padding:20px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm); max-height: 70vh; overflow-y: auto;">
-                    </div>
-                
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <div style="background:var(--primary-light); padding:15px; border-radius:8px; border:1px solid var(--primary);">
-                        <h4 style="margin:0 0 10px 0; color:var(--primary-dark);">Generate Outputs</h4>
-                        <button class="action" onclick="executePrint('rx')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--primary); box-shadow:var(--shadow-sm);">🖨️ Print Prescription</button>
-                        <button class="action" onclick="executePrint('comprehensive')" style="margin:0 0 10px 0; width:100%; padding:12px; background:var(--brand-cyan); color:var(--primary-dark); box-shadow:var(--shadow-sm);">📄 Print Full Summary</button>
-                        <button class="action" onclick="executePrint('milestones')" style="margin:0 0 10px 0; width:100%; padding:12px; border:1px solid var(--primary); color:var(--primary-dark); background:white;">🖨️ Print Milestones</button>
-                        <button class="action" onclick="sendWACompReport()" style="margin:0; width:100%; padding:12px; background:#25D366; box-shadow:var(--shadow-sm);">📱 WhatsApp Report</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-            <!-- ER FEATURE VIEW CONTINUES NORMALLY -->
             <div id="erFeatureView" class="view-content">
                 <h2 class="section-title" style="color:var(--danger)">🚨 ER & NICU Resuscitation</h2>
                 <div class="sub-tabs-nav">
@@ -865,10 +791,10 @@
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then(registration => {
-                console.log('✅ Offline Engine Active (Scope: ', registration.scope, ')');
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                console.log('✅ Offline Engine Active', reg.scope);
             }).catch(err => {
-                console.log('⚠️ Offline Engine Failed: ', err);
+                console.log('⚠️ Offline Engine Failed', err);
             });
         });
     }
