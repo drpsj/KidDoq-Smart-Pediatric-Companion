@@ -1,14 +1,14 @@
 // sw.js - KidDoq Offline Engine
-const CACHE_NAME = 'kiddoq-v2-cache';
+const CACHE_NAME = 'kiddoq-v3-cache'; // Bump to v3 to force a reset
 
-// The files we want to save directly to the device's hard drive
 const urlsToCache = [
     './',
     './index.html',
     './css/theme.css',
     './css/desktop.css',
-    './css/mobile.css',,
+    './css/mobile.css',
     './js/app.js',
+    // ... rest of the file
     './js/calculators.js',
     './js/clinical-math.js',
     './js/database.js',
