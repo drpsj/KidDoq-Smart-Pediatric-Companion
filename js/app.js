@@ -677,6 +677,7 @@ window.lockVisit = async function() {
     if(typeof openHistoricalEncounters === 'function') openHistoricalEncounters(ledgerBtn);
 };
 
+// --- SURGICAL PATCH: HARDENED ROUTING & TAB FIX ---
 window.openClinicalTool = function(toolId) {
     if (!AppStore.getActivePatientId()) {
         if (typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
@@ -695,26 +696,34 @@ window.openClinicalTool = function(toolId) {
     const target = document.getElementById(toolId);
     if (target) {
         target.style.display = 'block';
-        setTimeout(() => target.classList.add('active-view'), 10);
+        target.classList.add('active-view');
+        
+        // FIX: Explicitly force the first sub-tab to display so it's never empty
+        let firstTabBtn = target.querySelector('.sub-tab-btn');
+        let firstTabContent = target.querySelector('.sub-tab-content');
+        if (firstTabBtn && firstTabContent) {
+            window.switchSubTab(firstTabContent.id, firstTabBtn);
+        }
     }
 };
 
 window.switchSubTab = function(tabId, btnElement) {
     let parentView = btnElement.closest('.view-content') || document.querySelector('.active-view');
-    let navContainer = btnElement.parentElement;
-    
     if (!parentView) return;
 
+    let navContainer = btnElement.closest('.sub-tabs-nav');
     if (navContainer) {
-        Array.from(navContainer.children).forEach(btn => btn.classList.remove('active'));
+        Array.from(navContainer.querySelectorAll('.sub-tab-btn')).forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
     }
 
+    // Explicitly hide all other tab content
     parentView.querySelectorAll('.sub-tab-content').forEach(content => {
         content.classList.remove('active');
         content.style.display = 'none';
     });
 
+    // Explicitly show target tab content
     const targetTab = document.getElementById(tabId);
     if (targetTab) {
         targetTab.classList.add('active');
