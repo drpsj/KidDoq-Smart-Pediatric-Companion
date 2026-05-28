@@ -30,7 +30,7 @@
         document.addEventListener('DOMContentLoaded', () => document.head.appendChild(link));
     </script>
 
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
     <div id="splashScreen" class="splash-screen">
@@ -127,7 +127,7 @@
             Summary
         </button>
         <button class="nav-item" style="width: 20%;" onclick="switchNavTab('aboutFeatureView')">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             Settings
         </button>
     </nav>
@@ -316,6 +316,7 @@
                 <div id="aiCopilotSuggestions" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:5px;"></div>
             </div>
 
+            <!-- THE NEW VIEWS SECURELY INSIDE THE WORKSPACE -->
             <div id="historicalEncountersView" class="view-content">
                 <h2 class="section-title">📂 Historical Ledger</h2>
                 <div id="historicalLedgerContainer"></div>
@@ -324,7 +325,10 @@
             <div id="encounterSummaryGlobalView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
-                    <button class="action" onclick="lockVisit()" style="width:auto; margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock Visit</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="secondary" onclick="editDraft()" style="margin:0; font-weight:bold; background:#fff;">✏️ Edit Draft</button>
+                        <button class="action" onclick="lockVisit()" style="margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock</button>
+                    </div>
                 </div>
                 
                 <div class="timeline-section tool-grid" style="grid-template-columns: 2fr 1fr;">
@@ -441,36 +445,7 @@
 
                                     <label>History of Present Illness (HOPI)</label>
                                     <textarea id="rxHopi" style="width:100%; min-height:80px; margin-bottom:10px; font-family:inherit; padding:10px;" placeholder="Document history and findings..."></textarea>
-                                    <!-- SYSTEMIC EXAMINATION BLOCK -->
-<div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); margin-bottom:15px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h4 style="margin:0; color:var(--primary-dark); font-size:0.9rem; text-transform:uppercase;">🩺 Systemic Examination</h4>
-        <button class="secondary" onclick="fillNormalExams()" style="margin:0; padding:4px 10px; font-size:0.8rem; background:var(--success); color:white; border:none; box-shadow:var(--shadow-sm);">✨ Fill All Normal</button>
-    </div>
-    
-    <div style="display:grid; gap:10px;">
-        <div style="display:flex; align-items:start; gap:10px;">
-            <label style="width:40px; margin-top:8px; color:var(--text-main);">RS</label>
-            <textarea id="examRS" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Respiratory System..."></textarea>
-            <button class="secondary" onclick="document.getElementById('examRS').value='B/L NVBS heard, no added sounds.'" style="width:auto; margin:0; padding:8px;">N</button>
-        </div>
-        <div style="display:flex; align-items:start; gap:10px;">
-            <label style="width:40px; margin-top:8px; color:var(--text-main);">CVS</label>
-            <textarea id="examCVS" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Cardiovascular System..."></textarea>
-            <button class="secondary" onclick="document.getElementById('examCVS').value='S1, S2 heard. No murmurs.'" style="width:auto; margin:0; padding:8px;">N</button>
-        </div>
-        <div style="display:flex; align-items:start; gap:10px;">
-            <label style="width:40px; margin-top:8px; color:var(--text-main);">P/A</label>
-            <textarea id="examPA" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Per Abdomen..."></textarea>
-            <button class="secondary" onclick="document.getElementById('examPA').value='Soft, non-tender. Bowel sounds present.'" style="width:auto; margin:0; padding:8px;">N</button>
-        </div>
-        <div style="display:flex; align-items:start; gap:10px;">
-            <label style="width:40px; margin-top:8px; color:var(--text-main);">CNS</label>
-            <textarea id="examCNS" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Central Nervous System..."></textarea>
-            <button class="secondary" onclick="document.getElementById('examCNS').value='Conscious, active. No focal neurological deficits.'" style="width:auto; margin:0; padding:8px;">N</button>
-        </div>
-    </div>
-</div>
+                                    
                                     <div style="background:rgba(91,97,246,0.04); padding:12px; border-radius:8px; border:1px dashed var(--primary); margin-bottom:15px;">
                                         <h4 style="margin:0 0 8px 0; color:var(--primary); font-size:0.85rem; text-transform:uppercase;">💊 Medications Taken (Audit)</h4>
                                         <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
@@ -484,6 +459,37 @@
                                             <button class="secondary" onclick="appendAuditToHopi()" style="flex:1 1 45%; margin:0; padding:8px 12px; font-size:0.8rem; background:white; min-width:130px;">➕ Append to HOPI</button>
                                         </div>
                                         <div id="revOutputArea" style="margin-top:8px; font-size:0.8rem; color:var(--text-main);"></div>
+                                    </div>
+
+                                    <!-- NEW SYSTEMIC EXAMINATION BLOCK -->
+                                    <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); margin-bottom:15px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                            <h4 style="margin:0; color:var(--primary-dark); font-size:0.9rem; text-transform:uppercase;">🩺 Systemic Examination</h4>
+                                            <button class="secondary" onclick="fillNormalExams()" style="margin:0; padding:4px 10px; font-size:0.8rem; background:var(--success); color:white; border:none; box-shadow:var(--shadow-sm);">✨ Fill All Normal</button>
+                                        </div>
+                                        
+                                        <div style="display:grid; gap:10px;">
+                                            <div style="display:flex; align-items:start; gap:10px;">
+                                                <label style="width:40px; margin-top:8px; color:var(--text-main);">RS</label>
+                                                <textarea id="examRS" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Respiratory System..."></textarea>
+                                                <button class="secondary" onclick="document.getElementById('examRS').value='B/L NVBS heard, no added sounds.'" style="width:auto; margin:0; padding:8px;">N</button>
+                                            </div>
+                                            <div style="display:flex; align-items:start; gap:10px;">
+                                                <label style="width:40px; margin-top:8px; color:var(--text-main);">CVS</label>
+                                                <textarea id="examCVS" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Cardiovascular System..."></textarea>
+                                                <button class="secondary" onclick="document.getElementById('examCVS').value='S1, S2 heard. No murmurs.'" style="width:auto; margin:0; padding:8px;">N</button>
+                                            </div>
+                                            <div style="display:flex; align-items:start; gap:10px;">
+                                                <label style="width:40px; margin-top:8px; color:var(--text-main);">P/A</label>
+                                                <textarea id="examPA" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Per Abdomen..."></textarea>
+                                                <button class="secondary" onclick="document.getElementById('examPA').value='Soft, non-tender. Bowel sounds present.'" style="width:auto; margin:0; padding:8px;">N</button>
+                                            </div>
+                                            <div style="display:flex; align-items:start; gap:10px;">
+                                                <label style="width:40px; margin-top:8px; color:var(--text-main);">CNS</label>
+                                                <textarea id="examCNS" rows="1" style="flex:1; padding:8px; resize:vertical; min-height:40px;" placeholder="Central Nervous System..."></textarea>
+                                                <button class="secondary" onclick="document.getElementById('examCNS').value='Conscious, active. No focal neurological deficits.'" style="width:auto; margin:0; padding:8px;">N</button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <label>Diagnosis / DDx</label>
@@ -806,17 +812,17 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-<script src="js/database.js?v=3"></script>
-<script src="js/store.js?v=3"></script>
-<script src="js/patient-store.js?v=3"></script>
+<script src="js/database.js?v=5"></script>
+<script src="js/store.js?v=5"></script>
+<script src="js/patient-store.js?v=5"></script>
 
-<script src="js/clinical-math.js?v=3"></script>
-<script src="js/calculators.js?v=3"></script>
-<script src="js/growth-vax.js?v=3"></script>
-<script src="js/print-engine.js?v=3"></script>
-<script src="js/view-controller.js?v=3"></script>
+<script src="js/clinical-math.js?v=5"></script>
+<script src="js/calculators.js?v=5"></script>
+<script src="js/growth-vax.js?v=5"></script>
+<script src="js/print-engine.js?v=5"></script>
+<script src="js/view-controller.js?v=5"></script>
 
-<script src="js/app.js?v=3"></script>
+<script src="js/app.js?v=5"></script>
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

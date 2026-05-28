@@ -469,7 +469,6 @@ window.restoreDatabase = function(input) {
             const imported = JSON.parse(e.target.result);
             localStorage.setItem('nis_patients', JSON.stringify(imported));
             
-            // Sync memory for global state
             for (let id in imported) {
                 AppStore.savePatient(imported[id]);
             }
@@ -508,7 +507,7 @@ window.renderHistoricalLedger = function() {
     }
 
     let html = "";
-    
+
     [...p.visits].reverse().forEach((visit) => {
         const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
         let rxHtml = visit.rxList && visit.rxList.length > 0 ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit})`).join("<br>") : "";
@@ -522,6 +521,15 @@ window.renderHistoricalLedger = function() {
                 <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Wt: ${visit.weight || '--'} kg</span>
             </div>
             ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
+            
+            ${(visit.examRS || visit.examCVS || visit.examPA || visit.examCNS) ? 
+                `<div style="font-size:0.85rem; color:var(--text-main); margin-bottom:10px; background:#f1f5f9; padding:8px; border-radius:4px;"><b>O/E:</b> 
+                    ${visit.examRS ? `RS: ${visit.examRS} | ` : ''}
+                    ${visit.examCVS ? `CVS: ${visit.examCVS} | ` : ''}
+                    ${visit.examPA ? `P/A: ${visit.examPA} | ` : ''}
+                    ${visit.examCNS ? `CNS: ${visit.examCNS}` : ''}
+                </div>`.replace(/ \|\s*<\//, '</') : ''}
+
             <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications.</span>'}</div>
             ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
             ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-main); background: #fef3c7; padding:8px; border-radius:4px; border-left:3px solid #f59e0b;"><b>Advice / Next Steps:</b><br>${visit.advice}</div>` : ''}
@@ -532,29 +540,27 @@ window.renderHistoricalLedger = function() {
 };
 
 window.openActiveSummary = function(btnElem) {
-        if (!AppStore.getActivePatientId()) {
-            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
-            return;
-        }
-        
-        let p = AppStore.getPatient(AppStore.getActivePatientId());
-        const finalWt = document.getElementById('inlineCalcWeight') ? document.getElementById('inlineCalcWeight').value : null;
-        if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
+    if (!AppStore.getActivePatientId()) {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+        return;
+    }
+    
+    let p = AppStore.getPatient(AppStore.getActivePatientId());
+    const finalWt = document.getElementById('inlineCalcWeight') ? document.getElementById('inlineCalcWeight').value : null;
+    if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
 
-        p.diagnosis = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : p.diagnosis;
-        p.tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : p.tests;
-        p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : p.advice;
-        p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : p.review;
-        
-        // NEW: Save Exams to Vault
-        p.examRS = document.getElementById('examRS') ? document.getElementById('examRS').value : "";
-        p.examCVS = document.getElementById('examCVS') ? document.getElementById('examCVS').value : "";
-        p.examPA = document.getElementById('examPA') ? document.getElementById('examPA').value : "";
-        p.examCNS = document.getElementById('examCNS') ? document.getElementById('examCNS').value : "";
+    p.diagnosis = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : p.diagnosis;
+    p.tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : p.tests;
+    p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : p.advice;
+    p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : p.review;
+    
+    // Save Exam findings to draft
+    p.examRS = document.getElementById('examRS') ? document.getElementById('examRS').value : p.examRS;
+    p.examCVS = document.getElementById('examCVS') ? document.getElementById('examCVS').value : p.examCVS;
+    p.examPA = document.getElementById('examPA') ? document.getElementById('examPA').value : p.examPA;
+    p.examCNS = document.getElementById('examCNS') ? document.getElementById('examCNS').value : p.examCNS;
 
-        AppStore.savePatient(p); 
-
-        // ... (rest of the function remains the same) 
+    AppStore.savePatient(p); 
 
     if(typeof ViewController !== 'undefined') ViewController.switchNavTab('encounterSummaryGlobalView');
     if (btnElem) {
@@ -573,19 +579,19 @@ window.renderLiveComprehensiveSummary = function() {
     html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Draft (Unsaved)</h3>`;
     
     if (p.diagnosis) html += `<div style="margin-bottom:10px;"><b>Diagnosis:</b> ${p.diagnosis}</div>`;
-        
-        // NEW: Render Systemic Exams
-        if (p.examRS || p.examCVS || p.examPA || p.examCNS) {
-            html += `<div style="margin-bottom:15px; background:var(--bg-body); padding:10px; border-radius:6px; font-size:0.9rem;">
-                        <b style="color:var(--primary-dark);">Systemic Examination:</b>
-                        <ul style="margin:5px 0 0 0; padding-left:20px; line-height:1.4;">
-                            ${p.examRS ? `<li><b>RS:</b> ${p.examRS}</li>` : ''}
-                            ${p.examCVS ? `<li><b>CVS:</b> ${p.examCVS}</li>` : ''}
-                            ${p.examPA ? `<li><b>P/A:</b> ${p.examPA}</li>` : ''}
-                            ${p.examCNS ? `<li><b>CNS:</b> ${p.examCNS}</li>` : ''}
-                        </ul>
-                     </div>`;
-        }
+    
+    if (p.examRS || p.examCVS || p.examPA || p.examCNS) {
+        html += `<div style="margin-bottom:15px; background:var(--bg-body); padding:10px; border-radius:6px; font-size:0.9rem;">
+                    <b style="color:var(--primary-dark);">Systemic Examination:</b>
+                    <ul style="margin:5px 0 0 0; padding-left:20px; line-height:1.4;">
+                        ${p.examRS ? `<li><b>RS:</b> ${p.examRS}</li>` : ''}
+                        ${p.examCVS ? `<li><b>CVS:</b> ${p.examCVS}</li>` : ''}
+                        ${p.examPA ? `<li><b>P/A:</b> ${p.examPA}</li>` : ''}
+                        ${p.examCNS ? `<li><b>CNS:</b> ${p.examCNS}</li>` : ''}
+                    </ul>
+                 </div>`;
+    }
+
     if (p.rxList && p.rxList.length > 0) {
         html += `<div style="margin-bottom:10px;"><b>Medications:</b><ul style="margin:5px 0; padding-left:20px;">`;
         p.rxList.forEach(rx => { html += `<li style="margin-bottom:5px;"><b>${rx.name}</b> - ${rx.vol} ${rx.unit} (<i>${rx.freq}</i>)</li>`; });
@@ -616,6 +622,59 @@ window.renderLiveComprehensiveSummary = function() {
 
     html += `</div>`;
     container.innerHTML = html;
+};
+
+window.lockVisit = async function() {
+    if(!AppStore.getActivePatientId()) return;
+    let p = AppStore.getPatient(AppStore.getActivePatientId());
+    if (!p.visits) p.visits = [];
+    
+    let todayStr = new Date().toISOString().split('T')[0];
+    let todaysVax = [];
+    if(p.givenDates) {
+        for (const [vaxId, date] of Object.entries(p.givenDates)) {
+            if (date === todayStr) todaysVax.push(vaxId);
+        }
+    }
+    
+    const newVisit = {
+        id: 'v_' + Date.now(),
+        date: new Date().toISOString(),
+        weight: p.weight || "",
+        htCm: p.htCm || "",
+        hopi: document.getElementById('rxHopi') ? document.getElementById('rxHopi').value : "",
+        diagnosis: p.diagnosis || "",
+        tests: p.tests || "",
+        advice: p.advice || "",
+        review: p.review || "",
+        
+        examRS: p.examRS || "",
+        examCVS: p.examCVS || "",
+        examPA: p.examPA || "",
+        examCNS: p.examCNS || "",
+
+        rxList: [...(p.rxList || [])], 
+        dietLogs: [...(p.dietLogs || [])], 
+        vaccinesGiven: todaysVax 
+    };
+    
+    p.visits.push(newVisit); 
+    
+    p.rxList = []; 
+    p.dietLogs = []; 
+    p.diagnosis = ""; p.tests = ""; p.advice = ""; p.review = ""; 
+    p.examRS = ""; p.examCVS = ""; p.examPA = ""; p.examCNS = "";
+    
+    ['rxDiagnosis', 'rxTests', 'rxAdvice', 'rxReview', 'examRS', 'examCVS', 'examPA', 'examCNS'].forEach(id => {
+        if(document.getElementById(id)) document.getElementById(id).value = "";
+    });
+    
+    AppStore.savePatient(p); 
+    if(typeof DB !== 'undefined') await DB.savePatient(p); 
+    if(typeof showSystemToast === 'function') showSystemToast("✅ Visit securely locked to historical ledger.");
+    
+    let ledgerBtn = document.querySelectorAll('.nav-item')[2]; 
+    if(typeof openHistoricalEncounters === 'function') openHistoricalEncounters(ledgerBtn);
 };
 
 window.openClinicalTool = function(toolId) {
