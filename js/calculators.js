@@ -394,7 +394,7 @@ function populateHomeDrugs() {
 
         function injectSymp(name, val, unit) {
             if(typeof activeDraftSymptoms !== 'undefined') activeDraftSymptoms.push(name.toLowerCase());
-            document.getElementById('symptomTagsArea').innerHTML += `<span style="background:var(--primary-light); color:var(--primary-dark); padding:4px 10px; border-radius:12px; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:5px;">${name} x ${val} ${unit} <b style="cursor:pointer; color:var(--danger);" onclick="this.parentElement.remove(); evaluateDDx();">✖</b></span>`;
+            document.getElementById('symptomTagsArea').innerHTML += `<span class="symptom-tag">${name} x ${val} ${unit} <b style="cursor:pointer; color:var(--danger);" onclick="this.parentElement.remove(); evaluateDDx();">✖</b></span>`;
         }
 
         if (setId === 'os_aom') {
