@@ -532,20 +532,29 @@ window.renderHistoricalLedger = function() {
 };
 
 window.openActiveSummary = function(btnElem) {
-    if (!AppStore.getActivePatientId()) {
-        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
-        return;
-    }
-    
-    let p = AppStore.getPatient(AppStore.getActivePatientId());
-    const finalWt = document.getElementById('inlineCalcWeight') ? document.getElementById('inlineCalcWeight').value : null;
-    if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
+        if (!AppStore.getActivePatientId()) {
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+            return;
+        }
+        
+        let p = AppStore.getPatient(AppStore.getActivePatientId());
+        const finalWt = document.getElementById('inlineCalcWeight') ? document.getElementById('inlineCalcWeight').value : null;
+        if(finalWt && !isNaN(parseFloat(finalWt))) p.weight = parseFloat(finalWt).toFixed(1);
 
-    p.diagnosis = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : p.diagnosis;
-    p.tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : p.tests;
-    p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : p.advice;
-    p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : p.review;
-    AppStore.savePatient(p); 
+        p.diagnosis = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : p.diagnosis;
+        p.tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : p.tests;
+        p.advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : p.advice;
+        p.review = document.getElementById('rxReview') ? document.getElementById('rxReview').value : p.review;
+        
+        // NEW: Save Exams to Vault
+        p.examRS = document.getElementById('examRS') ? document.getElementById('examRS').value : "";
+        p.examCVS = document.getElementById('examCVS') ? document.getElementById('examCVS').value : "";
+        p.examPA = document.getElementById('examPA') ? document.getElementById('examPA').value : "";
+        p.examCNS = document.getElementById('examCNS') ? document.getElementById('examCNS').value : "";
+
+        AppStore.savePatient(p); 
+
+        // ... (rest of the function remains the same) 
 
     if(typeof ViewController !== 'undefined') ViewController.switchNavTab('encounterSummaryGlobalView');
     if (btnElem) {
@@ -564,6 +573,19 @@ window.renderLiveComprehensiveSummary = function() {
     html += `<h3 style="color:#1e3a8a; font-size:1rem; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Draft (Unsaved)</h3>`;
     
     if (p.diagnosis) html += `<div style="margin-bottom:10px;"><b>Diagnosis:</b> ${p.diagnosis}</div>`;
+        
+        // NEW: Render Systemic Exams
+        if (p.examRS || p.examCVS || p.examPA || p.examCNS) {
+            html += `<div style="margin-bottom:15px; background:var(--bg-body); padding:10px; border-radius:6px; font-size:0.9rem;">
+                        <b style="color:var(--primary-dark);">Systemic Examination:</b>
+                        <ul style="margin:5px 0 0 0; padding-left:20px; line-height:1.4;">
+                            ${p.examRS ? `<li><b>RS:</b> ${p.examRS}</li>` : ''}
+                            ${p.examCVS ? `<li><b>CVS:</b> ${p.examCVS}</li>` : ''}
+                            ${p.examPA ? `<li><b>P/A:</b> ${p.examPA}</li>` : ''}
+                            ${p.examCNS ? `<li><b>CNS:</b> ${p.examCNS}</li>` : ''}
+                        </ul>
+                     </div>`;
+        }
     if (p.rxList && p.rxList.length > 0) {
         html += `<div style="margin-bottom:10px;"><b>Medications:</b><ul style="margin:5px 0; padding-left:20px;">`;
         p.rxList.forEach(rx => { html += `<li style="margin-bottom:5px;"><b>${rx.name}</b> - ${rx.vol} ${rx.unit} (<i>${rx.freq}</i>)</li>`; });

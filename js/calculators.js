@@ -609,9 +609,16 @@ function populateHomeDrugs() {
             tests: p.tests || "",
             advice: p.advice || "",
             review: p.review || "",
-            rxList: [...(p.rxList || [])], // Copy active meds
-            dietLogs: [...(p.dietLogs || [])], // Copy active diet
-            vaccinesGiven: todaysVax // Copy today's vaccines
+            
+            // NEW: Lock the exams into the ledger
+            examRS: p.examRS || "",
+            examCVS: p.examCVS || "",
+            examPA: p.examPA || "",
+            examCNS: p.examCNS || "",
+            
+            rxList: [...(p.rxList || [])], 
+            dietLogs: [...(p.dietLogs || [])], 
+            vaccinesGiven: todaysVax 
         };
         
         p.visits.push(newVisit); 
@@ -620,10 +627,12 @@ function populateHomeDrugs() {
         p.rxList = []; 
         p.dietLogs = []; 
         p.diagnosis = ""; p.tests = ""; p.advice = ""; p.review = ""; 
-        if(document.getElementById('rxDiagnosis')) document.getElementById('rxDiagnosis').value = "";
-        if(document.getElementById('rxTests')) document.getElementById('rxTests').value = "";
-        if(document.getElementById('rxAdvice')) document.getElementById('rxAdvice').value = "";
-        if(document.getElementById('rxReview')) document.getElementById('rxReview').value = "";
+        p.examRS = ""; p.examCVS = ""; p.examPA = ""; p.examCNS = "";
+        
+        // Clear the UI fields safely
+        ['rxDiagnosis', 'rxTests', 'rxAdvice', 'rxReview', 'examRS', 'examCVS', 'examPA', 'examCNS'].forEach(id => {
+            if(document.getElementById(id)) document.getElementById(id).value = "";
+        });
         
         // Save and Sync
         AppStore.savePatient(p); 
@@ -639,6 +648,15 @@ function populateHomeDrugs() {
         if(confirm("Discard this draft? Unsaved changes will be lost.")) {
             renderVisitLedger();
         }
+    };
+
+    // --- SYSTEMIC EXAM AUTOFILL ---
+    window.fillNormalExams = function() {
+        document.getElementById('examRS').value = 'B/L NVBS heard, no added sounds.';
+        document.getElementById('examCVS').value = 'S1, S2 heard. No murmurs.';
+        document.getElementById('examPA').value = 'Soft, non-tender. Bowel sounds present.';
+        document.getElementById('examCNS').value = 'Conscious, active. No focal neurological deficits.';
+        if(typeof showSystemToast === 'function') showSystemToast("✅ Normal systemic findings injected.");
     };
 
    function startNewVisit() {
