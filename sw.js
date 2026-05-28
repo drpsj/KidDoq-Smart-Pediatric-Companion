@@ -1,14 +1,13 @@
 // sw.js - KidDoq Offline Engine
-const CACHE_NAME = 'kiddoq-v3-cache'; // Bump to v3 to force a reset
+const CACHE_NAME = 'kiddoq-v4-cache'; // Bumped to v4
 
 const urlsToCache = [
     './',
     './index.html',
-    './css/theme.css',
-    './css/desktop.css',
-    './css/mobile.css',
+    './theme.css',
+    './desktop.css',
+    './mobile.css',
     './js/app.js',
-    // ... rest of the file
     './js/calculators.js',
     './js/clinical-math.js',
     './js/database.js',
