@@ -3,6 +3,12 @@
    Loads only on viewports > 1024px
    ========================================= */
 
+/* Hides the mobile splash screen on desktop */
+.splash-screen { display: none !important; }
+
+/* Transforms bottom tabs to left sidebar */
+.app-shell { flex-direction: row !important; }
+
 /* Transforms bottom tabs to left sidebar */
 .app-shell { flex-direction: row !important; }
 .main-content { padding-bottom: 40px !important; }
