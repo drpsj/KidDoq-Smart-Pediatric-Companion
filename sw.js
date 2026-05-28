@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiddoq-v6-cache'; // Bumped to v6
+const CACHE_NAME = 'kiddoq-v7-cache'; // Bumped to v7
 
 const urlsToCache = [
     './',
@@ -8,6 +8,7 @@ const urlsToCache = [
     './css/mobile.css',
     './js/app.js',
     './js/calculators.js',
+    './js/module-er.js', // ADD THIS LINE
     './js/clinical-math.js',
     './js/database.js',
     './js/growth-vax.js',
