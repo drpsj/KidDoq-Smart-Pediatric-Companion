@@ -677,59 +677,60 @@ window.lockVisit = async function() {
     if(typeof openHistoricalEncounters === 'function') openHistoricalEncounters(ledgerBtn);
 };
 
-// --- SURGICAL PATCH: HARDENED ROUTING & TAB FIX ---
+// --- SURGICAL PATCH: FORCE TOOL VISIBILITY ---
 window.openClinicalTool = function(toolId) {
     if (!AppStore.getActivePatientId()) {
         if (typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
-        if(typeof ViewController !== 'undefined') ViewController.switchNavTab('databaseFeatureView');
         return;
     }
-    
-    // Switch to the Tools Tab globally
-    if(typeof ViewController !== 'undefined') ViewController.switchNavTab('toolsTab');
-    
-    // Hide all tools inside the tools tab
+
+    // 1. Show the main workspace and hide everything else
+    document.getElementById('activeWorkspace').style.display = 'block';
     document.querySelectorAll('.view-content').forEach(v => {
-        if(v.id !== 'toolsTab') {
-            v.style.display = 'none';
-            v.classList.remove('active-view');
-        }
+        v.style.display = 'none';
+        v.classList.remove('active-view');
     });
-    
-    const workspace = document.getElementById('activeWorkspace');
-    if (workspace) workspace.style.display = 'block';
-    
+
+    // 2. Show the selected tool
     const target = document.getElementById(toolId);
     if (target) {
         target.style.display = 'block';
-        setTimeout(() => target.classList.add('active-view'), 10);
+        target.classList.add('active-view');
         
-        // CRITICAL FIX: Force the first sub-tab to open
+        // 3. FORCE the first sub-tab to display (fixes the empty screen bug)
         let firstTabBtn = target.querySelector('.sub-tab-btn');
         let firstTabContent = target.querySelector('.sub-tab-content');
+        
         if (firstTabBtn && firstTabContent) {
-            window.switchSubTab(firstTabContent.id, firstTabBtn);
+            target.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+            target.querySelectorAll('.sub-tab-content').forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none'; // hide all inner tabs first
+            });
+            firstTabBtn.classList.add('active');
+            firstTabContent.classList.add('active');
+            firstTabContent.style.display = 'block'; // force the first one visible
         }
     }
 };
 
 window.switchSubTab = function(tabId, btnElement) {
-    let parentView = btnElement.closest('.view-content') || document.querySelector('.active-view');
+    let parentView = btnElement.closest('.view-content');
     if (!parentView) return;
 
+    // Reset button styles
     let navContainer = btnElement.closest('.sub-tabs-nav');
     if (navContainer) {
-        Array.from(navContainer.querySelectorAll('.sub-tab-btn')).forEach(btn => btn.classList.remove('active'));
+        navContainer.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
     }
 
-    // Explicitly hide all other tab content
+    // Hide all sub-tabs, then force the clicked one to show
     parentView.querySelectorAll('.sub-tab-content').forEach(content => {
         content.classList.remove('active');
         content.style.display = 'none';
     });
 
-    // Explicitly show target tab content
     const targetTab = document.getElementById(tabId);
     if (targetTab) {
         targetTab.classList.add('active');

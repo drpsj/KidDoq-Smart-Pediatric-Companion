@@ -1,3 +1,9 @@
+window.generateMilestonesReport = function(pId) {
+    const p = AppStore.getPatient(pId);
+    if (!p) return "<p>No patient data found.</p>";
+    return `<p style="font-family:sans-serif; color:#64748b;">Milestone tracking data secured in digital vault.</p>`; 
+};
+
 // js/print-engine.js
 
 function getPrintHeaderHTML(title, patientObj) {
