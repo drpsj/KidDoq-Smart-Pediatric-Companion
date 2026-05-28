@@ -259,7 +259,7 @@ function populateHomeDrugs() {
         document.getElementById('emptySympMsg').style.display = 'none';
         
         const tag = document.createElement('span');
-        tag.style.cssText = "background:var(--primary-light); color:var(--primary-dark); padding:4px 10px; border-radius:12px; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:5px;";
+        tag.className = 'symptom-tag';
         tag.innerHTML = `${tagString} <b style="cursor:pointer; color:var(--danger);" onclick="this.parentElement.remove(); evaluateDDx();">✖</b>`;
         
         tagArea.appendChild(tag);

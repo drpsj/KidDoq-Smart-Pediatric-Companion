@@ -63,7 +63,7 @@ function renderSettingsChecklist() {
 function showSystemToast(msg) {
     const container = document.getElementById('systemToastContainer');
     const toast = document.createElement('div');
-    toast.style.cssText = 'background:var(--success); color:white; padding:12px 24px; border-radius:var(--radius-pill); box-shadow:var(--shadow-float); font-weight:bold; font-size:0.9rem; animation: springSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); pointer-events:auto; display:flex; align-items:center; gap:8px;';
+    toast.className = 'system-toast';
     toast.innerHTML = `<span>✅</span> ${msg}`;
     container.appendChild(toast);
     setTimeout(() => { 

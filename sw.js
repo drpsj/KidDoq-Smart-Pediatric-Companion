@@ -5,7 +5,9 @@ const CACHE_NAME = 'kiddoq-v2-cache';
 const urlsToCache = [
     './',
     './index.html',
-    './css/style.css',
+    './css/theme.css',
+    './css/desktop.css',
+    './css/mobile.css',,
     './js/app.js',
     './js/calculators.js',
     './js/clinical-math.js',

@@ -359,4 +359,34 @@
     font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: var(--shadow-sm);
     flex-shrink: 0;
 }
+
+/* =========================================
+   JS DYNAMIC COMPONENT CLASSES
+   ========================================= */
+.system-toast {
+    background: var(--success);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-float);
+    font-weight: bold;
+    font-size: 0.9rem;
+    animation: springSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.symptom-tag {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
         
