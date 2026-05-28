@@ -168,30 +168,6 @@
         .fab svg { width: 30px; height: 30px; stroke: white; stroke-width: 2.5; }
         .fab:active { transform: scale(0.9); }
 
-        /* DESKTOP SAAS LAYOUT (Transforms bottom tabs to left sidebar) */
-        @media (min-width: 1024px) {
-            .app-shell { flex-direction: row !important; }
-            .main-content { padding-bottom: 40px !important; }
-            .main-nav { 
-                position: relative; 
-                width: 280px; 
-                min-width: 280px; /* NEW: Forces strict width */
-                flex-shrink: 0;   /* NEW: Prevents it from getting squished */
-                height: 100vh; 
-                flex-direction: column; 
-                justify-content: flex-start; 
-                padding: 30px 20px; 
-                border-top: none; 
-                border-right: 1px solid var(--border-soft); 
-                align-items: stretch; 
-                gap: 10px;
-            }
-            .nav-item { width: 100%; flex-direction: row; justify-content: flex-start; padding: 14px 20px; border-radius: var(--radius-md); font-size: 1rem; }
-            .nav-item:hover { background: var(--bg-body); }
-            .nav-item.active { background: var(--primary-light); color: var(--primary); }
-            .fab { bottom: 30px; right: 40px; width: 70px; height: 70px; }
-        }
-
         /* KIDDOQ MODAL SYSTEM */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(20,20,43,0.6); z-index: 999999; display: none; backdrop-filter: blur(4px); animation: fadeIn 0.2s ease;}
         .modal-overlay.active { display: flex; align-items: flex-end; justify-content: center; }
@@ -261,39 +237,6 @@
             color: var(--text-main) !important; 
             line-height: 1.2 !important; 
             text-align: center !important; 
-        }
-
-        /* =========================================
-           MOBILE SPLASH SCREEN
-           ========================================= */
-        .splash-screen { display: none; }
-        @media (max-width: 1024px) {
-            .splash-screen {
-                display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
-                background: #0B0E14; z-index: 9999999; align-items: center; justify-content: center;
-                flex-direction: column; transition: opacity 0.6s ease, visibility 0.6s;
-            }
-            .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-            
-            /* Gradient Waves at the bottom */
-            .splash-waves {
-                position: absolute; bottom: 0; left: 0; width: 100%; height: 35vh;
-                background: linear-gradient(135deg, var(--brand-blue), var(--brand-pink));
-                mask-image: radial-gradient(ellipse at top, transparent 50%, black 100%);
-                -webkit-mask-image: radial-gradient(ellipse at top, transparent 50%, black 100%);
-                opacity: 0.8; z-index: 1;
-            }
-            
-            .splash-content { z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
-            .splash-content h1 { color: white; font-size: 3.5rem; margin: 0; letter-spacing: -1px; }
-            .splash-content p { color: #9CA3AF; font-size: 1.1rem; margin-top: 5px; font-weight: 500; }
-            
-            /* Modern Loading Spinner */
-            .splash-loader {
-                margin-top: 50px; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
-                border-left-color: var(--brand-cyan); border-radius: 50%; animation: spin 1s linear infinite;
-            }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         }
 
         /* =========================================
@@ -416,75 +359,4 @@
     font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: var(--shadow-sm);
     flex-shrink: 0;
 }
-
-/* =========================================
-   KIDDOQ MOBILE DIAGNOSTIC FIXES
-   ========================================= */
-
-@media (max-width: 1023px) {
-    /* FIX 1: The iOS Auto-Zoom Bug */
-    /* Forces all inputs to be exactly 16px on mobile so the screen never zooms in unexpectedly */
-    input, select, textarea {
-        font-size: 16px !important;
-    }
-
-    /* FIX 2: Squished Row Inputs */
-    /* Prevents side-by-side inputs from crushing each other on narrow screens */
-    .row-inputs { 
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; 
-    }
-
-    /* FIX 3: Horizontal Table Blowouts */
-    /* Forces tables to scroll internally instead of stretching the whole app page */
-    .theory-table {
-        display: block;
-        max-width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap; /* Keeps table cells from crunching text */
-    }
-
-    /* FIX 4: Tool Grid & Button Text Wrapping */
-    .tools-grid {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
-        gap: 12px !important;
-    }
-    .tool-btn { padding: 15px 5px !important; }
-    .tool-icon-wrapper { width: 50px !important; height: 50px !important; }
-    .tool-btn span { font-size: 0.8rem !important; }
-
-    /* FIX 5: Safe Area Insets (For iPhones with the bottom swipe bar) */
-    .main-nav {
-        padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-    }
-    .main-content {
-        padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
-    }
-
-    /* FIX 6: Floating Action Button & Toast Overlap */
-    .fab {
-        bottom: calc(85px + env(safe-area-inset-bottom)) !important;
-        right: 15px !important;
-        width: 55px !important; height: 55px !important;
-    }
-    #systemToastContainer {
-        bottom: calc(90px + env(safe-area-inset-bottom)) !important;
-        right: 15px !important;
-        left: 15px !important; /* Centers toasts on mobile */
-        align-items: center;
-    }
-
-    /* FIX 7: Modal Keyboard Squeeze */
-    /* Prevents the modal from becoming 10px tall when the mobile keyboard pops up */
-    .modal-content {
-        max-height: 85vh !important; /* Uses vh instead of dvh to stabilize keyboard popups */
-        padding: 20px 15px !important;
-    }
-
-    /* FIX 8: Live Rx Preview alignment */
-    #rxCartList {
-        min-height: auto !important;
-    }
-}
-
         

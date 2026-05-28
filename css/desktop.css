@@ -1,0 +1,42 @@
+/* =========================================
+   DESKTOP & LARGE TABLET EXCLUSIVE LAYOUT
+   Loads only on viewports > 1024px
+   ========================================= */
+
+/* Transforms bottom tabs to left sidebar */
+.app-shell { flex-direction: row !important; }
+.main-content { padding-bottom: 40px !important; }
+
+.main-nav { 
+    position: relative; 
+    width: 280px; 
+    min-width: 280px; 
+    flex-shrink: 0;   
+    height: 100vh; 
+    flex-direction: column; 
+    justify-content: flex-start; 
+    padding: 30px 20px; 
+    border-top: none; 
+    border-right: 1px solid var(--border-soft); 
+    align-items: stretch; 
+    gap: 10px;
+}
+
+.nav-item { 
+    width: 100%; 
+    flex-direction: row; 
+    justify-content: flex-start; 
+    padding: 14px 20px; 
+    border-radius: var(--radius-md); 
+    font-size: 1rem; 
+}
+
+.nav-item:hover { background: var(--bg-body); }
+.nav-item.active { background: var(--primary-light); color: var(--primary); }
+
+.fab { bottom: 30px; right: 40px; width: 70px; height: 70px; }
+
+.modal-content { 
+    border-radius: var(--radius-xl); 
+    align-self: center; 
+}
