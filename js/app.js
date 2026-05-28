@@ -685,9 +685,15 @@ window.openClinicalTool = function(toolId) {
         return;
     }
     
+    // Switch to the Tools Tab globally
+    if(typeof ViewController !== 'undefined') ViewController.switchNavTab('toolsTab');
+    
+    // Hide all tools inside the tools tab
     document.querySelectorAll('.view-content').forEach(v => {
-        v.style.display = 'none';
-        v.classList.remove('active-view');
+        if(v.id !== 'toolsTab') {
+            v.style.display = 'none';
+            v.classList.remove('active-view');
+        }
     });
     
     const workspace = document.getElementById('activeWorkspace');
@@ -696,9 +702,9 @@ window.openClinicalTool = function(toolId) {
     const target = document.getElementById(toolId);
     if (target) {
         target.style.display = 'block';
-        target.classList.add('active-view');
+        setTimeout(() => target.classList.add('active-view'), 10);
         
-        // FIX: Explicitly force the first sub-tab to display so it's never empty
+        // CRITICAL FIX: Force the first sub-tab to open
         let firstTabBtn = target.querySelector('.sub-tab-btn');
         let firstTabContent = target.querySelector('.sub-tab-content');
         if (firstTabBtn && firstTabContent) {

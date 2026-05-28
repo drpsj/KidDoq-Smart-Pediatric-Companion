@@ -218,6 +218,12 @@ window.generateMilestonesReport = function(pId) {
     return html;
 };
 
+window.generateMilestonesReport = function(pId) {
+    const p = AppStore.getPatient(pId);
+    if (!p) return "<p>No patient data found.</p>";
+    return `<p>Milestone data for ${p.name} will be populated here.</p>`; // Temporary placeholder to stop the crash
+};
+
 window.executePrint = function(mode) {
     const currentPId = typeof AppStore !== 'undefined' ? AppStore.getActivePatientId() : null;
 
