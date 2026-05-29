@@ -1,7 +1,6 @@
 // js/module-rx.js
 
 // --- NEW: UNIFIED FORMULARY MERGER ---
-// Stitches the static master database and user's custom drugs together on the fly
 window.getUnifiedDB = function() {
     let combined = [...drugsDb];
     if (typeof customDrugsStore !== 'undefined') {
@@ -13,7 +12,6 @@ window.getUnifiedDB = function() {
 };
 
 // --- CORE CLINICAL MATH ENGINE ---
-// This single function powers all calculators (Dashboard, Draft, Manual, Order Sets)
 
 // --- 1. UNIFIED DOSAGE ENGINE (For the 🧮 Dose Calc Tab) ---
 function populateDrugs() {
@@ -59,19 +57,33 @@ function calculateDose() {
     let durVal = document.getElementById('calcDuration') ? document.getElementById('calcDuration').value : "";
     let durStr = durVal ? ` x ${durVal} Days` : "";
     let finalFreq = `${drug.defaultFreq}${durStr}`;
-    let warnHTML = math.isMax ? `<br><span style="color:var(--danger); font-size:0.85rem;">⚠️ Adult Max Cap Enforced (${drug.maxMg}mg)</span>` : "";
     
+    // --- NEW: VISUAL INDICATIONS & WARNINGS ---
+    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; margin-top:5px;">⚠️ Adult Max Cap Enforced (${drug.maxMg}mg)</div>` : "";
+    if (drug.warnings && drug.warnings.length > 0) {
+        warnHTML += `<div style="color:var(--warning); font-size:0.85rem; margin-top:5px; font-weight:600;">${drug.warnings.join("<br>")}</div>`;
+    }
+    let indHTML = "";
+    if (drug.indications && drug.indications.length > 0) {
+        indHTML = `<div style="margin-top:10px;">` + drug.indications.map(i => `<span style="background:rgba(0,212,255,0.1); color:var(--brand-cyan); border:1px solid rgba(0,212,255,0.2); padding:2px 8px; border-radius:12px; font-size:0.75rem; margin-right:6px; display:inline-block; font-weight:bold;">${i}</span>`).join("") + `</div>`;
+    }
+
     outputArea.innerHTML = `
         <div class="result-card">
             <p style="margin-top:0; color:var(--text-muted); font-weight:700; font-size:0.75rem; text-transform:uppercase;">Administer Volume</p>
             <h2 style="font-size:3rem; margin:10px 0; color:var(--success); letter-spacing:-1px;">${math.reqVol.toFixed(1)} ${unit}</h2>
             <p style="color:var(--primary); font-weight:bold; font-size:1.1rem; margin-bottom:0;">Frequency: ${finalFreq}</p>
+            ${indHTML}
             <div style="font-size:0.85rem; color:#64748b; margin-top:1.5rem; border-top:1px dashed var(--border-soft); padding-top:1rem;">
                 Target: ${math.reqMg.toFixed(0)} mg/dose ${warnHTML}
             </div>
         </div>`;
     
-    pendingPrescriptionDrug = { name: drug.name, vol: math.reqVol.toFixed(1), freq: finalFreq, details: math.isMax ? "Max dose cap" : "", unit: unit };
+    // Pass warnings into the details string so it hits the prescription pad
+    let detailsText = math.isMax ? "Max dose cap enforced. " : "";
+    if (drug.warnings && drug.warnings.length > 0) detailsText += drug.warnings.join(" ");
+
+    pendingPrescriptionDrug = { name: drug.name, vol: math.reqVol.toFixed(1), freq: finalFreq, details: detailsText, unit: unit };
     
     if(activePatientId) {
         btnArea.innerHTML = `<button class="action" onclick="addToRxCart()" style="width:100%; font-size:1.1rem; padding:1rem; margin-top:1rem; background:var(--primary); color:white; border-radius:var(--radius-md); box-shadow:var(--shadow-md);">➕ Add to Active Draft</button>`;
@@ -91,14 +103,24 @@ function runHomeDoseCalc() {
 
     let math = ClinicalMath.computeDose(drug, wt);
     let unit = ClinicalMath.getUnit(drug);
-    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:5px;">⚠️ Adult Max Cap Enforced</div>` : "";
+    
+    // --- NEW: VISUAL INDICATIONS & WARNINGS ---
+    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:8px;">⚠️ Adult Max Cap Enforced</div>` : "";
+    if (drug.warnings && drug.warnings.length > 0) {
+        warnHTML += `<div style="color:var(--warning); font-size:0.8rem; margin-top:8px; text-align:left; line-height:1.4;">${drug.warnings.join("<br>")}</div>`;
+    }
+    let indHTML = "";
+    if (drug.indications && drug.indications.length > 0) {
+        indHTML = `<div style="margin-top:10px; margin-bottom:5px;">` + drug.indications.map(i => `<span style="background:rgba(91,97,246,0.1); color:var(--primary); padding:2px 8px; border-radius:12px; font-size:0.7rem; margin-right:4px; display:inline-block; font-weight:bold;">${i}</span>`).join("") + `</div>`;
+    }
 
     res.innerHTML = `
         <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--primary); text-align:center; box-shadow:var(--shadow-md);">
             <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Calculated Quantity</div>
             <div style="font-size:2.8rem; color:var(--primary); font-weight:800; margin:5px 0;">${math.reqVol.toFixed(1)} <span style="font-size:1.2rem;">${unit}</span></div>
             <div style="font-size:1rem; color:var(--text-main); font-weight:700; background:rgba(91,97,246,0.1); padding:5px 10px; border-radius:4px; display:inline-block;">${drug.defaultFreq}</div>
-            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
+            ${indHTML}
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px; padding-top:10px; border-top:1px solid var(--border-soft);">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
             ${warnHTML}
         </div>
     `;
@@ -273,7 +295,7 @@ function evaluateDDx() {
     const ddxArea = document.getElementById('ddxSuggestions');
     let suggestions = [];
 
-    if (activeDraftSymptoms.includes('fever') && activeDraftSymptoms.includes('ear tugging')) {
+    if (activeDraftSymptoms.includes('fever') && activeDraftSymptoms.includes('ear pain')) {
         suggestions.push('Acute Otitis Media (AOM)');
     }
     if (activeDraftSymptoms.includes('loose stools') && activeDraftSymptoms.includes('vomiting')) {
@@ -340,9 +362,12 @@ function calcInlineDose() {
     
     let math = ClinicalMath.computeDose(drug, wt);
     let unit = ClinicalMath.getUnit(drug);
-    let warnHTML = math.isMax ? ` <span style="color:var(--danger); font-size:0.8rem;">(⚠️ Adult Max Cap)</span>` : "";
     
-    res.innerHTML = `Calculated: <span style="font-size:1.1rem; color:var(--primary);">${math.reqVol.toFixed(1)} ${unit}</span> (${math.reqMg.toFixed(0)} mg)${warnHTML}`;
+    // --- NEW: INLINE WARNINGS ---
+    let warnHTML = math.isMax ? ` <span style="color:var(--danger); font-size:0.8rem;">(⚠️ Adult Max Cap)</span>` : "";
+    let alertText = drug.warnings && drug.warnings.length > 0 ? `<br><span style="color:var(--warning); font-size:0.8rem; display:block; margin-top:2px;">${drug.warnings.join(" | ")}</span>` : "";
+    
+    res.innerHTML = `Calculated: <span style="font-size:1.1rem; color:var(--primary);">${math.reqVol.toFixed(1)} ${unit}</span> (${math.reqMg.toFixed(0)} mg)${warnHTML}${alertText}`;
     
     const durVal = document.getElementById('inlineDurVal').value;
     const durUnit = document.getElementById('inlineDurUnit').value;
@@ -365,8 +390,12 @@ function autoCalcFromDB(drugId, freqStr = null, detailsStr = "") {
 
     let math = ClinicalMath.computeDose(drug, wt);
     
+    // Pass warnings directly into the order set prescriptions
     let finalDetails = detailsStr;
     if (math.isMax) finalDetails += (finalDetails ? " | " : "") + `⚠️ Max Dose Cap Enforced (${drug.maxMg}mg)`;
+    if (drug.warnings && drug.warnings.length > 0) {
+        finalDetails += (finalDetails ? " | " : "") + drug.warnings.join(" | ");
+    }
 
     return {
         name: drug.name,
@@ -398,7 +427,7 @@ function applyOrderSet(setId) {
     } 
     else if (setId === 'os_uri') {
         dx = "Viral Upper Respiratory Infection (URI)"; advice = "Maintain hydration. Steam inhalation twice daily.";
-        injectSymp("Cough", "3", "Days"); injectSymp("Runny Nose", "3", "Days");
+        injectSymp("Cough", "3", "Days"); injectSymp("Cold", "3", "Days");
         newRx.push(autoCalcFromDB("ap_04", "SOS Q6H for Fever"));
         newRx.push({ name: "Saline Nasal Drops (0.65%)", vol: "2", unit: "drops", freq: "TID in both nostrils", details: "" });
     } 
@@ -463,12 +492,19 @@ window.renderRxCartList = function() {
     } else {
         html += `<div style="display:flex; flex-direction:column; gap:12px;">`;
         list.forEach((r,i) => {
+            // Highlight warnings in red if they exist on the Rx Pad
+            let detailsDisplay = "";
+            if (r.details) {
+                let color = r.details.includes("⚠️") ? "var(--danger)" : "#888";
+                detailsDisplay = `<div style="font-size:0.75rem; color:${color}; font-weight:600; margin-top:4px;">${r.details}</div>`;
+            }
+
             html += `
             <div style="display:flex; justify-content:space-between; align-items:start; padding-bottom:8px; border-bottom:1px dashed #eee;">
                 <div>
                     <strong style="font-size:0.95rem; color:#333;">${i+1}. ${r.name}</strong><br>
                     <span style="font-size:0.85rem; color:#555;">Give <b style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${r.vol} ${r.unit}</b> — <i>${r.freq}</i></span>
-                    ${r.details ? `<div style="font-size:0.75rem; color:#888; margin-top:2px;">${r.details}</div>` : ''}
+                    ${detailsDisplay}
                 </div>
                 <button onclick="removeDrugFromCart(${i})" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer; font-weight:bold;">✖</button>
             </div>`;

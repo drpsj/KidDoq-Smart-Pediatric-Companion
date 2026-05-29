@@ -162,13 +162,18 @@
                     <div>
                         <label>Drug Category</label>
                         <select id="homeCategory" onchange="populateHomeDrugs(); runHomeDoseCalc();">
-                            <option value="">-- Select --</option>
-                            <option value="antibiotics">Antibiotics</option>
-                            <option value="antipyretics">Antipyretics / Pain</option>
-                            <option value="antihistamines">Allergy / Cold</option>
-                            <option value="respiratory">Respiratory</option>
-                            <option value="git">Gastrointestinal</option>
-                        </select>
+    <option value="">-- Select --</option>
+    <option value="antibiotics">Antibiotics</option>
+    <option value="antipyretics">Antipyretics / Pain</option>
+    <option value="antihistamines">Allergy / Cold</option>
+    <option value="respiratory">Respiratory</option>
+    <option value="git">Gastrointestinal</option>
+    <option value="vitamins">Vitamins & Minerals</option>
+    <option value="musclerelaxants">Muscle Relaxants</option>
+    <option value="emergency">ER & Resuscitation</option>
+    <option value="neurology">Neurology & Seizures</option>
+    <option value="topical">Topical (Skin/Eye/ENT)</option>
+</select>
                     </div>
                 </div>
                 
@@ -510,8 +515,21 @@
                                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                                         <input type="text" id="sympInput" placeholder="Search symptom (e.g. Fever, Cough)" list="sympList" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem;">
                                         <datalist id="sympList">
-                                            <option value="Fever"><option value="Cough"><option value="Vomiting"><option value="Loose Stools"><option value="Ear Tugging"><option value="Wheezing"><option value="Lethargy">
-                                        </datalist>
+    <option value="Fever">
+    <option value="Cough">
+    <option value="Vomiting">
+    <option value="Loose Stools">
+    <option value="Ear Pain">
+    <option value="Wheezing">
+    <option value="Lethargy">
+    <option value="Sore Throat">
+    <option value="Abdominal Pain">
+    <option value="Cold">
+    <option value="Skin Rash">
+    <option value="Itching">
+    <option value="Nausea">
+    <option value="Shortness of Breath">
+</datalist>
                                         
                                         <div style="display:grid; grid-template-columns: 1fr 1.2fr auto; gap:8px;">
                                             <input type="number" id="sympDurVal" placeholder="Qty" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; box-sizing:border-box;">
@@ -532,8 +550,18 @@
                                         <h4 style="margin:0 0 8px 0; color:var(--primary); font-size:0.85rem; text-transform:uppercase;">💊 Medications Taken (Audit)</h4>
                                         <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
                                             <select id="revCategory" onchange="populateRevDrugs()" style="flex:1 1 45%; border:1px solid var(--border-soft); border-radius:6px; padding:8px; font-size:0.9rem; min-width:110px;">
-                                                <option value="">-- Cat --</option><option value="antibiotics">Antibiotics</option><option value="antipyretics">Antipyretics</option><option value="antihistamines">Antihistamines</option><option value="git">Gastrointestinal</option><option value="respiratory">Respiratory</option>
-                                            </select>
+    <option value="">-- Cat --</option>
+    <option value="antibiotics">Antibiotics</option>
+    <option value="antipyretics">Antipyretics</option>
+    <option value="antihistamines">Antihistamines</option>
+    <option value="git">Gastrointestinal</option>
+    <option value="respiratory">Respiratory</option>
+    <option value="vitamins">Vitamins & Minerals</option>
+    <option value="musclerelaxants">Muscle Relaxants</option>
+    <option value="emergency">ER & Resuscitation</option>
+    <option value="neurology">Neurology & Seizures</option>
+    <option value="topical">Topical (Skin/Eye/ENT)</option>
+</select>
                                             <select id="revFormulation" onchange="calcReverse()" style="flex:1 1 45%; border:1px solid var(--border-soft); border-radius:6px; padding:8px; font-size:0.9rem; min-width:130px;"><option value="">-- Drug --</option></select>
                                         </div>
                                         <div style="display:flex; flex-wrap:wrap; gap:8px;">
@@ -631,13 +659,18 @@
 
                                         <div style="display:flex; flex-direction:column; gap:10px;">
                                             <select id="inlineDrugCat" onchange="populateInlineDrugs()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem;">
-                                                <option value="">-- Filter by Category --</option>
-                                                <option value="antipyretics">Antipyretics / Pain</option>
-                                                <option value="antibiotics">Antibiotics</option>
-                                                <option value="respiratory">Respiratory / Allergy</option>
-                                                <option value="antihistamines">Antihistamines</option>
-                                                <option value="git">Gastrointestinal</option>
-                                            </select>
+    <option value="">-- Filter by Category --</option>
+    <option value="antipyretics">Antipyretics / Pain</option>
+    <option value="antibiotics">Antibiotics</option>
+    <option value="respiratory">Respiratory / Allergy</option>
+    <option value="antihistamines">Antihistamines</option>
+    <option value="git">Gastrointestinal</option>
+    <option value="vitamins">Vitamins & Minerals</option>
+    <option value="musclerelaxants">Muscle Relaxants</option>
+    <option value="emergency">ER & Resuscitation</option>
+<option value="neurology">Neurology & Seizures</option>
+<option value="topical">Topical (Skin/Eye/ENT)</option>
+</select>
                                             <select id="inlineDrugSelect" onchange="calcInlineDose()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem;">
                                                 <option value="">-- Select Drug --</option>
                                             </select>
