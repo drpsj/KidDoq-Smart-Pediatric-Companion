@@ -117,7 +117,7 @@ const drugsDb = [
     { id: "vm_04", name: "Tab. Cholecalciferol (400 IU)", doseMg: 400, doseType: "fixed", maxMg: 400, div: 1, defaultFreq: "OD", conc: 400, vol: 1, category: "vitamins", indications: ['Vitamin D Deficiency', 'Rickets'], warnings: [], orderSetTags: [] },
 
     // --- ADDITIONAL GIT (IAP Extracted) ---
-    { id: "gi_11", name: "Cap. Omeprazole (10mg)", doseMg: 1, doseType: "perDay", maxMg: 40, div: 1, defaultFreq: "OD", conc: 10, vol: 1, category: "git", indications: ['Abdominal Pain', 'Vomiting'], warnings: ['⚠️ Administer before meals.'], orderSetTags: [] }
+    { id: "gi_11", name: "Cap. Omeprazole (10mg)", doseMg: 1, doseType: "perDay", maxMg: 40, div: 1, defaultFreq: "OD", conc: 10, vol: 1, category: "git", indications: ['Abdominal Pain', 'Vomiting'], warnings: ['⚠️ Administer before meals.'], orderSetTags: [] },
     // --- EMERGENCY, ANAPHYLAXIS & ANTIDOTES (IAP Extracted) ---
     { id: "em_01", name: "Inj. Epinephrine / Adrenaline (1:1000, 1mg/ml)", doseMg: 0.01, doseType: "perDose", maxMg: 0.5, div: 1, defaultFreq: "STAT (IM)", conc: 1, vol: 1, category: "emergency", indications: ['Anaphylaxis', 'Cardiac Arrest', 'Severe Asthma'], warnings: ['⚠️ Give IM in anterolateral thigh for anaphylaxis.', 'Monitor HR closely.'], orderSetTags: [] },
     { id: "em_02", name: "Inj. Hydrocortisone (100mg vial)", doseMg: 5, doseType: "perDose", maxMg: 200, div: 1, defaultFreq: "STAT (IV)", conc: 100, vol: 2, category: "emergency", indications: ['Anaphylaxis', 'Severe Asthma', 'Adrenal Crisis'], warnings: ['⚠️ Reconstitute with sterile water.'], orderSetTags: ['os_asthma'] },
