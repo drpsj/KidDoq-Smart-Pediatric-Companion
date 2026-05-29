@@ -182,3 +182,62 @@ window.loadPatientFromDB = function(pId) {
 };
 
 window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;
+
+// --- SURGICAL PATCH: FORCE TOOL VISIBILITY ---
+window.openClinicalTool = function(toolId) {
+    if (!AppStore.getActivePatientId()) {
+        if (typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!");
+        return;
+    }
+
+    // 1. Show the main workspace and hide everything else
+    document.getElementById('activeWorkspace').style.display = 'block';
+    document.querySelectorAll('.view-content').forEach(v => {
+        v.style.display = 'none';
+        v.classList.remove('active-view');
+    });
+
+    // 2. Show the selected tool
+    const target = document.getElementById(toolId);
+    if (target) {
+        target.style.display = 'block';
+        target.classList.add('active-view');
+        
+        // 3. FORCE the first sub-tab to display
+        let firstTabBtn = target.querySelector('.sub-tab-btn');
+        let firstTabContent = target.querySelector('.sub-tab-content');
+        
+        if (firstTabBtn && firstTabContent) {
+            target.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+            target.querySelectorAll('.sub-tab-content').forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none'; 
+            });
+            firstTabBtn.classList.add('active');
+            firstTabContent.classList.add('active');
+            firstTabContent.style.display = 'block'; 
+        }
+    }
+};
+
+window.switchSubTab = function(tabId, btnElement) {
+    let parentView = btnElement.closest('.view-content');
+    if (!parentView) return;
+
+    let navContainer = btnElement.closest('.sub-tabs-nav');
+    if (navContainer) {
+        navContainer.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    parentView.querySelectorAll('.sub-tab-content').forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';
+    });
+
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) {
+        targetTab.classList.add('active');
+        targetTab.style.display = 'block';
+    }
+};
