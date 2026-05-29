@@ -7,6 +7,7 @@ const urlsToCache = [
     './css/desktop.css',
     './css/mobile.css',
     './js/app.js',
+    './js/patient-registry.js',
     './js/module-rx.js', // RENAMED (was calculators.js)
     './js/module-er.js',
     './js/module-nutrition.js',
