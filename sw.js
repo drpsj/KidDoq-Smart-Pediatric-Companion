@@ -16,7 +16,8 @@ const urlsToCache = [
     './js/module-er.js', // ADD THIS LINE
     './js/clinical-math.js',
     './js/database.js',
-    './js/growth-vax.js',
+    './js/module-growth.js',
+    './js/module-vax.js',
     './js/patient-store.js',
     './js/print-engine.js',
     './js/store.js',
