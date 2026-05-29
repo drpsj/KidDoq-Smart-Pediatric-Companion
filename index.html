@@ -255,6 +255,10 @@
 
         <div id="aboutFeatureView" class="view-content">
             <h2 class="section-title">⚙️ Settings & About</h2>
+            
+            <!-- NEW ENTRY BUTTON -->
+            <button class="action" onclick="switchNavTab('personaliseFeatureView')" style="margin-bottom:20px; width:100%; background:linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); font-size:1.1rem; padding:15px; box-shadow:var(--shadow-md);">🎨 Personalise Your App</button>
+            
             <div class="timeline-section tool-grid">
                 <div>
                     <h4 style="margin-top:0; color:var(--primary);">👨‍⚕️ Letterhead / Rx Builder</h4>
@@ -294,6 +298,80 @@
                         <span style="font-size:0.85rem; color:var(--text-muted);">Architected & Developed by <b>Dr. Peter Suraj Joseph</b></span><br>
                         <span style="font-size:0.75rem; color:var(--text-muted);">100% Client-Side Execution • Zero Data Tracking</span>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 1: PERSONALISATION HUB -->
+        <div id="personaliseFeatureView" class="view-content">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('aboutFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none;">🎨 Personalisation Hub</h2>
+            </div>
+            
+            <div class="tools-grid">
+                <!-- Button to open the Custom Formulary Builder -->
+                <div class="tool-btn" onclick="switchNavTab('customFormularyView'); renderCustomDrugsList();">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">💊</div>
+                    <span>Add Custom Drugs</span>
+                </div>
+                <!-- Future personalization buttons can go here! -->
+            </div>
+        </div>
+
+        <!-- PAGE 2: CUSTOM FORMULARY BUILDER -->
+        <div id="customFormularyView" class="view-content">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('personaliseFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none;">💊 Custom Formulary Builder</h2>
+            </div>
+
+            <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 1.5fr;">
+                <div style="background:var(--bg-body); padding:1.5rem; border-radius:8px; border:1px solid var(--border-soft);">
+                    <h3 style="margin-top:0; color:var(--primary);">➕ Add New Drug</h3>
+                    
+                    <label>Drug Name & Brand</label>
+                    <input type="text" id="cdName" placeholder="e.g. Syp. Augmentin DDS">
+                    
+                    <label>Category</label>
+                    <select id="cdCat">
+                        <option value="antibiotics">Antibiotics</option>
+                        <option value="antipyretics">Antipyretics / Pain</option>
+                        <option value="antihistamines">Allergy / Cold</option>
+                        <option value="respiratory">Respiratory</option>
+                        <option value="git">Gastrointestinal</option>
+                    </select>
+
+                    <div class="row-inputs">
+                        <div><label>Dose Target</label><input type="number" id="cdMg" placeholder="mg/kg"></div>
+                        <div>
+                            <label>Dose Type</label>
+                            <select id="cdDoseType">
+                                <option value="perDay">Per Day (Divided)</option>
+                                <option value="perDose">Per Dose</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label>Concentration (mg per mL)</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="number" id="cdConcMg" placeholder="mg" style="flex:1;">
+                        <span style="font-weight:bold; color:var(--text-muted);">in</span>
+                        <input type="number" id="cdConcVol" placeholder="mL" style="flex:1;">
+                    </div>
+
+                    <div class="row-inputs" style="margin-top:10px;">
+                        <div><label>Default Freq</label><input type="text" id="cdFreq" placeholder="e.g. BID"></div>
+                        <div><label>Max Cap (mg)</label><input type="number" id="cdMax" placeholder="e.g. 2000"></div>
+                    </div>
+
+                    <button class="action" onclick="saveCustomDrug()" style="margin-top:1.5rem; width:100%;">💾 Save to Formulary</button>
+                </div>
+
+                <div>
+                    <h3 style="margin-top:0; color:var(--primary-dark);">📚 Your Custom Formulary</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">These drugs will securely save to your device and appear in your prescription calculators.</p>
+                    <div id="customDrugsListArea" style="display:flex; flex-direction:column; gap:10px; max-height:600px; overflow-y:auto; padding-right:10px;"></div>
                 </div>
             </div>
         </div>
