@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiddoq-v12-cache'; // Bumped to v12
+const CACHE_NAME = 'kiddoq-v14-cache';
 
 const urlsToCache = [
     './',

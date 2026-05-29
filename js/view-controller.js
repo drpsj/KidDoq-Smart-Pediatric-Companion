@@ -107,3 +107,78 @@ window.switchNavTab = ViewController.switchNavTab;
 window.switchMainFeature = ViewController.switchNavTab; 
 window.openClinicalTool = ViewController.openClinicalTool;
 window.switchSubTab = ViewController.switchSubTab;
+
+// ==========================================
+// AI COPILOT & WORKSPACE LOADER
+// ==========================================
+
+window.updateCopilot = function(pId) {
+    const p = AppStore.getPatient(pId);
+    const container = document.getElementById('aiCopilotSuggestions');
+    if(!p || !container) return;
+
+    document.getElementById('aiCopilotBanner').style.display = 'block';
+    let suggestions = [];
+
+    if (!p.visits || p.visits.length === 0) {
+        suggestions.push(`<button class="action" onclick="ViewController.openClinicalTool('prescriptionFeatureView'); startNewVisit();" style="width:auto; margin:0; padding:8px 16px; background:var(--primary); box-shadow:var(--shadow-sm);">➕ Start Initial Visit</button>`);
+    }
+    if (!p.weight || p.weight === "") {
+        suggestions.push(`<button class="secondary" onclick="ViewController.openClinicalTool('malnutritionFeatureView')" style="width:auto; border-color:var(--warning); color:var(--warning); background:white;">⚖️ Record Weight</button>`);
+    }
+    if (p.totalMonths <= 24) {
+        suggestions.push(`<button class="secondary" onclick="ViewController.openClinicalTool('trackerFeatureView')" style="width:auto; border-color:var(--success); color:var(--success); background:white;">💉 Check Due Vaccines</button>`);
+        suggestions.push(`<button class="secondary" onclick="ViewController.openClinicalTool('milestoneFeatureView')" style="width:auto; border-color:var(--brand-pink); color:var(--brand-pink); background:white;">👶 Assess Milestones</button>`);
+    }
+    suggestions.push(`<button class="secondary" onclick="ViewController.openClinicalTool('prescriptionFeatureView')" style="width:auto; border-color:var(--primary); color:var(--primary); background:white;">🧮 Rx & Dosing</button>`);
+    container.innerHTML = suggestions.join("");
+};
+
+window.loadPatientFromDB = function(pId) {
+    const p = AppStore.getPatient(pId);
+    if (!p) {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Patient data not found in vault!");
+        return;
+    }
+
+    AppStore.setActivePatient(pId);
+    activePatientId = pId; 
+
+    const headerEl = document.getElementById('headerPatientText');
+    if (headerEl) headerEl.innerText = `👤 ${p.name} | ${p.ageYrs || 0}Y ${p.ageMos || 0}M | ${p.weight} kg`;
+    if (typeof updateStickyBanner === 'function') updateStickyBanner(pId);
+
+    if (typeof ViewController !== 'undefined') {
+        ViewController.openClinicalTool('prescriptionFeatureView');
+        setTimeout(() => {
+            let ledgerTabBtn = document.querySelector('[onclick*="rxNotesTab"]');
+            if(ledgerTabBtn) ViewController.switchSubTab('rxNotesTab', ledgerTabBtn);
+        }, 50);
+    }
+
+    setTimeout(() => {
+        if (typeof renderVisitLedger === 'function') renderVisitLedger(); 
+        if (typeof calcMalnutrition === 'function') calcMalnutrition();
+        if (typeof renderSensory === 'function') renderSensory();
+        if (typeof calcNutrition === 'function') calcNutrition();
+        if (typeof renderRecallLog === 'function') renderRecallLog();
+        if (typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
+        if (typeof renderMilestoneDashboard === 'function') renderMilestoneDashboard();
+        if (typeof updateCopilot === 'function') updateCopilot(pId);
+        
+        // Safe UI mapping
+        const inputs = {
+            'calcWeight': p.weight, 'pName': p.name, 'pPhone': p.phone,
+            'dob': p.dob, 'ageYrs': p.ageYrs, 'ageMos': p.ageMos,
+            'gender': p.gender, 'pWeight': p.weight, 'htCm': p.htCm
+        };
+        for (const [id, val] of Object.entries(inputs)) {
+            const el = document.getElementById(id);
+            if (el) el.value = val !== undefined ? val : (id.includes('age') ? 0 : "");
+        }
+    }, 100);
+
+    if(typeof showSystemToast === 'function') showSystemToast(`✅ Opened ${p.name}'s File`);
+};
+
+window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;
