@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiddoq-v15-cache';
+const CACHE_NAME = 'kiddoq-v25-cache';
 
 const urlsToCache = [
     './',
@@ -6,47 +6,61 @@ const urlsToCache = [
     './css/theme.css',
     './css/desktop.css',
     './css/mobile.css',
-    './js/app.js',
+    './js/database.js',
+    './js/store.js',
+    './js/patient-store.js',
     './js/patient-registry.js',
+    './js/clinical-math.js',
     './js/encounter-ledger.js',
-    './js/module-rx.js', // RENAMED (was calculators.js)
-    './js/core-settings.js',
+    './js/module-rx.js',
     './js/module-er.js',
     './js/module-nutrition.js',
-    './js/module-er.js', // ADD THIS LINE
-    './js/clinical-math.js',
-    './js/database.js',
     './js/module-growth.js',
     './js/module-vax.js',
-    './js/patient-store.js',
+    './js/core-settings.js',
     './js/print-engine.js',
-    './js/store.js',
     './js/view-controller.js',
+    './js/app.js',
+    './icon-rx.png',
+    './icon-cert.png',
+    './icon-growth.png',
+    './icon-vax.png',
+    './icon-er.png',
+    './icon-miles.png',
+    './icon-triage.png',
+    './icon-diet.png',
+    './icon-jaundice.png',
+    './icon-asthma.png',
     './kiddoq lite.png'
 ];
 
-// Install Event: Download and cache all the files
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
+    self.skipWaiting(); // Force the new worker to activate immediately
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Opened cache');
-                return cache.addAll(urlsToCache);
-            })
+            .then(cache => cache.addAll(urlsToCache))
+            .catch(err => console.error("SW Cache Install Error:", err))
     );
 });
 
-// Fetch Event: Serve files from the cache if offline
-self.addEventListener('fetch', (event) => {
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cache => {
+                    if (cache !== CACHE_NAME) {
+                        return caches.delete(cache);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // If the file is in the cache, return it!
-                if (response) {
-                    return response;
-                }
-                // Otherwise, try to fetch it from the internet
-                return fetch(event.request);
-            })
+        caches.match(event.request).then(response => {
+            return response || fetch(event.request);
+        })
     );
 });

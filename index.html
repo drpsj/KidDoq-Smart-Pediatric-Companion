@@ -837,17 +837,24 @@
 <script src="js/core-settings.js?v=23"></script>
 <script src="js/print-engine.js?v=23"></script>
 <script src="js/view-controller.js?v=23"></script>
-<script>
+<<script>
+    // EMERGENCY MOBILE CACHE WIPE
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                console.log('✅ Offline Engine Active', reg.scope);
-            }).catch(err => {
-                console.log('⚠️ Offline Engine Failed', err);
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister(); // Kill the old trapped workers
+                }
+            }).then(() => {
+                // Register the brand new one
+                navigator.serviceWorker.register('./sw.js?v=25').then(reg => {
+                    console.log('✅ Offline Engine Force Updated', reg.scope);
+                }).catch(err => {
+                    console.log('⚠️ Offline Engine Failed', err);
+                });
             });
         });
     }
 </script>
-
 </body>
 </html>
