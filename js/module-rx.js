@@ -58,7 +58,7 @@ function calculateDose() {
     let durStr = durVal ? ` x ${durVal} Days` : "";
     let finalFreq = `${drug.defaultFreq}${durStr}`;
     
-    // --- NEW: VISUAL INDICATIONS & WARNINGS ---
+    // --- DOCTOR'S EYES ONLY: VISUAL INDICATIONS & WARNINGS IN CALCULATOR ---
     let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; margin-top:5px;">⚠️ Adult Max Cap Enforced (${drug.maxMg}mg)</div>` : "";
     if (drug.warnings && drug.warnings.length > 0) {
         warnHTML += `<div style="color:var(--warning); font-size:0.85rem; margin-top:5px; font-weight:600;">${drug.warnings.join("<br>")}</div>`;
@@ -79,11 +79,8 @@ function calculateDose() {
             </div>
         </div>`;
     
-    // Pass warnings into the details string so it hits the prescription pad
-    let detailsText = math.isMax ? "Max dose cap enforced. " : "";
-    if (drug.warnings && drug.warnings.length > 0) detailsText += drug.warnings.join(" ");
-
-    pendingPrescriptionDrug = { name: drug.name, vol: math.reqVol.toFixed(1), freq: finalFreq, details: detailsText, unit: unit };
+    // STRIPPED: Warnings are no longer passed to the details section of the Rx Pad
+    pendingPrescriptionDrug = { name: drug.name, vol: math.reqVol.toFixed(1), freq: finalFreq, details: "", unit: unit };
     
     if(activePatientId) {
         btnArea.innerHTML = `<button class="action" onclick="addToRxCart()" style="width:100%; font-size:1.1rem; padding:1rem; margin-top:1rem; background:var(--primary); color:white; border-radius:var(--radius-md); box-shadow:var(--shadow-md);">➕ Add to Active Draft</button>`;
@@ -104,7 +101,7 @@ function runHomeDoseCalc() {
     let math = ClinicalMath.computeDose(drug, wt);
     let unit = ClinicalMath.getUnit(drug);
     
-    // --- NEW: VISUAL INDICATIONS & WARNINGS ---
+    // --- DOCTOR'S EYES ONLY ---
     let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:8px;">⚠️ Adult Max Cap Enforced</div>` : "";
     if (drug.warnings && drug.warnings.length > 0) {
         warnHTML += `<div style="color:var(--warning); font-size:0.8rem; margin-top:8px; text-align:left; line-height:1.4;">${drug.warnings.join("<br>")}</div>`;
@@ -363,7 +360,7 @@ function calcInlineDose() {
     let math = ClinicalMath.computeDose(drug, wt);
     let unit = ClinicalMath.getUnit(drug);
     
-    // --- NEW: INLINE WARNINGS ---
+    // --- DOCTOR'S EYES ONLY: INLINE WARNINGS ---
     let warnHTML = math.isMax ? ` <span style="color:var(--danger); font-size:0.8rem;">(⚠️ Adult Max Cap)</span>` : "";
     let alertText = drug.warnings && drug.warnings.length > 0 ? `<br><span style="color:var(--warning); font-size:0.8rem; display:block; margin-top:2px;">${drug.warnings.join(" | ")}</span>` : "";
     
@@ -390,19 +387,13 @@ function autoCalcFromDB(drugId, freqStr = null, detailsStr = "") {
 
     let math = ClinicalMath.computeDose(drug, wt);
     
-    // Pass warnings directly into the order set prescriptions
-    let finalDetails = detailsStr;
-    if (math.isMax) finalDetails += (finalDetails ? " | " : "") + `⚠️ Max Dose Cap Enforced (${drug.maxMg}mg)`;
-    if (drug.warnings && drug.warnings.length > 0) {
-        finalDetails += (finalDetails ? " | " : "") + drug.warnings.join(" | ");
-    }
-
+    // STRIPPED: Warnings are no longer added to order set final details
     return {
         name: drug.name,
         vol: math.reqVol.toFixed(1),
         unit: ClinicalMath.getUnit(drug),
         freq: freqStr || drug.defaultFreq,
-        details: finalDetails
+        details: detailsStr // Keeps only the specific manual advice passed by the Order Set
     };
 }
 
@@ -466,7 +457,7 @@ function applyOrderSet(setId) {
     document.getElementById('orderSetSelect').value = "";
 }
 
-// --- 3. LIVE RX PREVIEW (FIXED) ---
+// --- 3. LIVE RX PREVIEW ---
 window.renderRxCartList = function() { 
     const container = document.getElementById('rxCartList'); 
     if(!activePatientId) return; 
@@ -492,11 +483,10 @@ window.renderRxCartList = function() {
     } else {
         html += `<div style="display:flex; flex-direction:column; gap:12px;">`;
         list.forEach((r,i) => {
-            // Highlight warnings in red if they exist on the Rx Pad
+            // Render any manual details passed by Order Sets, but not system warnings
             let detailsDisplay = "";
             if (r.details) {
-                let color = r.details.includes("⚠️") ? "var(--danger)" : "#888";
-                detailsDisplay = `<div style="font-size:0.75rem; color:${color}; font-weight:600; margin-top:4px;">${r.details}</div>`;
+                detailsDisplay = `<div style="font-size:0.75rem; color:#888; font-weight:600; margin-top:4px;">${r.details}</div>`;
             }
 
             html += `
