@@ -220,12 +220,12 @@ const ClinicalMath = (function() {
         calculateVaccineTimeline,
         calculateExpectedWeight, // <-- NEW
         evaluateMAC,             // <-- NEW
-        classifyWellcomeTrust    // <-- NEW
+        classifyWellcomeTrust,    // <-- NEW
         evaluateBP,
         calcBSA,
         calcEGFR,
         calcParkland,
-        calcUmbilicalLines
-        calcSodiumCorrection
+        calcUmbilicalLines,
+        calcSodiumCorrection,
     };
 })();
