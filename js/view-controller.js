@@ -47,7 +47,7 @@ const ViewController = (function() {
             const workspace = document.getElementById('activeWorkspace');
 
             // Workspace Gatekeeper
-            if (tabId === 'homeDashboardView' || tabId === 'databaseFeatureView' || tabId === 'aboutFeatureView' || tabId === 'toolsTab') {
+            if (tabId === 'homeDashboardView' || tabId === 'databaseFeatureView' || tabId === 'aboutFeatureView' || tabId === 'toolsTab' || tabId === 'personaliseFeatureView' || tabId === 'customFormularyView') {
                 if (workspace) workspace.style.display = 'none';
             } else if (workspace && AppStore.getActivePatientId()) {
                 workspace.style.display = 'block';
@@ -82,10 +82,14 @@ const ViewController = (function() {
 
             parentView.querySelectorAll('.sub-tab-content').forEach(content => {
                 content.classList.remove('active');
+                // Erase any lingering inline styles blocking the CSS
+                content.style.display = ''; 
             });
 
             const targetTab = document.getElementById(tabId);
-            if (targetTab) targetTab.classList.add('active');
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
         },
 
         showModal: function(modalId) {
@@ -128,7 +132,7 @@ window.syncVitalsToTools = function() {
     for (let id in fieldsToSync) {
         let el = document.getElementById(id);
         if (el) {
-            // Only overwrite if the field is currently empty, so we don't erase user edits
+            // Only overwrite if the field is currently empty
             if(!el.value && fieldsToSync[id]) {
                 el.value = fieldsToSync[id];
             }
@@ -156,7 +160,7 @@ window.openClinicalTool = function(viewId) {
         target.style.display = 'block';
         target.classList.add('active-view');
         
-        // Force the first sub-tab to open automatically
+        // Let CSS handle the visibility, just assign the 'active' classes
         let firstTabBtn = target.querySelector('.sub-tab-btn');
         let firstTabContent = target.querySelector('.sub-tab-content');
         
@@ -164,11 +168,10 @@ window.openClinicalTool = function(viewId) {
             target.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
             target.querySelectorAll('.sub-tab-content').forEach(content => {
                 content.classList.remove('active');
-                content.style.display = 'none'; 
+                content.style.display = ''; // Clear the inline block!
             });
             firstTabBtn.classList.add('active');
             firstTabContent.classList.add('active');
-            firstTabContent.style.display = 'block'; 
         }
     }
 
