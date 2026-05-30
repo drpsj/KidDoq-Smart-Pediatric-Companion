@@ -434,43 +434,140 @@
                 </div>
             </div>
 
-            <div id="erFeatureView" class="view-content">
-                <h2 class="section-title" style="color:var(--danger)">🚨 ER & NICU Resuscitation</h2>
-                <div class="sub-tabs-nav">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('erCrashTab', this)">⚡ Crash Cart</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('erFluidsTab', this)">💧 IV Fluids</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('erNicuTab', this)">🍼 NICU (GIR/APGAR)</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('erVitalsTab', this)">📊 Vitals Matrix</button>
+            <!-- ER & RESUSCITATION HUB -->
+        <div id="erFeatureView" class="view-content">
+            <h2 class="section-title" style="color:var(--danger)">🚨 ER & Resuscitation Hub</h2>
+            
+            <div class="tools-grid">
+                <div class="tool-btn" onclick="openErView('erCrashView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">⚡</div>
+                    <span>Code Blue & Airway</span>
                 </div>
-                
-                <div id="erCrashTab" class="sub-tab-content active"><div class="timeline-section tool-grid" style="border: 2px solid var(--danger); background: rgba(239, 68, 68, 0.02);"><div><h3 style="color:var(--danger); margin-top:0;">Code Blue Calculator</h3><label>Weight (kg)</label><input type="number" id="crashWeight" oninput="calcCrash()"><label>Age (Yrs)</label><input type="number" id="crashAge" oninput="calcCrash()"><div class="formula-box" style="margin-top:10px;"><b>Defibrillation:</b> 2 J/kg &rarr; 4 J/kg<br><b>Fluid Bolus:</b> 20 mL/kg (NS)<br><b>Adrenaline (1:10,000):</b> 0.1 mL/kg</div></div><div id="crashOutputArea" class="tool-result danger">Input physical vectors to map lines.</div></div></div>
-                
-                <div id="erFluidsTab" class="sub-tab-content">
-                    <div class="timeline-section tool-grid">
-                        <div>
-                            <div class="formula-box">
-                                <b>Maintenance Limits:</b><br>
-                                1st 10kg: <code>100 ml/kg/day</code><br>
-                                2nd 10kg: <code>50 ml/kg/day</code><br>
-                                > 20kg: <code>20 ml/kg/day</code>
-                            </div>
-                            <label>Clinical Dehydration Grading</label>
-                            <select id="fluidDehydration" onchange="calcFluids()">
-                                <option value="0">Euvolemia (Maintenance Only 0%)</option>
-                                <option value="5">Mild Fluid Loss (5%)</option>
-                                <option value="10">Moderate Fluid Loss (10%)</option>
-                                <option value="15">Severe Fluid Deficit (15%)</option>
-                            </select>
-                            <label style="margin-top:1rem;">Fluid Mass Target (kg)</label>
-                            <input type="number" id="fluidWeight" oninput="calcFluids()">
-                        </div>
-                        <div id="fluidResultArea" class="tool-result neutral">Compile inputs parameter block.</div>
+                <div class="tool-btn" onclick="openErView('erSeizureView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🧠</div>
+                    <span>Seizures (Status)</span>
+                </div>
+                <div class="tool-btn" onclick="openErView('erFluidsView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">💧</div>
+                    <span>IV Fluids</span>
+                </div>
+                <div class="tool-btn" onclick="openErView('erNicuView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🍼</div>
+                    <span>NICU (GIR & APGAR)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. ADVANCED CRASH CART & AIRWAY (Harriet Lane) -->
+        <div id="erCrashView" class="view-content">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--danger);">⚡ Code Blue & Airway</h2>
+            </div>
+
+            <div class="timeline-section tool-grid" style="border: 2px solid var(--danger); background: rgba(239, 68, 68, 0.02); grid-template-columns: 1fr 2fr;">
+                <div>
+                    <h3 style="color:var(--danger); margin-top:0;">Crisis Parameters</h3>
+                    <label>Patient Weight (kg)</label>
+                    <input type="number" id="crashWeight" placeholder="Required" oninput="syncErWeight(this.value)" style="font-weight:bold; font-size:1.1rem; border-color:var(--danger);">
+                    <label>Age (Yrs)</label>
+                    <input type="number" id="crashAge" placeholder="0 for <1 yr" oninput="syncErAge(this.value)">
+                    <div class="formula-box" style="margin-top:15px; font-size:0.8rem;">
+                        <b>Harriet Lane Algorithms Active:</b><br>
+                        ETT Uncuffed: <code>(Age/4) + 4</code><br>
+                        Epi 1:10,000: <code>0.1 mL/kg</code>
                     </div>
                 </div>
-
-                <div id="erNicuTab" class="sub-tab-content"><div class="timeline-section tool-grid"><div><h3 style="color:var(--primary); margin-top:0;">GIR Calculator</h3><div class="formula-box"><code>GIR = (Rate × Dex%) / (Weight × 6)</code></div><div class="row-inputs"><div><label>Wt (kg)</label><input type="number" id="girWt" oninput="calcGIR()"></div><div><label>Rate (ml/hr)</label><input type="number" id="girRate" oninput="calcGIR()"></div></div><label>Dextrose %</label><input type="number" id="girDex" oninput="calcGIR()"><div id="girOutput" class="tool-result neutral"></div></div><div><h3 style="color:var(--primary); margin-top:0;">APGAR Score</h3><div class="row-inputs" style="gap:5px;"><label>Heart Rate</label><select id="apgarHR" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Resp. Effort</label><select id="apgarResp" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Muscle Tone</label><select id="apgarTone" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Reflex Excitability</label><select id="apgarReflex" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div class="row-inputs" style="gap:5px;"><label>Color</label><select id="apgarColor" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div><div id="apgarOutput" class="tool-result success">Score: 10/10</div></div></div></div>
-                <div id="erVitalsTab" class="sub-tab-content"><div class="timeline-section"><table class="theory-table"><thead><tr><th>Age Bracket</th><th>Heart Rate (bpm)</th><th>Resp Rate (bpm)</th><th>Systolic BP (mmHg)</th></tr></thead><tbody><tr><td>Neonate (&lt;28 Days)</td><td>100 - 205</td><td>40 - 60</td><td>60 - 90</td></tr><tr><td>Infant (1 - 12 Mos)</td><td>100 - 180</td><td>30 - 53</td><td>87 - 105</td></tr><tr><td>Toddler (1 - 3 Yrs)</td><td>98 - 140</td><td>22 - 37</td><td>95 - 105</td></tr><tr><td>School Age (6 - 11 Yrs)</td><td>75 - 118</td><td>18 - 25</td><td>97 - 112</td></tr></tbody></table></div></div>
+                <div id="crashOutputArea" class="tool-result neutral" style="display:flex; align-items:center; justify-content:center; text-align:center;">
+                    Awaiting weight input to generate Code Blue parameters.
+                </div>
             </div>
+        </div>
+
+        <!-- 2. TIME-GATED SEIZURE PROTOCOL (Harriet Lane) -->
+        <div id="erSeizureView" class="view-content">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--warning);">🧠 Status Epilepticus</h2>
+            </div>
+
+            <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 2fr;">
+                <div>
+                    <h3 style="color:var(--warning); margin-top:0;">Status Epilepticus</h3>
+                    <label>Patient Weight (kg)</label>
+                    <input type="number" id="seizureWeight" placeholder="Required" oninput="syncErWeight(this.value)" style="font-weight:bold; font-size:1.1rem; border-color:var(--warning);">
+                    <div class="formula-box" style="margin-top:15px; font-size:0.8rem;">
+                        <b>Time-Gated Protocol:</b><br>
+                        0-5m: Benzodiazepines<br>
+                        5-15m: Phenytoin/Levetiracetam<br>
+                        15-30m: Phenobarbital
+                    </div>
+                </div>
+                <div id="seizureOutputArea" class="tool-result neutral" style="display:flex; align-items:center; justify-content:center; text-align:center;">
+                    Awaiting weight input to generate seizure protocol sequence.
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3. IV FLUIDS -->
+        <div id="erFluidsView" class="view-content">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--info);">💧 IV Fluids</h2>
+            </div>
+
+            <div class="timeline-section tool-grid">
+                <div>
+                    <div class="formula-box">
+                        <b>Holliday-Segar Maintenance:</b><br>
+                        1st 10kg: <code>100 ml/kg/day</code><br>
+                        2nd 10kg: <code>50 ml/kg/day</code><br>
+                        > 20kg: <code>20 ml/kg/day</code>
+                    </div>
+                    <label>Clinical Dehydration Grading</label>
+                    <select id="fluidDehydration" onchange="calcFluids()">
+                        <option value="0">Euvolemia (Maintenance Only 0%)</option>
+                        <option value="5">Mild Fluid Loss (5%)</option>
+                        <option value="10">Moderate Fluid Loss (10%)</option>
+                        <option value="15">Severe Fluid Deficit (15%)</option>
+                    </select>
+                    <label style="margin-top:1rem;">Fluid Mass Target (kg)</label>
+                    <input type="number" id="fluidWeight" oninput="syncErWeight(this.value)">
+                </div>
+                <div id="fluidResultArea" class="tool-result neutral">Compile inputs parameter block.</div>
+            </div>
+        </div>
+
+        <!-- 4. NICU / APGAR -->
+        <div id="erNicuView" class="view-content">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--primary);">🍼 NICU Metrics</h2>
+            </div>
+
+            <div class="timeline-section tool-grid">
+                <div>
+                    <h3 style="color:var(--primary); margin-top:0;">GIR Calculator</h3>
+                    <div class="formula-box"><code>GIR = (Rate × Dex%) / (Weight × 6)</code></div>
+                    <div class="row-inputs">
+                        <div><label>Wt (kg)</label><input type="number" id="girWt" oninput="syncErWeight(this.value)"></div>
+                        <div><label>Rate (ml/hr)</label><input type="number" id="girRate" oninput="calcGIR()"></div>
+                    </div>
+                    <label>Dextrose %</label>
+                    <input type="number" id="girDex" oninput="calcGIR()">
+                    <div id="girOutput" class="tool-result neutral" style="margin-top:10px;"></div>
+                </div>
+                <div>
+                    <h3 style="color:var(--primary); margin-top:0;">APGAR Score</h3>
+                    <div class="row-inputs" style="gap:5px;"><label>Heart Rate</label><select id="apgarHR" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div>
+                    <div class="row-inputs" style="gap:5px;"><label>Resp. Effort</label><select id="apgarResp" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div>
+                    <div class="row-inputs" style="gap:5px;"><label>Muscle Tone</label><select id="apgarTone" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div>
+                    <div class="row-inputs" style="gap:5px;"><label>Reflex</label><select id="apgarReflex" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div>
+                    <div class="row-inputs" style="gap:5px;"><label>Color</label><select id="apgarColor" onchange="calcAPGAR()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div>
+                    <div id="apgarOutput" class="tool-result success" style="margin-top:10px;">Total Score: 10/10</div>
+                </div>
+            </div>
+        </div>
 
             <div id="prescriptionFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
