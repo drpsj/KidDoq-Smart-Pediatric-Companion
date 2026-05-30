@@ -4,11 +4,11 @@
  * Centralizes all DOM manipulation for navigation, tabs, and modals.
  */
 
-// --- 1. GLOBAL SYSTEM TOAST (Fixes the silent failure!) ---
+// --- 1. GLOBAL SYSTEM TOAST ---
 window.showSystemToast = function(msg) {
     const container = document.getElementById('systemToastContainer');
     if (!container) { 
-        alert(msg); // Fallback if container is missing
+        alert(msg); 
         return; 
     }
     const toast = document.createElement('div');
@@ -16,7 +16,6 @@ window.showSystemToast = function(msg) {
     toast.innerHTML = msg;
     container.appendChild(toast);
     
-    // Auto-remove the toast after 3 seconds
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(10px)';
@@ -71,15 +70,6 @@ const ViewController = (function() {
             if (tabId === 'databaseFeatureView' && typeof renderFullDatabase === 'function') renderFullDatabase();
         },
 
-        openClinicalTool: function(toolId) {
-            if (!AppStore.getActivePatientId()) {
-                showSystemToast("⚠️ Please open a patient file first!");
-                this.switchNavTab('databaseFeatureView');
-                return;
-            }
-            this.switchNavTab(toolId);
-        },
-
         switchSubTab: function(tabId, btnElement) {
             const navContainer = btnElement.closest('.sub-tabs-nav');
             if (!navContainer) return;
@@ -110,13 +100,43 @@ const ViewController = (function() {
     };
 })();
 
-// --- LEGACY BRIDGE ---
+// --- LEGACY BRIDGES ---
 window.switchNavTab = ViewController.switchNavTab;
 window.switchMainFeature = ViewController.switchNavTab; 
 window.switchSubTab = ViewController.switchSubTab;
 
-// --- SURGICAL PATCH: FORCE TOOL VISIBILITY ---
-window.openClinicalTool = function(toolId) {
+// --- TOOL ROUTING & VITAL SYNCING ---
+window.syncVitalsToTools = function() {
+    if(!activePatientId) return;
+    const p = AppStore.getPatient(activePatientId);
+    if(!p) return;
+    
+    // Map of input IDs to the patient's data
+    const fieldsToSync = {
+        'inlineCalcWeight': p.weight,
+        'fluidWeight': p.weight,
+        'crashWeight': p.weight,
+        'seizureWeight': p.weight,
+        'burnBsa': '', 
+        'girWt': p.weight,
+        'umbilicalWt': p.weight,
+        'sbeWeight': p.weight,
+        'triageHt': p.htCm,
+        'triageMac': '' 
+    };
+    
+    for (let id in fieldsToSync) {
+        let el = document.getElementById(id);
+        if (el) {
+            // Only overwrite if the field is currently empty, so we don't erase user edits
+            if(!el.value && fieldsToSync[id]) {
+                el.value = fieldsToSync[id];
+            }
+        }
+    }
+};
+
+window.openClinicalTool = function(viewId) {
     if (!AppStore.getActivePatientId()) {
         showSystemToast("⚠️ Please open a patient file first!");
         ViewController.switchNavTab('databaseFeatureView');
@@ -124,16 +144,19 @@ window.openClinicalTool = function(toolId) {
     }
 
     document.getElementById('activeWorkspace').style.display = 'block';
+    
+    // Hide all currently open tools
     document.querySelectorAll('.view-content').forEach(v => {
         v.style.display = 'none';
         v.classList.remove('active-view');
     });
 
-    const target = document.getElementById(toolId);
+    const target = document.getElementById(viewId);
     if (target) {
         target.style.display = 'block';
         target.classList.add('active-view');
         
+        // Force the first sub-tab to open automatically
         let firstTabBtn = target.querySelector('.sub-tab-btn');
         let firstTabContent = target.querySelector('.sub-tab-content');
         
@@ -147,6 +170,14 @@ window.openClinicalTool = function(toolId) {
             firstTabContent.classList.add('active');
             firstTabContent.style.display = 'block'; 
         }
+    }
+
+    // Push patient details into the tools dynamically
+    syncVitalsToTools();
+
+    // Specific Tool Triggers
+    if (viewId === 'milestoneFeatureView' && typeof renderMilestoneTimeline === 'function') {
+        renderMilestoneTimeline();
     }
 };
 
@@ -204,8 +235,6 @@ window.loadPatientFromDB = function(pId) {
         if (typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
         if (typeof renderMilestoneDashboard === 'function') renderMilestoneDashboard();
         if (typeof updateCopilot === 'function') updateCopilot(pId);
-        
-        // ✨ NEW: Auto-calculate advanced math (BSA, etc.) on load ✨
         if (typeof calcMathTools === 'function') calcMathTools();
         
         const inputs = {

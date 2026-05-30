@@ -713,3 +713,69 @@ window.startNewVisit = function() {
 
     if(typeof renderRxCartList === 'function') renderRxCartList();
 };
+
+// --- MILESTONE TIMELINE ENGINE ---
+window.renderMilestoneTimeline = function() {
+    const container = document.getElementById('milestoneTimelineContainer');
+    if (!container) return;
+    
+    if (!activePatientId) {
+        container.innerHTML = '<div style="color:var(--danger);">⚠️ Please open a patient file first.</div>';
+        return;
+    }
+    
+    const p = AppStore.getPatient(activePatientId);
+    const msDb = typeof window.milestonesDb !== 'undefined' ? window.milestonesDb : null;
+    if(!msDb) {
+        container.innerHTML = 'Milestone database not found.';
+        return;
+    }
+
+    let html = '<div style="display:flex; flex-direction:column; gap:15px;">';
+    
+    // Sort months numerically and loop through them
+    Object.keys(msDb).sort((a,b) => parseInt(a) - parseInt(b)).forEach(month => {
+        html += `
+        <div style="border:1px solid var(--border-soft); border-radius:8px; overflow:hidden;">
+            <div style="background:var(--primary-light); padding:10px 15px; font-weight:bold; color:var(--primary-dark); font-size:1.1rem; border-bottom:1px solid var(--border-soft);">
+                ${month} Months
+            </div>
+            <div style="padding:15px; background:var(--bg-body); display:flex; flex-direction:column; gap:12px;">
+        `;
+        
+        msDb[month].forEach(ms => {
+            // Check if patient already has this saved
+            let isChecked = (p.achievedMilestones && p.achievedMilestones[ms.id]) ? 'checked' : '';
+            
+            html += `
+                <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
+                    <input type="checkbox" value="${ms.id}" ${isChecked} onchange="toggleMilestone('${ms.id}', this.checked)" style="margin-top:4px; width:20px; height:20px; accent-color:var(--brand-pink);">
+                    <div>
+                        <div style="font-weight:600; color:var(--text-main); font-size:0.95rem;">
+                            ${ms.text} 
+                            <span style="font-size:0.7rem; color:var(--text-muted); background:var(--bg-surface); padding:2px 6px; border-radius:4px; margin-left:5px; border:1px solid var(--border-soft);">${ms.domain}</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--danger); margin-top:2px;">🚨 Red Flag if missed: ${ms.sig}</div>
+                    </div>
+                </label>
+            `;
+        });
+        
+        html += `</div></div>`;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+};
+
+window.toggleMilestone = function(msId, isAchieved) {
+    if (!activePatientId) return;
+    const p = AppStore.getPatient(activePatientId);
+    
+    if (!p.achievedMilestones) p.achievedMilestones = {};
+    p.achievedMilestones[msId] = isAchieved;
+    
+    // Save silently in the background
+    AppStore.savePatient(p);
+    if(typeof saveAndRegisterPatient === 'function') saveAndRegisterPatient(true);
+};

@@ -1188,21 +1188,24 @@
                 <div id="malnSensoryTab" class="sub-tab-content"><div class="timeline-section"><div id="sensoryOutputArea"></div></div></div>
             </div>
 
-            <div id="milestoneFeatureView" class="view-content">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                    <h2 class="section-title" style="margin:0; border:none;">👶 Developmental Progress</h2>
-                    <button onclick="executePrint('milestones')" class="secondary" style="width:auto;">🖨️ Print Progress</button>
+           <!-- CLEAN MILESTONES HUB -->
+            <div id="milestoneFeatureView" class="view-content" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <button class="secondary" onclick="window.openClinicalTool('patientProfileView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                        <h2 class="section-title" style="margin:0; border:none; color:var(--brand-pink);">👶 Developmental Milestones</h2>
+                    </div>
+                    <button onclick="executePrint('milestones')" class="secondary" style="margin:0; width:auto; border-color:var(--primary); color:var(--primary);">🖨️ Print</button>
                 </div>
-                <div class="sub-tabs-nav">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('msEvalTab', this)">📋 Checklist</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('msProgressTab', this)">📈 Dashboard</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('msMissedTab', this)">🚨 Red Flags</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('msReferenceTab', this); buildMilestoneReference();">📘 Standards</button>
+                
+                <div class="timeline-section" style="padding:1.5rem; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-soft);">
+                    <p style="font-size:0.9rem; color:var(--text-muted); margin-top:0;">Select a month below to evaluate the patient's developmental progress. Checked items automatically save to the Patient Profile.</p>
+                    
+                    <!-- Interactive Timeline Container -->
+                    <div id="milestoneTimelineContainer">
+                        <!-- Javascript will automatically render the months here -->
+                    </div>
                 </div>
-                <div id="msEvalTab" class="sub-tab-content active"><div class="timeline-section"><h3 style="color:var(--primary); margin-top:0;">Comprehensive Evaluation</h3><div id="msEvalContainer"></div></div></div>
-                <div id="msProgressTab" class="sub-tab-content"><div class="timeline-section"><h3 style="color:var(--primary); margin-top:0;">Developmental Dashboard</h3><div class="tool-grid"><div id="msCompletedContainer"></div><div id="msUpcomingContainer"></div></div></div></div>
-                <div id="msMissedTab" class="sub-tab-content"><div class="timeline-section"><h3 style="color:var(--primary); margin-top:0;">Red Flags</h3><div id="msMissedContainer"></div></div></div>
-                <div id="msReferenceTab" class="sub-tab-content"><div class="timeline-section" style="overflow-x:auto;"><h3 style="color:var(--primary); margin-top:0;">Standard Milestones</h3><div id="msReferenceContainer"></div></div></div>
             </div>
 
             <div id="trackerFeatureView" class="view-content">

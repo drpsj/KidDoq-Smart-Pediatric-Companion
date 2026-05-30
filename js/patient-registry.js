@@ -216,16 +216,27 @@ window.populatePatientProfile = function(pId) {
     } else { vaxHtml = "No vaccines logged yet."; }
     if(vaxOut) vaxOut.innerHTML = vaxHtml;
     
-    // Milestones Summary
+    // Milestones Summary (Fixed text resolver)
     const mileOut = document.getElementById('profileMilesSummary');
     let mileHtml = "";
     if(p.achievedMilestones && Object.keys(p.achievedMilestones).length > 0) {
-        Object.keys(p.achievedMilestones).forEach(m => {
-            if(p.achievedMilestones[m]) mileHtml += `<div style="padding:6px 0; border-bottom:1px dashed var(--border-soft);">⭐ Marker ${m.replace('m','')} achieved</div>`;
+        Object.keys(p.achievedMilestones).forEach(mId => {
+            if(p.achievedMilestones[mId]) {
+                // Find the actual text from the database instead of ID
+                let month = mId.split('_')[0].replace('m', '');
+                let text = "Milestone achieved";
+                if(typeof window.milestonesDb !== 'undefined' && window.milestonesDb[month]) {
+                    let ms = window.milestonesDb[month].find(x => x.id === mId);
+                    if(ms) text = ms.text;
+                }
+                mileHtml += `<div style="padding:6px 0; border-bottom:1px dashed var(--border-soft);">⭐ <b>${month} Months:</b> ${text}</div>`;
+            }
         });
-    } else { mileHtml = "No milestones logged yet."; }
+    } else { 
+        mileHtml = "No milestones logged yet."; 
+    }
     if(mileOut) mileOut.innerHTML = mileHtml;
-};
+}; // <--- THIS WAS THE FATAL MISSING BRACKET
 
 window.editActivePatient = function() {
     const p = AppStore.getPatient(activePatientId);
@@ -249,4 +260,67 @@ window.deleteActivePatient = function() {
         if(typeof renderFullDatabase === 'function') renderFullDatabase();
         if(typeof showSystemToast === 'function') showSystemToast("🗑️ Patient deleted successfully.");
     }
+};
+
+// --- MILESTONE TIMELINE ENGINE ---
+window.renderMilestoneTimeline = function() {
+    const container = document.getElementById('milestoneTimelineContainer');
+    if (!container) return;
+    
+    if (!activePatientId) {
+        container.innerHTML = '<div style="color:var(--danger);">⚠️ Please open a patient file first.</div>';
+        return;
+    }
+    
+    const p = AppStore.getPatient(activePatientId);
+    const msDb = typeof window.milestonesDb !== 'undefined' ? window.milestonesDb : null;
+    if(!msDb) {
+        container.innerHTML = 'Milestone database not found.';
+        return;
+    }
+
+    let html = '<div style="display:flex; flex-direction:column; gap:15px;">';
+    
+    // Sort months numerically and loop through them
+    Object.keys(msDb).sort((a,b) => parseInt(a) - parseInt(b)).forEach(month => {
+        html += `
+        <div style="border:1px solid var(--border-soft); border-radius:8px; overflow:hidden;">
+            <div style="background:var(--primary-light); padding:10px 15px; font-weight:bold; color:var(--primary-dark); font-size:1.1rem; border-bottom:1px solid var(--border-soft);">
+                ${month} Months
+            </div>
+            <div style="padding:15px; background:var(--bg-body); display:flex; flex-direction:column; gap:12px;">
+        `;
+        
+        msDb[month].forEach(ms => {
+            let isChecked = (p.achievedMilestones && p.achievedMilestones[ms.id]) ? 'checked' : '';
+            html += `
+                <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
+                    <input type="checkbox" value="${ms.id}" ${isChecked} onchange="toggleMilestone('${ms.id}', this.checked)" style="margin-top:4px; width:20px; height:20px; accent-color:var(--brand-pink);">
+                    <div>
+                        <div style="font-weight:600; color:var(--text-main); font-size:0.95rem;">
+                            ${ms.text} 
+                            <span style="font-size:0.7rem; color:var(--text-muted); background:var(--bg-surface); padding:2px 6px; border-radius:4px; margin-left:5px; border:1px solid var(--border-soft);">${ms.domain}</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--danger); margin-top:2px;">🚨 Red Flag if missed: ${ms.sig}</div>
+                    </div>
+                </label>
+            `;
+        });
+        
+        html += `</div></div>`;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+};
+
+window.toggleMilestone = function(msId, isAchieved) {
+    if (!activePatientId) return;
+    const p = AppStore.getPatient(activePatientId);
+    
+    if (!p.achievedMilestones) p.achievedMilestones = {};
+    p.achievedMilestones[msId] = isAchieved;
+    
+    AppStore.savePatient(p);
+    if(typeof saveAndRegisterPatient === 'function') saveAndRegisterPatient(true);
 };
