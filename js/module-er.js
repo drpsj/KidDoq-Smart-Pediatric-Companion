@@ -199,6 +199,46 @@ window.calcFluids = function() {
     out.className = "tool-result success";
 };
 
+window.calcBurns = function() {
+    const wt = parseFloat(document.getElementById('fluidWeight').value);
+    const bsa = parseFloat(document.getElementById('burnBsa').value);
+    const out = document.getElementById('burnResultArea');
+    if(!wt || !bsa) { out.innerHTML = "Awaiting weight and % burn."; out.className="tool-result neutral"; return; }
+    
+    const pRes = ClinicalMath.calcParkland(wt, bsa);
+    out.innerHTML = `
+        <b>Total 24h Burn Fluid (LR/NS):</b> ${pRes.total.toFixed(0)} mL<br>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed rgba(239,68,68,0.3);">
+            <b>1st 8 Hours:</b> ${pRes.first8h.toFixed(0)} mL <span style="color:var(--danger);">(${(pRes.first8h/8).toFixed(1)} mL/hr)</span><br>
+            <b>Next 16 Hours:</b> ${pRes.next16h.toFixed(0)} mL <span style="color:var(--danger);">(${(pRes.next16h/16).toFixed(1)} mL/hr)</span>
+        </div>
+        <div style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);">*Add to standard maintenance fluids.</div>
+    `;
+    out.className = "tool-result danger";
+};
+
+window.calcUmbilicalLines = function() {
+    const bw = parseFloat(document.getElementById('umbilicalWt').value);
+    const out = document.getElementById('umbilicalResultArea');
+    if(!bw) { out.innerHTML = "Awaiting birth weight."; out.className="tool-result neutral"; return; }
+    
+    const lines = ClinicalMath.calcUmbilicalLines(bw);
+    out.innerHTML = `
+        <div style="display:grid; gap:8px;">
+            <div style="background:var(--bg-surface); padding:8px; border-radius:6px; border:1px solid var(--border-soft);">
+                <b>UAC (High):</b> <span style="color:var(--primary); font-size:1.1rem;">${lines.uacHigh.toFixed(1)} cm</span> <span style="font-size:0.8rem; color:var(--text-muted);">(T6-T9)</span>
+            </div>
+            <div style="background:var(--bg-surface); padding:8px; border-radius:6px; border:1px solid var(--border-soft);">
+                <b>UAC (Low):</b> <span style="color:var(--primary); font-size:1.1rem;">${lines.uacLow.toFixed(1)} cm</span> <span style="font-size:0.8rem; color:var(--text-muted);">(L3-L5)</span>
+            </div>
+            <div style="background:var(--bg-surface); padding:8px; border-radius:6px; border:1px solid var(--border-soft);">
+                <b>UVC:</b> <span style="color:var(--success); font-size:1.1rem;">${lines.uvc.toFixed(1)} cm</span> <span style="font-size:0.8rem; color:var(--text-muted);">(Above diaphragm)</span>
+            </div>
+        </div>
+    `;
+    out.className = "tool-result";
+};
+
 // --- 4. NICU METRICS ---
 window.calcGIR = function() {
     const wt = parseFloat(document.getElementById('girWt').value), rate = parseFloat(document.getElementById('girRate').value), dex = parseFloat(document.getElementById('girDex').value);
@@ -296,6 +336,7 @@ window.syncErWeight = function(newWeight) {
     if(typeof calcSeizure === 'function') calcSeizure(); 
     if(typeof calcFluids === 'function') calcFluids(); 
     if(typeof calcGIR === 'function') calcGIR();
+    if(typeof calcUmbilicalLines === 'function') calcUmbilicalLines();
 };
 
 window.syncErAge = function(newAge) {
@@ -308,4 +349,72 @@ window.syncErAge = function(newAge) {
     if(crashAgeEl && crashAgeEl.value !== newAge) crashAgeEl.value = newAge;
     
     if(typeof calcCrash === 'function') calcCrash();
+};
+
+// --- BP & ADVANCED MATH ---
+window.calcBP = function() {
+    const sys = parseFloat(document.getElementById('bpSys').value);
+    const dia = parseFloat(document.getElementById('bpDia').value);
+    const out = document.getElementById('bpOutputArea');
+    
+    if(!activePatientId || !sys || !dia) {
+        out.innerHTML = "Enter parameters to map percentiles.";
+        out.className = "tool-result neutral";
+        return;
+    }
+    
+    const p = AppStore.getPatient(activePatientId);
+    const result = ClinicalMath.evaluateBP(sys, dia, p.ageYrs || 1, p.gender || 'male');
+    
+    out.innerHTML = `
+        <div style="text-align:center;">
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">Percentile Status</div>
+            <h2 style="color:${result.color}; margin:10px 0;">${result.status}</h2>
+            <div style="font-size:0.9rem;">Evaluated for ${p.ageYrs}Y ${p.gender.toUpperCase()}</div>
+        </div>
+    `;
+    out.style.borderColor = result.color;
+    out.style.background = `rgba(${result.color === 'var(--danger)' ? '239,68,68' : (result.color === 'var(--warning)' ? '245,158,11' : '16,185,129')}, 0.1)`;
+};
+
+window.calcMathTools = function() {
+    if(!activePatientId) return;
+    const p = AppStore.getPatient(activePatientId);
+    
+    // 1. BSA (Mosteller)
+    let bsa = ClinicalMath.calcBSA(p.htCm, p.weight);
+    if(bsa) document.getElementById('bsaOutput').innerText = `${bsa.toFixed(2)} m²`;
+    
+    // 2. eGFR (Schwartz)
+    const cr = parseFloat(document.getElementById('mathCr').value);
+    if(cr) {
+        let egfr = ClinicalMath.calcEGFR(p.htCm, cr, p.ageYrs, p.gender);
+        if(egfr) document.getElementById('egfrOutput').innerText = `${egfr.toFixed(0)} ml/min/1.73m²`;
+    }
+
+    // 3. Electrolytes & Free Water
+    const currentNa = parseFloat(document.getElementById('mathCurrentNa').value);
+    const targetNa = parseFloat(document.getElementById('mathTargetNa').value) || 135;
+    const lytesOut = document.getElementById('lytesOutput');
+    
+    if (currentNa && p.weight) {
+        let correction = ClinicalMath.calcSodiumCorrection(p.weight, currentNa, targetNa);
+        if(correction) {
+            if(currentNa < targetNa) {
+                // Hyponatremia: Needs Sodium
+                lytesOut.innerHTML = `
+                    <div style="color:var(--danger); font-weight:bold; font-size:1.4rem;">${correction.naDeficit.toFixed(1)} mEq</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);"><b>Total Sodium Deficit</b><br>⚠️ Max correction rate: 0.5 mEq/L/hr to prevent Central Pontine Myelinolysis.</div>`;
+            } else if (currentNa > targetNa) {
+                // Hypernatremia: Needs Free Water
+                lytesOut.innerHTML = `
+                    <div style="color:var(--info); font-weight:bold; font-size:1.4rem;">${correction.freeWaterDeficit.toFixed(0)} mL</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);"><b>Free Water Deficit</b><br>⚠️ Replace deficit slowly over 48h to prevent cerebral edema.</div>`;
+            } else {
+                lytesOut.innerHTML = `<div style="color:var(--success); font-weight:bold; font-size:1.1rem;">Patient is Isnatremic</div>`;
+            }
+        }
+    } else {
+        lytesOut.innerHTML = `<span style="font-size:0.85rem; color:var(--text-muted);">Enter Current Na⁺ to evaluate deficits.</span>`;
+    }
 };

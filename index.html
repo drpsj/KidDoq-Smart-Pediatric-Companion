@@ -214,6 +214,18 @@
                     <div class="tool-icon-wrapper"><img src="icon-vax.png" alt="Vax"></div>
                     <span>Vaccination</span>
                 </div>
+                <div class="tool-btn" onclick="openClinicalTool('cardiologyFeatureView'); if(typeof syncCardioWeight === 'function') syncCardioWeight();">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🫀</div>
+                    <span>Cardiology</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('toxicologyFeatureView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">☠️</div>
+                    <span>Toxicology</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('dermFeatureView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🔬</div>
+                    <span>Dermatology</span>
+                </div>
                 <div class="tool-btn" onclick="openClinicalTool('erFeatureView')">
                     <div class="tool-icon-wrapper"><img src="icon-er.png" alt="ER"></div>
                     <span>ER & Resus</span>
@@ -509,15 +521,16 @@
             </div>
         </div>
         
-        <!-- 3. IV FLUIDS -->
+        <!-- 3. IV FLUIDS & BURNS -->
         <div id="erFluidsView" class="view-content" style="display:none;">
             <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
                 <button class="secondary" onclick="openClinicalTool('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
-                <h2 class="section-title" style="margin:0; border:none; color:var(--info);">💧 IV Fluids</h2>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--info);">💧 IV Fluids & Burns</h2>
             </div>
 
             <div class="timeline-section tool-grid">
                 <div>
+                    <h3 style="color:var(--info); margin-top:0;">Dehydration & Maintenance</h3>
                     <div class="formula-box">
                         <b>Holliday-Segar Maintenance:</b><br>
                         1st 10kg: <code>100 ml/kg/day</code><br>
@@ -535,10 +548,22 @@
                     <input type="number" id="fluidWeight" oninput="syncErWeight(this.value)">
                 </div>
                 <div id="fluidResultArea" class="tool-result neutral">Compile inputs parameter block.</div>
+                
+                <!-- NEW: PARKLAND BURN CALCULATOR -->
+                <div style="grid-column: 1 / -1; margin-top:15px; border-top:2px solid var(--border-soft); padding-top:20px;">
+                    <h3 style="color:var(--danger); margin-top:0;">🔥 Burn Resuscitation (Parkland)</h3>
+                    <div class="row-inputs">
+                        <div>
+                            <label>Total Body Surface Area Burned (%)</label>
+                            <input type="number" id="burnBsa" placeholder="e.g. 15" oninput="calcBurns()">
+                        </div>
+                    </div>
+                    <div id="burnResultArea" class="tool-result neutral" style="margin-top:10px; text-align:left;">Enter TBSA % burn to calculate 24h fluid protocol.</div>
+                </div>
             </div>
         </div>
 
-        <!-- 4. NICU / APGAR -->
+        <!-- 4. NICU / APGAR & LINES -->
         <div id="erNicuView" class="view-content" style="display:none;">
             <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
                 <button class="secondary" onclick="openClinicalTool('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
@@ -556,6 +581,14 @@
                     <label>Dextrose %</label>
                     <input type="number" id="girDex" oninput="calcGIR()">
                     <div id="girOutput" class="tool-result neutral" style="margin-top:10px;"></div>
+
+                    <!-- NEW: UAC/UVC CALCULATOR -->
+                    <div style="margin-top:25px; border-top:2px solid var(--border-soft); padding-top:20px;">
+                        <h3 style="color:var(--primary-dark); margin-top:0;">📏 Umbilical Line Depth</h3>
+                        <label>Birth Weight (kg)</label>
+                        <input type="number" id="umbilicalWt" oninput="calcUmbilicalLines()" placeholder="e.g. 2.5">
+                        <div id="umbilicalResultArea" class="tool-result neutral" style="margin-top:10px; text-align:left;">Enter BW to calculate insertion depth.</div>
+                    </div>
                 </div>
                 <div>
                     <h3 style="color:var(--primary); margin-top:0;">APGAR Score</h3>
@@ -568,6 +601,134 @@
                 </div>
             </div>
         </div>
+
+        <!-- CARDIOLOGY HUB -->
+        <div id="cardiologyFeatureView" class="view-content" style="display:none;">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('toolsTab')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--danger);">🫀 Cardiology Hub</h2>
+            </div>
+            
+            <div class="sub-tabs-nav">
+                <button class="sub-tab-btn active" onclick="switchSubTab('cardioEcgTab', this); calcECG();">📈 ECG Normals</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('cardioSbeTab', this)">🦠 SBE Prophylaxis</button>
+            </div>
+            
+            <!-- ECG TAB -->
+            <div id="cardioEcgTab" class="sub-tab-content active">
+                <div class="timeline-section tool-grid">
+                    <div>
+                        <h3 style="color:var(--primary); margin-top:0;">ECG Parameter Reference</h3>
+                        <label>Patient Age Bracket</label>
+                        <select id="ecgAgeSelect" onchange="calcECG()">
+                            <option value="0">0 - 7 Days</option>
+                            <option value="1">1 - 3 Weeks</option>
+                            <option value="2">1 - 6 Months</option>
+                            <option value="3">6 - 12 Months</option>
+                            <option value="4">1 - 3 Years</option>
+                            <option value="5">4 - 5 Years</option>
+                            <option value="6">6 - 8 Years</option>
+                            <option value="7">9 - 11 Years</option>
+                            <option value="8">12 - 16 Years</option>
+                        </select>
+                    </div>
+                    <div id="ecgOutputArea" class="tool-result neutral">Select an age bracket to view Harriet Lane ECG standards.</div>
+                </div>
+            </div>
+
+            <!-- SBE PROPHYLAXIS TAB -->
+            <div id="cardioSbeTab" class="sub-tab-content">
+                <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 2fr;">
+                    <div>
+                        <h3 style="color:var(--danger); margin-top:0;">Endocarditis Prophylaxis</h3>
+                        <label>Patient Weight (kg)</label>
+                        <input type="number" id="sbeWeight" oninput="calcSBE()" placeholder="e.g. 15">
+                        <div style="margin-top:15px; background:var(--bg-body); padding:10px; border-radius:8px; border:1px solid var(--border-soft);">
+                            <input type="checkbox" id="sbePenAllergy" onchange="calcSBE()"> <label style="display:inline;">Penicillin Allergy?</label>
+                        </div>
+                    </div>
+                    <div id="sbeOutputArea" class="tool-result neutral">Awaiting weight to calculate prophylaxis dosing.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOXICOLOGY HUB -->
+        <div id="toxicologyFeatureView" class="view-content" style="display:none;">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('toolsTab')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--primary-dark);">☠️ Toxicology & Antidotes</h2>
+            </div>
+            
+            <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 2fr;">
+                <div>
+                    <h3 style="color:var(--danger); margin-top:0;">Toxin / Overdose</h3>
+                    <label>Select Agent</label>
+                    <select id="toxinSelect" onchange="calcTox()" style="border-color:var(--danger); font-weight:bold;">
+                        <option value="">-- Select Toxin --</option>
+                        <option value="acetaminophen">Acetaminophen (Paracetamol)</option>
+                        <option value="anticholinergics">Anticholinergics (e.g., TCAs, Diphenhydramine)</option>
+                        <option value="betablockers">Beta-Blockers</option>
+                        <option value="ccb">Calcium Channel Blockers</option>
+                        <option value="iron">Iron</option>
+                        <option value="lead">Lead</option>
+                        <option value="opiates">Opiates / Narcotics</option>
+                        <option value="organophosphates">Organophosphates / Insecticides</option>
+                    </select>
+                </div>
+                <div id="toxOutputArea" class="tool-result neutral" style="display:flex; align-items:center; justify-content:center; text-align:center;">
+                    Select a toxin to view Harriet Lane antidote and management protocols.
+                </div>
+            </div>
+        </div>
+
+        <!-- DERMATOLOGY HUB -->
+        <div id="dermFeatureView" class="view-content" style="display:none;">
+            <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+                <button class="secondary" onclick="switchNavTab('toolsTab')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <h2 class="section-title" style="margin:0; border:none; color:var(--brand-pink);">🔬 Dermatology Hub</h2>
+            </div>
+            
+            <div class="sub-tabs-nav">
+                <button class="sub-tab-btn active" onclick="switchSubTab('dermHemangiomaTab', this)">🩸 Hemangiomas</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('dermWartTab', this); renderWartTherapy();">🦠 Wart (HPV) Therapy</button>
+            </div>
+            
+            <!-- HEMANGIOMA TAB -->
+            <div id="dermHemangiomaTab" class="sub-tab-content active">
+                <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 2fr;">
+                    <div>
+                        <h3 style="color:var(--danger); margin-top:0;">Risk Assessment</h3>
+                        <label>Select Lesion Location / Type</label>
+                        <select id="hemangiomaSelect" onchange="calcHemangioma()" style="font-weight:bold;">
+                            <option value="">-- Select Location --</option>
+                            <option value="beard">Beard Distribution (Chin, Lips, Neck)</option>
+                            <option value="periorbital">Periorbital Region</option>
+                            <option value="lumbosacral">Lumbosacral (Midline)</option>
+                            <option value="multiple">Multiple Cutaneous / Large Facial</option>
+                            <option value="kasabach">Deep Red-Blue / Firm / Rapidly Enlarging</option>
+                            <option value="uncomplicated">Uncomplicated Cutaneous</option>
+                        </select>
+                        <div class="formula-box" style="margin-top:15px; font-size:0.8rem;">
+                            <b>Steroid Intervention:</b><br>
+                            Prednisone/Prednisolone at 2–3 mg/kg/day for lesions requiring intervention.
+                        </div>
+                    </div>
+                    <div id="hemangiomaOutputArea" class="tool-result neutral" style="display:flex; align-items:center; justify-content:center; text-align:center;">
+                        Select a location to view Harriet Lane complication risks and management.
+                    </div>
+                </div>
+            </div>
+
+            <!-- WART THERAPY TAB -->
+            <div id="dermWartTab" class="sub-tab-content">
+                <div class="timeline-section">
+                    <h3 style="color:var(--primary); margin-top:0;">Wart Therapy Protocols</h3>
+                    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Note: Spontaneous resolution occurs in over 75% of warts in otherwise healthy individuals within 3 years.</div>
+                    <div id="wartTherapyArea" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;"></div>
+                </div>
+            </div>
+        </div>
+
             <div id="prescriptionFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">📝 Prescription & Dosing</h2>
@@ -881,12 +1042,18 @@
                 </div>
             </div> 
 
-            <div id="malnutritionFeatureView" class="view-content">
-                <h2 class="section-title">🩺 Malnutrition & Anthropometry</h2>
-                <div class="sub-tabs-nav">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('malnCalcTab', this)">🧮 Diagnostics</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('malnSensoryTab', this)">👀 Sensory Screening</button>
+            <div id="malnutritionFeatureView" class="view-content" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">🩺 Triage & Clinical Math</h2>
                 </div>
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('malnCalcTab', this)">🧮 Anthropometry</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('malnBPTab', this)">🩸 BP Percentiles</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('malnMathTab', this)">📐 Advanced Math</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('malnSensoryTab', this)">👀 Sensory</button>
+                </div>
+                
+                <!-- TAB 1: ANTHROPOMETRY -->
                 <div id="malnCalcTab" class="sub-tab-content active">
                     <div class="timeline-section tool-grid">
                         <div>
@@ -903,31 +1070,68 @@
                         <div>
                             <div id="malnGridOutput" class="tool-result neutral">Awaiting data entry...</div>
                             <div id="macOutput" style="margin-top:10px; font-weight:bold; text-align:center;"></div>
-                            
-                            <h4 style="margin-top:20px; color:var(--primary);">Reference: Weight for Height (SAM/MAM)</h4>
-                            <table class="theory-table">
-                                <thead><tr><th>Classification</th><th>WFH / WFL</th></tr></thead>
-                                <tbody>
-                                    <tr><td>Normal</td><td>> -2 SD ( >80% )</td></tr>
-                                    <tr><td>MAM</td><td>-2 SD to -3 SD (70-80%)</td></tr>
-                                    <tr><td>SAM</td><td>&lt; -3 SD ( &lt;70% )</td></tr>
-                                </tbody>
-                            </table>
-                            <h4 style="margin-top:20px; color:var(--primary);">Wellcome Trust Classification</h4>
-                            <table class="theory-table">
-                                <thead><tr><th>Wt for Age %</th><th>Oedema Absent</th><th>Oedema Present</th></tr></thead>
-                                <tbody>
-                                    <tr><td>60-80%</td><td>Underweight</td><td>Kwashiorkor</td></tr>
-                                    <tr><td>&lt;60%</td><td>Marasmus</td><td>Marasmic-kwashiorkor</td></tr>
-                                </tbody>
-                            </table>
-                            <div class="formula-box" style="margin-top:20px;">
-                                <b>US/LS Ratio:</b> 1.7:1 (Birth) &rarr; 1:1 (7-10 yrs). Alters in disproportionate short stature.<br>
-                                <b>Arm Span:</b> Less than height up to 7 yrs, equal 8-12 yrs, greater than height after 14 yrs.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: HARRIET LANE BP PERCENTILES -->
+                <div id="malnBPTab" class="sub-tab-content">
+                    <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 1.5fr;">
+                        <div>
+                            <h3 style="color:var(--danger); margin-top:0;">Blood Pressure Tracker</h3>
+                            <label>Systolic (mmHg)</label>
+                            <input type="number" id="bpSys" oninput="calcBP()">
+                            <label>Diastolic (mmHg)</label>
+                            <input type="number" id="bpDia" oninput="calcBP()">
+                            <div class="formula-box" style="margin-top:15px; font-size:0.8rem; border-color:var(--danger); color:var(--danger);">
+                                <b>Harriet Lane BP Standards:</b><br>
+                                Dynamically evaluates 90th & 95th percentiles based on Age and Gender.
+                            </div>
+                        </div>
+                        <div id="bpOutputArea" class="tool-result neutral" style="display:flex; align-items:center; justify-content:center; text-align:center;">
+                            Awaiting BP input for percentile mapping.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: ADVANCED CLINICAL MATH -->
+                <div id="malnMathTab" class="sub-tab-content">
+                    <div class="timeline-section tool-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                        <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft);">
+                            <h4 style="margin:0 0 10px 0; color:var(--primary);">BSA (Mosteller Formula)</h4>
+                            <div class="formula-box" style="margin-bottom:10px; padding:10px;"><code>√ (Ht × Wt / 3600)</code></div>
+                            <div id="bsaOutput" style="font-size:1.5rem; font-weight:bold; color:var(--primary-dark);">-- m²</div>
+                        </div>
+                        
+                        <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft);">
+                            <h4 style="margin:0 0 10px 0; color:var(--primary);">eGFR (Schwartz Equation)</h4>
+                            <div class="formula-box" style="margin-bottom:10px; padding:10px;"><code>(k × Ht) / Serum Creatinine</code></div>
+                            <label>Serum Cr (mg/dL)</label>
+                            <input type="number" step="0.1" id="mathCr" oninput="calcMathTools()">
+                            <div id="egfrOutput" style="font-size:1.5rem; font-weight:bold; color:var(--success); margin-top:10px;">-- ml/min/1.73m²</div>
+                        </div>
+
+                        <!-- NEW: ELECTROLYTE ENGINE -->
+                        <div style="grid-column: 1 / -1; background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft);">
+                            <h4 style="margin:0 0 10px 0; color:var(--danger);">⚡ Electrolyte & Fluid Corrections</h4>
+                            <div class="row-inputs">
+                                <div>
+                                    <label>Current Serum Na⁺ (mEq/L)</label>
+                                    <input type="number" id="mathCurrentNa" placeholder="e.g. 125" oninput="calcMathTools()">
+                                </div>
+                                <div>
+                                    <label>Target Na⁺ (mEq/L)</label>
+                                    <input type="number" id="mathTargetNa" value="135" oninput="calcMathTools()">
+                                </div>
+                            </div>
+                            <div id="lytesOutput" style="margin-top:15px; padding-top:15px; border-top:1px dashed var(--border-soft);">
+                                <span style="font-size:0.85rem; color:var(--text-muted);">Enter Current Na⁺ to evaluate deficits.</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- TAB 4: SENSORY -->
                 <div id="malnSensoryTab" class="sub-tab-content"><div class="timeline-section"><div id="sensoryOutputArea"></div></div></div>
             </div>
 
@@ -1023,27 +1227,30 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <!-- 1. Core Data & Storage -->
-<script src="js/database.js?v=29"></script>
-<script src="js/store.js?v=29"></script>
-<script src="js/patient-store.js?v=29"></script>
-<script src="js/patient-registry.js?v=29"></script> <!-- ADD THIS NEW FILE HERE -->
+<script src="js/database.js?v=32"></script>
+<script src="js/store.js?v=32"></script>
+<script src="js/patient-store.js?v=32"></script>
+<script src="js/patient-registry.js?v=32"></script> <!-- ADD THIS NEW FILE HERE -->
 
 <!-- 2. Clinical Math Engine (Must load before modules) -->
-<script src="js/clinical-math.js?v=29"></script>
+<script src="js/clinical-math.js?v=32"></script>
 
 <!-- 3. Clinical Modules -->
-<script src="js/encounter-ledger.js?v=29"></script> <!-- ADD THIS NEW FILE HERE -->
-<script src="js/module-rx.js?v=29"></script>
-<script src="js/module-er.js?v=29"></script>
-<script src="js/module-nutrition.js?v=29"></script>
-<script src="js/module-growth.js?v=29"></script>
-<script src="js/module-vax.js?v=29"></script>
+<script src="js/encounter-ledger.js?v=32"></script> <!-- ADD THIS NEW FILE HERE -->
+<script src="js/module-rx.js?v=32"></script>
+<script src="js/module-er.js?v=32"></script>
+<script src="js/module-nutrition.js?v=32"></script>
+<script src="js/module-growth.js?v=32"></script>
+<script src="js/module-vax.js?v=32"></script>
+<script src="js/module-cardio.js?v=32"></script>
+<script src="js/module-tox.js?v=32"></script>
+<script src="js/module-derm.js?v=32"></script>
 
 <!-- 4. UI & App Logic -->
-<script src="js/app.js?v=29"></script> <!-- Moved to the top of this section -->
-<script src="js/core-settings.js?v=29"></script>
-<script src="js/print-engine.js?v=29"></script>
-<script src="js/view-controller.js?v=29"></script>
+<script src="js/app.js?v=32"></script> <!-- Moved to the top of this section -->
+<script src="js/core-settings.js?v=32"></script>
+<script src="js/print-engine.js?v=32"></script>
+<script src="js/view-controller.js?v=32"></script>
 <script>
     // EMERGENCY MOBILE CACHE WIPE
     if ('serviceWorker' in navigator) {

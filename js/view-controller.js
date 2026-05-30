@@ -208,6 +208,9 @@ window.loadPatientFromDB = function(pId) {
         if (typeof renderMilestoneDashboard === 'function') renderMilestoneDashboard();
         if (typeof updateCopilot === 'function') updateCopilot(pId);
         
+        // ✨ NEW: Auto-calculate advanced math (BSA, etc.) on load ✨
+        if (typeof calcMathTools === 'function') calcMathTools();
+        
         const inputs = {
             'calcWeight': p.weight, 'pName': p.name, 'pPhone': p.phone,
             'dob': p.dob, 'ageYrs': p.ageYrs, 'ageMos': p.ageMos,
