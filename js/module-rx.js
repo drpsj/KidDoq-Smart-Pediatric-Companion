@@ -450,11 +450,22 @@ window.calcInlineDose = function() {
     let math = ClinicalMath.computeDose(drug, wt);
     let unit = ClinicalMath.getUnit(drug);
     
-    let warnHTML = math.isMax ? ` <span style="color:var(--danger); font-size:0.8rem;">(⚠️ Adult Max Cap)</span>` : "";
-    let alertText = drug.warnings && drug.warnings.length > 0 ? `<br><span style="color:var(--warning); font-size:0.8rem; display:block; margin-top:2px;">${drug.warnings.join(" | ")}</span>` : "";
+    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:800; margin-top:8px; text-transform:uppercase;">⚠️ Adult Max Cap Enforced</div>` : "";
+    let alertText = drug.warnings && drug.warnings.length > 0 ? `<div style="color:#b45309; font-size:0.85rem; margin-top:6px; font-weight:600; line-height:1.4;">${drug.warnings.join("<br>")}</div>` : "";
     
     res.dataset.vol = math.reqVol; res.dataset.mg = math.reqMg; res.dataset.unit = unit;
-    res.innerHTML = `Calculated: <span style="font-size:1.1rem; color:var(--primary);">${math.reqVol.toFixed(1)} ${unit}</span> (${math.reqMg.toFixed(0)} mg)${warnHTML}${alertText}`;
+    
+    res.innerHTML = `
+        <div style="background:rgba(91, 97, 246, 0.04); border:2px solid var(--primary); padding:16px; border-radius:12px; text-align:center; margin-top:12px; box-shadow:var(--shadow-sm);">
+            <div style="font-size:0.8rem; color:var(--primary-dark); text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:4px;">Give Patient</div>
+            <div style="font-size:2.6rem; color:var(--primary); font-weight:900; line-height:1; margin-bottom:5px;">
+                ${math.reqVol.toFixed(1)} <span style="font-size:1.2rem; color:var(--text-main); opacity:0.8;">${unit}</span>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
+            ${warnHTML}
+            ${alertText}
+        </div>
+    `;
     
     let adjustedFreq = getNeonateInterval(drug.name, drug.defaultFreq);
     if(!freqInput.value) freqInput.value = adjustedFreq;
@@ -744,4 +755,26 @@ window.toggleMilestone = function(msId, isAchieved) {
     p.achievedMilestones[msId] = isAchieved;
     AppStore.savePatient(p);
     if(typeof saveAndRegisterPatient === 'function') saveAndRegisterPatient(true);
+};
+
+// ==========================================
+// ⚙️ PROGRESSIVE DISCLOSURE (CASE SHEET)
+// ==========================================
+window.toggleAdvancedClinicalFields = function() {
+    const sec = document.getElementById('advancedClinicalSection');
+    const btn = document.getElementById('advancedFieldsToggleBtn');
+    
+    if (!sec || !btn) return;
+
+    if (sec.style.display === 'none') {
+        sec.style.display = 'flex';
+        btn.innerHTML = '➖ Hide Advanced Clinical Fields';
+        btn.style.background = 'var(--primary-light)';
+        btn.style.borderStyle = 'solid';
+    } else {
+        sec.style.display = 'none';
+        btn.innerHTML = '➕ Add Detailed Exams, History & Labs';
+        btn.style.background = 'var(--bg-surface)';
+        btn.style.borderStyle = 'dashed';
+    }
 };

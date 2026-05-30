@@ -187,8 +187,20 @@
                 <div id="homeDoseResult" style="margin-top:15px; position:relative; z-index:2;"></div>
             </div>
 
-            <div class="section-header">
-                <h3>Quick Access Tools</h3>
+            <div style="margin-bottom: 25px; position:relative; z-index: 10;">
+                
+                <div style="position: relative; margin-bottom: 20px;">
+                    <input type="text" id="omniSearchInput" placeholder="🔍 Search tools, protocols, or keywords (e.g. 'Fever', 'Burns')..." onkeyup="runOmniSearch(this.value)" autocomplete="off" style="width: 100%; padding: 18px 20px; font-size: 1.05rem; border-radius: var(--radius-pill); border: 2px solid var(--border-soft); box-shadow: var(--shadow-sm); background: var(--bg-surface);">
+                    <div id="omniSearchResults" style="display:none; position:absolute; top:calc(100% + 5px); left:0; width:100%; background:var(--bg-surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); box-shadow:var(--shadow-float); z-index:1000; max-height:350px; overflow-y:auto; padding:8px;"></div>
+                </div>
+
+                <button class="action" onclick="window.openClinicalTool('prescriptionFeatureView')" style="width: 100%; padding: 24px; font-size: 1.3rem; border-radius: var(--radius-xl); background: linear-gradient(135deg, var(--success), #059669); margin: 0 0 20px 0; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
+                    <span style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">🩺</span> Start Routine Visit
+                </button>
+            </div>
+
+            <div class="section-header" style="margin-bottom: 15px; border-top: 1px solid var(--border-soft); padding-top: 20px;">
+                <h3 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">📌 Pinned Favorites</h3>
             </div>
             <div id="homeQuickToolsGrid" class="tools-grid"></div>
         </div> 
@@ -858,6 +870,15 @@
                                         <span style="color:var(--text-muted); font-size:0.85rem;" id="emptySympMsg">No symptoms added yet.</span>
                                     </div>
 
+                                    <label>Diagnosis / DDx</label>
+                                    <input type="text" id="rxDiagnosis" onkeyup="if(typeof renderRxCartList === 'function') renderRxCartList()" placeholder="Type custom or click a suggestion below..." style="margin-bottom:15px; font-weight:bold; font-size:1.05rem;">
+                                    <div id="ddxSuggestions" style="display:none; gap:8px; margin-bottom:15px; flex-wrap:wrap; padding:10px; background:rgba(0,212,255,0.05); border:1px dashed var(--brand-cyan); border-radius:8px;"></div>
+                                    
+                                    <button id="advancedFieldsToggleBtn" class="secondary" onclick="toggleAdvancedClinicalFields()" style="margin-bottom: 20px; background: var(--bg-surface); border: 1px dashed var(--primary); color: var(--primary); width: 100%; font-weight: 700; padding: 12px; transition: all 0.2s;">
+                                        ➕ Add Detailed Exams, History & Labs
+                                    </button>
+
+                                    <div id="advancedClinicalSection" style="display:none; animation: iosFadeInScale 0.3s ease; flex-direction:column;">
                                     <label>History of Present Illness (HOPI)</label>
                                     <textarea id="rxHopi" style="width:100%; min-height:80px; margin-bottom:10px; font-family:inherit; padding:10px;" placeholder="Document history and findings..."></textarea>
                                     
@@ -917,10 +938,6 @@
                                         </div>
                                     </div>
 
-                                    <label>Diagnosis / DDx</label>
-                                    <input type="text" id="rxDiagnosis" onkeyup="if(typeof renderRxCartList === 'function') renderRxCartList()" placeholder="Type custom or click a suggestion below..." style="margin-bottom:8px; font-weight:bold; font-size:1.05rem;">
-                                    <div id="ddxSuggestions" style="display:none; gap:8px; margin-bottom:15px; flex-wrap:wrap; padding:10px; background:rgba(0,212,255,0.05); border:1px dashed var(--brand-cyan); border-radius:8px;"></div>
-                                    
                                     <label>Required Investigations / Scans</label>
                                     <style>
                                         .chip-checkbox { cursor: pointer; margin-right: 2px; }
@@ -956,7 +973,7 @@
                                         <input type="text" id="rxTestsCustom" placeholder="Type other specific tests here..." onkeyup="updateTestsTextarea()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem;">
                                         <input type="hidden" id="rxTests">
                                     </div>
-                                    <label>General Advice / Care Plan</label>
+                                    </div> <label>General Advice / Care Plan</label>
                                     <textarea id="rxAdvice" onkeyup="if(typeof renderRxCartList === 'function') renderRxCartList()" style="width:100%; min-height:80px; margin-bottom:15px; font-family:inherit; padding:10px;"></textarea>
                                     <label>Next Review Date</label>
                                     <input type="date" id="rxReview">
@@ -1003,11 +1020,12 @@
                                                     <option value="Days">Days</option><option value="Weeks">Weeks</option><option value="Months">Months</option>
                                                 </select>
                                             </div>
-                                            <div style="display:flex; gap:10px;">
-                                                <input type="text" id="inlineFreq" placeholder="Freq (e.g. BID x 5d)" style="flex:2; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem;">
-                                                <button class="action" onclick="addInlineDrugToCart()" style="flex:1; margin:0; padding:10px; box-shadow:none; font-size:0.95rem;">➕ Add</button>
-                                            </div>
-                                            <div id="inlineDoseResult" style="font-size:0.9rem; color:var(--success); font-weight:bold; margin-top:2px;"></div>
+                                            <input type="text" id="inlineFreq" placeholder="Frequency (e.g. BID)" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem; margin-top:8px;">
+                                            
+                                            <!-- Massive Dose Result Box -->
+                                            <div id="inlineDoseResult"></div>
+                                            
+                                            <button class="action" onclick="addInlineDrugToCart()" style="width:100%; margin-top:15px; padding:15px; font-size:1.1rem; box-shadow:var(--shadow-sm); border-radius:8px;">➕ Add to Prescription</button>
                                         </div>
                                     </div>
 
