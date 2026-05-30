@@ -76,6 +76,20 @@ window.buildMilestoneReference = function() {
 }
 
 // --- GROWTH CHARTS ---
+// Helper to estimate the exact WHO curve value for a specific month
+function getInterpolatedVal(ageM, xArr, yArr) {
+    if (ageM <= 0) return yArr[0];
+    if (ageM >= 36) return yArr[6];
+    for(let i=0; i<xArr.length-1; i++) {
+        if (ageM >= xArr[i] && ageM <= xArr[i+1]) {
+            let range = xArr[i+1] - xArr[i];
+            let fraction = (ageM - xArr[i]) / range;
+            return yArr[i] + fraction * (yArr[i+1] - yArr[i]);
+        }
+    }
+    return yArr[0];
+}
+
 window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeight, patientGender) {
     if(wtChartInstance) wtChartInstance.destroy(); if(htChartInstance) htChartInstance.destroy();
     const standardXLabels = [0, 6, 12, 18, 24, 30, 36];
@@ -86,29 +100,71 @@ window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeigh
     const height3rd  = patientGender === 'male' ? [46, 63, 71, 76, 81, 85, 89] : [45, 61, 69, 74, 79, 83, 87];
     const height97th = patientGender === 'male' ? [54, 71, 81, 88, 93, 99, 103] : [53, 69, 79, 86, 91, 97, 101];
 
+    // Evaluate significance
+    let exact3rd = getInterpolatedVal(patientAgeMonths, standardXLabels, weight3rd);
+    let exact50th = getInterpolatedVal(patientAgeMonths, standardXLabels, weight50th);
+    
+    let statusText = "";
+    let explanationText = "";
+    let titleColor = "";
+
+    if (currentWeight < exact3rd) {
+        statusText = "🚨 Below 3rd Percentile";
+        titleColor = "var(--danger)";
+        explanationText = `At ${currentWeight} kg, the patient is plotting below the 3rd percentile for their age (${patientAgeMonths} mos). This indicates they weigh less than 97% of healthy children their age.<br><br><b>Significance for Parents:</b> Your child needs a bit of extra help catching up. We will review their diet and monitor them closely to ensure they are getting the energy they need to grow.`;
+    } else if (currentWeight < exact50th) {
+        statusText = "⚖️ Expected Growth (Lower Curve)";
+        titleColor = "var(--warning)";
+        explanationText = `At ${currentWeight} kg, the patient is plotting between the 3rd and 50th percentile. This is a normal, healthy growth pattern.<br><br><b>Significance for Parents:</b> Your child is growing exactly as expected on their personal curve! Continue routine feeding and we will make sure they maintain this steady path.`;
+    } else {
+        statusText = "⭐ Optimal Growth (Upper Curve)";
+        titleColor = "var(--success)";
+        explanationText = `At ${currentWeight} kg, the patient is plotting at or above the 50th percentile average.<br><br><b>Significance for Parents:</b> Excellent growth and nutritional status! Your child is tracking perfectly along the upper median WHO curve.`;
+    }
+
+    // Update UI
+    const area = document.getElementById('growthResultArea');
+    if (area) {
+        area.style.display = 'block';
+        area.style.borderLeft = `4px solid ${titleColor}`;
+        document.getElementById('growthStatusTitle').innerText = statusText;
+        document.getElementById('growthStatusTitle').style.color = titleColor;
+        document.getElementById('growthExplanationText').innerHTML = explanationText;
+    }
+
+    // Save to patient profile for the print summary
+    if (typeof activePatientId !== 'undefined' && activePatientId) {
+        let p = AppStore.getPatient(activePatientId);
+        if (p) {
+            p.growthExplanation = `<b>Status:</b> ${statusText}<br>${explanationText.replace('<br><br>', ' ')}`;
+            AppStore.savePatient(p);
+        }
+    }
+
+    // TENSION 0.4 adds beautiful bezier curves to the chart lines!
     const ctxW = document.getElementById('weightChartCanvas');
     if(ctxW) {
-        wtChartInstance = new Chart(ctxW.getContext('2d'), { type: 'line', data: { labels: standardXLabels, datasets: [ { label: 'Patient Value', data: [{x: patientAgeMonths, y: currentWeight}], backgroundColor: 'red', borderColor: 'red', pointRadius: 7, showLine: false }, { label: 'WHO 97th %', data: weight97th, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0 }, { label: 'WHO 50th %', data: weight50th, borderColor: 'rgba(16, 185, 129, 0.8)', fill: false, pointRadius: 0 }, { label: 'WHO 3rd %', data: weight3rd, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Age (Mos)' }, min:0, max:36 } } } });
+        wtChartInstance = new Chart(ctxW.getContext('2d'), { type: 'line', data: { labels: standardXLabels, datasets: [ { label: 'Patient', data: [{x: patientAgeMonths, y: currentWeight}], backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', pointRadius: 8, showLine: false }, { label: '97th %', data: weight97th, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0, tension: 0.4 }, { label: '50th %', data: weight50th, borderColor: 'rgba(16, 185, 129, 0.8)', fill: false, pointRadius: 0, tension: 0.4 }, { label: '3rd %', data: weight3rd, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0, tension: 0.4 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Age (Mos)' }, min:0, max:36 } } } });
     }
     const ctxH = document.getElementById('heightChartCanvas');
     if(ctxH) {
-        htChartInstance = new Chart(ctxH.getContext('2d'), { type: 'line', data: { labels: standardXLabels, datasets: [ { label: 'Patient Value', data: [{x: patientAgeMonths, y: currentHeight}], backgroundColor: 'red', borderColor: 'red', pointRadius: 7, showLine: false }, { label: 'WHO 97th %', data: height97th, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0 }, { label: 'WHO 50th %', data: height50th, borderColor: 'rgba(16, 185, 129, 0.8)', fill: false, pointRadius: 0 }, { label: 'WHO 3rd %', data: height3rd, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Age (Mos)' }, min:0, max:36 } } } });
+        htChartInstance = new Chart(ctxH.getContext('2d'), { type: 'line', data: { labels: standardXLabels, datasets: [ { label: 'Patient', data: [{x: patientAgeMonths, y: currentHeight}], backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', pointRadius: 8, showLine: false }, { label: '97th %', data: height97th, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0, tension: 0.4 }, { label: '50th %', data: height50th, borderColor: 'rgba(16, 185, 129, 0.8)', fill: false, pointRadius: 0, tension: 0.4 }, { label: '3rd %', data: height3rd, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0, tension: 0.4 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Age (Mos)' }, min:0, max:36 } } } });
     }
 };
 
 window.calcGrowth = function() {
     const pWtElem = document.getElementById('pWeight');
-    const cWtElem = document.getElementById('calcWeight');
-    const wt = parseFloat((pWtElem ? pWtElem.value : 0) || (cWtElem ? cWtElem.value : 0) || 10);
+    const inlineWtElem = document.getElementById('inlineCalcWeight'); // Ensure we pull the most recent weight
+    const wt = parseFloat((inlineWtElem ? inlineWtElem.value : 0) || (pWtElem ? pWtElem.value : 0) || 10);
     
     let htObj = document.getElementById('htCm'); 
-    let htOnTheGoObj = document.getElementById('triageHt');
-    const ht = parseFloat( (htObj && htObj.value) ? htObj.value : (htOnTheGoObj ? htOnTheGoObj.value : 0) );
+    let htOnTheGoObj = document.getElementById('htCmOnTheGo');
+    const ht = parseFloat( (htOnTheGoObj && htOnTheGoObj.value) ? htOnTheGoObj.value : (htObj ? htObj.value : 0) );
     
-    let totalM = typeof activePatientId !== 'undefined' && activePatientId ? globalPatientsStore[activePatientId].totalMonths : (parseInt(document.getElementById('calcQuickAge') ? document.getElementById('calcQuickAge').value : 0) || 0);
+    let totalM = typeof activePatientId !== 'undefined' && activePatientId ? globalPatientsStore[activePatientId].totalMonths : 0;
     let pGender = document.getElementById('gender') ? document.getElementById('gender').value : 'male';
     
-    if(!ht || isNaN(ht)) return; 
+    if(!ht || isNaN(ht) || !wt || isNaN(wt)) return; 
     drawGrowthCharts(totalM, wt, ht, pGender);
 };
 

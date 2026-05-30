@@ -337,8 +337,18 @@ window.executePrint = function(mode) {
     if (mode === 'comprehensive') {
         html += getPrintHeaderHTML("COMPREHENSIVE CLINICAL SUMMARY", p);
         
+        html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Triage & Growth Anthropometry</h3>`;
+        
+        // Inject the newly generated Growth Explanation
+        if (p.growthExplanation) {
+            html += `<div style="background:#f8fafc; border-left:4px solid #1e3a8a; padding:15px; border-radius:6px; margin-bottom:15px; font-family:sans-serif; font-size:14px; line-height:1.6;">
+                        <h4 style="margin:0 0 5px 0; color:#1e3a8a;">WHO Growth Chart Interpretation</h4>
+                        ${p.growthExplanation}
+                     </div>`;
+        }
+
         let maln = typeof extractToolResult === 'function' ? extractToolResult('malnGridOutput') : ""; 
-        if(maln) html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px;">Current Triage & Anthropometry</h3>${maln}`;
+        if(maln) html += `${maln}`;
         
         html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">Longitudinal Medical History</h3>`;
         
