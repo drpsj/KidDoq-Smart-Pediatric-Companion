@@ -353,19 +353,50 @@ window.updateTestsTextarea = function() {
 };
 
 // --- 1. THE INLINE DRAFT CALCULATOR (Phase 8) ---
-function populateInlineDrugs() {
-    const cat = document.getElementById('inlineDrugCat').value;
-    const sel = document.getElementById('inlineDrugSelect');
-    sel.innerHTML = '<option value="">-- Select Drug --</option>';
-    document.getElementById('inlineDoseResult').innerText = '';
-    if(!cat) return;
+window.populateInlineDrugs = function() {
+    const catSelect = document.getElementById('inlineDrugCat');
+    const drugSelect = document.getElementById('inlineDrugSelect');
     
-    const filtered = getUnifiedDB().filter(d => d.category === cat);
-    filtered.forEach(d => { 
-        const icon = d.isCustom ? "👤 " : "";
-        sel.innerHTML += `<option value="${d.id}">${icon}${d.name}</option>`; 
+    // 1. Check if HTML elements exist
+    if (!catSelect || !drugSelect) {
+        console.error("UI ERROR: Could not find 'inlineDrugCat' or 'inlineDrugSelect' in index.html.");
+        return;
+    }
+    
+    const selectedCat = catSelect.value;
+    drugSelect.innerHTML = '<option value="">-- Select Drug --</option>';
+    
+    // 2. Bulletproof Database Fetch
+    let db = [];
+    if (typeof getUnifiedDB === 'function' && getUnifiedDB()) {
+        db = getUnifiedDB();
+    } else if (typeof window.drugsDb !== 'undefined') {
+        db = window.drugsDb; // Fallback directly to the raw database
+    }
+    
+    if (!db || db.length === 0) {
+        console.error("DATA ERROR: Cannot find the drug database (drugsDb). Ensure database.js is loaded before module-rx.js.");
+        return;
+    }
+    
+    // 3. Filter and Populate
+    const filteredDrugs = selectedCat === 'all' 
+        ? db 
+        : db.filter(d => d.category && d.category.toLowerCase() === selectedCat.toLowerCase());
+        
+    filteredDrugs.forEach(d => {
+        let opt = document.createElement('option');
+        opt.value = d.id;
+        opt.innerText = d.name;
+        drugSelect.appendChild(opt);
     });
-}
+    
+    // 4. Clear old results safely
+    const res = document.getElementById('inlineDoseResult');
+    if (res) res.innerText = '';
+    const freqInput = document.getElementById('inlineFreq');
+    if (freqInput) freqInput.value = '';
+};
 
 function calcInlineDose() {
     const drugId = document.getElementById('inlineDrugSelect').value;
