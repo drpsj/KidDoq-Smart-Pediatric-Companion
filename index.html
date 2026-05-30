@@ -801,10 +801,16 @@
                                 <label style="color: var(--primary-dark); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block;">⚡ Quick Protocol (Order Sets)</label>
                                 <select id="orderSetSelect" onchange="applyOrderSet(this.value)" style="width: 100%; font-weight: 600; color: var(--primary); border: 1px solid var(--border-soft); border-radius: 6px; padding: 8px;">
                                     <option value="">-- Select a Clinical Protocol to Auto-Fill --</option>
-                                    <option value="os_aom">Acute Otitis Media (AOM)</option>
+                                    <option disabled>── STANDARD PROTOCOLS ──</option>
                                     <option value="os_uri">Viral Upper Respiratory Infection (URI)</option>
                                     <option value="os_age">Acute Gastroenteritis (Mild Dehydration)</option>
                                     <option value="os_fever">Acute Febrile Illness</option>
+                                    <option value="os_asthma">Asthma / Wheeze Exacerbation</option>
+                                    <option value="os_uti">Urinary Tract Infection (UTI)</option>
+                                    <option disabled>── IMNCI PROTOCOLS ──</option>
+                                    <option value="os_imnci_pneumonia">IMNCI: Pneumonia</option>
+                                    <option value="os_imnci_dysentery">IMNCI: Dysentery</option>
+                                    <option value="os_imnci_ear">IMNCI: Acute Ear Infection</option>
                                 </select>
                             </div>
                             
@@ -1187,21 +1193,59 @@
             </div>
 
            <!-- CLEAN MILESTONES HUB -->
+            <!-- MILESTONES HUB (WITH TABS RESTORED) -->
             <div id="milestoneFeatureView" class="view-content" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; gap:15px;">
                     <div style="display:flex; align-items:center; gap:15px;">
                         <button class="secondary" onclick="window.openClinicalTool('patientProfileView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
-                        <h2 class="section-title" style="margin:0; border:none; color:var(--brand-pink);">👶 Developmental Milestones</h2>
+                        <h2 class="section-title" style="margin:0; border:none; color:var(--brand-pink);">👶 Developmental Progress</h2>
                     </div>
                     <button onclick="executePrint('milestones')" class="secondary" style="margin:0; width:auto; border-color:var(--primary); color:var(--primary);">🖨️ Print</button>
                 </div>
+
+                <div class="sub-tabs-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('msEvalTab', this)">📋 Timeline</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('msProgressTab', this)">📈 Dashboard</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('msMissedTab', this)">🚨 Red Flags</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('msReferenceTab', this); if(typeof buildMilestoneReference==='function') buildMilestoneReference();">📘 Standards</button>
+                </div>
                 
-                <div class="timeline-section" style="padding:1.5rem; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-soft);">
-                    <p style="font-size:0.9rem; color:var(--text-muted); margin-top:0;">Select a month below to evaluate the patient's developmental progress. Checked items automatically save to the Patient Profile.</p>
-                    
-                    <!-- Interactive Timeline Container -->
-                    <div id="milestoneTimelineContainer">
-                        <!-- Javascript will automatically render the months here -->
+                <!-- TAB 1: NEW INTERACTIVE TIMELINE -->
+                <div id="msEvalTab" class="sub-tab-content active">
+                    <div class="timeline-section" style="padding:1.5rem; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-soft);">
+                        <p style="font-size:0.9rem; color:var(--text-muted); margin-top:0;">Select a month below to evaluate the patient's developmental progress. Checked items automatically save to the Patient Profile.</p>
+                        
+                        <!-- Interactive Timeline Container -->
+                        <div id="milestoneTimelineContainer">
+                            <!-- Javascript will automatically render the months here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DASHBOARD -->
+                <div id="msProgressTab" class="sub-tab-content">
+                    <div class="timeline-section">
+                        <h3 style="color:var(--primary); margin-top:0;">Developmental Dashboard</h3>
+                        <div class="tool-grid">
+                            <div id="msCompletedContainer"></div>
+                            <div id="msUpcomingContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: RED FLAGS -->
+                <div id="msMissedTab" class="sub-tab-content">
+                    <div class="timeline-section">
+                        <h3 style="color:var(--primary); margin-top:0;">Red Flags</h3>
+                        <div id="msMissedContainer"></div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: STANDARDS -->
+                <div id="msReferenceTab" class="sub-tab-content">
+                    <div class="timeline-section" style="overflow-x:auto;">
+                        <h3 style="color:var(--primary); margin-top:0;">Standard Milestones</h3>
+                        <div id="msReferenceContainer"></div>
                     </div>
                 </div>
             </div>

@@ -810,3 +810,101 @@ window.toggleMilestone = function(msId, isAchieved) {
     AppStore.savePatient(p);
     if(typeof saveAndRegisterPatient === 'function') saveAndRegisterPatient(true);
 };
+window.applyOrderSet = function(setId) {
+    if (!setId || !activePatientId) return;
+    
+    // 1. THE CLINICAL PROTOCOL MATRIX
+    const protocols = {
+        os_uri: {
+            dx: "Viral Upper Respiratory Infection (URI)",
+            investigations: [],
+            advice: "Maintain adequate hydration. Saline nasal drops for blocked nose. Steam inhalation. \n\n⚠️ Return immediately if: fast breathing, chest indrawing, or poor feeding."
+        },
+        os_age: {
+            dx: "Acute Gastroenteritis (Mild/Some Dehydration)",
+            investigations: ["Serum Electrolytes"],
+            advice: "Continue breastfeeding/normal diet. Give ORS (10-20 ml/kg) after every loose stool. Strict hand hygiene. \n\n⚠️ Return immediately if: blood in stool, persistent vomiting, sunken eyes, or no urine for 6 hours."
+        },
+        os_fever: {
+            dx: "Acute Febrile Illness",
+            investigations: ["CBC", "CRP", "Urine Routine", "Dengue NS1/IgM"],
+            advice: "Tepid sponging for temperature > 101°F. Ensure plenty of oral fluids. Monitor for rashes or extreme lethargy."
+        },
+        os_asthma: {
+            dx: "Acute Exacerbation of Bronchial Asthma",
+            investigations: ["CXR (PA View)"],
+            advice: "Use MDI with spacer and mask. Identify and avoid triggers (dust, smoke, cold air). \n\n⚠️ Return to ER if respiratory distress, unable to speak in sentences, or continuous coughing."
+        },
+        os_uti: {
+            dx: "Urinary Tract Infection (UTI)",
+            investigations: ["Urine Routine", "Urine Culture", "USG Abdomen & Pelvis"],
+            advice: "Ensure plenty of oral fluids. Maintain perineal hygiene. Follow up with Urine Culture reports in 48-72 hours."
+        },
+        os_imnci_pneumonia: {
+            dx: "Pneumonia (IMNCI Criteria)",
+            investigations: ["CBC", "CXR (PA View)"],
+            advice: "IMNCI GUIDELINES: Continue feeding and breastfeeding. Keep the child warm. \n\n⚠️ Return IMMEDIATELY if: child is unable to drink, has chest indrawing, or develops stridor. \nFollow up mandatory in 2 days."
+        },
+        os_imnci_dysentery: {
+            dx: "Dysentery (IMNCI Criteria)",
+            investigations: ["Stool Routine", "Stool Culture"],
+            advice: "IMNCI GUIDELINES: Continue feeding. Give ORS to prevent dehydration. \n\n⚠️ Return immediately if child becomes lethargic or unable to drink. \nFollow up mandatory in 2 days."
+        },
+        os_imnci_ear: {
+            dx: "Acute Ear Infection / AOM (IMNCI)",
+            investigations: [],
+            advice: "IMNCI GUIDELINES: Keep ear dry. Do NOT insert cotton buds or oil. \nFollow up in 5 days, or sooner if pain worsens or high fever develops."
+        }
+    };
+
+    const pData = protocols[setId];
+    if (pData) {
+        // 2. AUTO-FILL DIAGNOSIS
+        let dxEl = document.getElementById('rxDiagnosis');
+        if (dxEl) dxEl.value = pData.dx;
+
+        // 3. AUTO-FILL ADVICE
+        let advEl = document.getElementById('rxAdvice');
+        if (advEl) advEl.value = pData.advice;
+
+        // 4. AUTO-CHECK INVESTIGATIONS
+        document.querySelectorAll('.chip-checkbox input').forEach(chk => {
+            chk.checked = pData.investigations.includes(chk.value);
+        });
+        if (typeof updateTestsTextarea === 'function') updateTestsTextarea();
+    }
+
+    // 5. AUTO-CALCULATE & ADD DRUGS (TREATMENT)
+    let patient = AppStore.getPatient(activePatientId);
+    if (!patient.rxList) patient.rxList = [];
+    
+    let wt = patient.weight || 10;
+    const db = typeof getUnifiedDB === 'function' ? getUnifiedDB() : window.drugsDb;
+    
+    // Find drugs tagged with this specific order set
+    const matchingDrugs = db.filter(d => d.orderSetTags && d.orderSetTags.includes(setId));
+    
+    matchingDrugs.forEach(drug => {
+        // Prevent duplicate drug entries
+        if (!patient.rxList.find(r => r.id === drug.id)) {
+            let math = ClinicalMath.computeDose(drug, wt);
+            patient.rxList.push({
+                id: drug.id,
+                name: drug.name,
+                doseVol: math.reqVol.toFixed(1),
+                doseUnit: ClinicalMath.getUnit(drug),
+                doseMg: math.reqMg.toFixed(0),
+                freq: drug.defaultFreq,
+                dur: "5 Days", // Default duration, easily editable in the UI
+                type: drug.doseType
+            });
+        }
+    });
+
+    AppStore.savePatient(patient);
+    if (typeof renderRxCartList === 'function') renderRxCartList();
+    
+    // Reset dropdown visually
+    document.getElementById('orderSetSelect').value = "";
+    showSystemToast("⚡ Protocol Applied: " + pData.dx);
+};
