@@ -47,10 +47,11 @@
         .app-shell { 
             width: 100vw; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; 
             background-color: var(--bg-body);
-            /* Premium Mesh Gradient overlay for Light Mode */
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 92, 171, 0.04) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(0, 212, 255, 0.04) 0px, transparent 50%);
+            /* Custom Image Background */
+            background-image: url('../app background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             background-attachment: fixed;
         }
         .workspace { flex: 1; display: flex; overflow: hidden; position: relative; }

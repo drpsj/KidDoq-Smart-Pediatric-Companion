@@ -39,9 +39,14 @@ const ViewController = (function() {
     }
 
     return {
-        switchNavTab: function(tabId) {
+        switchNavTab: function(tabId, skipHistory = false) {
             _hideAllViews();
             _resetNavButtons();
+            
+            // Log this move in the native mobile history
+            if (!skipHistory) {
+                history.pushState({ type: 'nav', id: tabId }, "", "#" + tabId);
+            }
 
             const target = document.getElementById(tabId);
             const workspace = document.getElementById('activeWorkspace');
@@ -140,11 +145,16 @@ window.syncVitalsToTools = function() {
     }
 };
 
-window.openClinicalTool = function(viewId) {
+window.openClinicalTool = function(viewId, skipHistory = false) {
     if (!AppStore.getActivePatientId()) {
         showSystemToast("⚠️ Please open a patient file first!");
         ViewController.switchNavTab('databaseFeatureView');
         return;
+    }
+    
+    // Log tool opening in the native mobile history
+    if (!skipHistory) {
+        history.pushState({ type: 'tool', id: viewId }, "", "#" + viewId);
     }
 
     document.getElementById('activeWorkspace').style.display = 'block';
@@ -255,3 +265,34 @@ window.loadPatientFromDB = function(pId) {
 };
 
 window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;
+
+// ==========================================
+// NATIVE MOBILE BACK BUTTON / SWIPE SUPPORT
+// ==========================================
+window.addEventListener('popstate', function(event) {
+    // 1. If a modal is open, the back button should close the modal FIRST.
+    let activeModal = document.querySelector('.modal-overlay.active');
+    if (activeModal) {
+        activeModal.classList.remove('active');
+        // Push the state back so we don't accidentally navigate away
+        history.pushState(event.state, "", document.location.hash);
+        return;
+    }
+
+    // 2. Otherwise, route backward normally
+    if (event.state) {
+        if (event.state.type === 'nav') {
+            ViewController.switchNavTab(event.state.id, true);
+        } else if (event.state.type === 'tool') {
+            window.openClinicalTool(event.state.id, true);
+        }
+    } else {
+        // Fallback to home if they swipe all the way back
+        ViewController.switchNavTab('homeDashboardView', true);
+    }
+});
+
+// Set the baseline anchor when the app boots
+document.addEventListener("DOMContentLoaded", () => {
+    history.replaceState({ type: 'nav', id: 'homeDashboardView' }, "", "#homeDashboardView");
+});
