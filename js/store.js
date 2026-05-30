@@ -69,6 +69,13 @@ const AppStore = (function() {
             localStorage.setItem('nis_patients', JSON.stringify(_patients));
             return true;
         },
+
+        deletePatient: (id) => {
+            if (!_patients[id]) return false;
+            delete _patients[id];
+            localStorage.setItem('nis_patients', JSON.stringify(_patients));
+            return true;
+        },
         
         // --- SPECIFIC CLINICAL ACTIONS (Isolated Logic) ---
         addPrescriptionToActivePatient: (rxObj) => {

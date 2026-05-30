@@ -11,6 +11,30 @@ window.getUnifiedDB = function() {
     return combined;
 };
 
+// --- NEONATAL MODE ENGINE ---
+let isNeonateMode = false;
+
+window.toggleNeonateMode = function(enabled) {
+    isNeonateMode = enabled;
+    if(enabled) {
+        if(typeof showSystemToast === 'function') showSystemToast("🍼 Neonatal Mode: Intervals adjusted for PMA.");
+    } else {
+        if(typeof showSystemToast === 'function') showSystemToast("Pediatric Mode Active.");
+    }
+    // Re-calculate the inline dose immediately if a drug is selected
+    if(typeof calcInlineDose === 'function') calcInlineDose();
+};
+
+function getNeonateInterval(drugName, baseFreq) {
+    if (!isNeonateMode) return baseFreq;
+    
+    const highRiskDrugs = ['amikacin', 'gentamicin', 'tobramycin', 'vancomycin', 'caffeine'];
+    if (highRiskDrugs.some(d => drugName.toLowerCase().includes(d))) {
+        return "Q36H"; // Standard preemie interval adjustment
+    }
+    // Add more specific neonatal interval shifts here as needed
+    return baseFreq;
+}
 // --- CORE CLINICAL MATH ENGINE ---
 
 // --- 1. UNIFIED DOSAGE ENGINE (For the 🧮 Dose Calc Tab) ---
@@ -369,7 +393,10 @@ function calcInlineDose() {
     const durVal = document.getElementById('inlineDurVal').value;
     const durUnit = document.getElementById('inlineDurUnit').value;
     let durStr = durVal ? ` x ${durVal} ${durUnit}` : "";
-    freqInput.value = `${drug.defaultFreq}${durStr}`;
+    
+    // ✨ NEONATAL INTERVAL INJECTION ✨
+    let adjustedFreq = getNeonateInterval(drug.name, drug.defaultFreq);
+    freqInput.value = `${adjustedFreq}${durStr}`;
 }
 
 // --- 2. THE SMART PROTOCOL ENGINE (Order Sets) ---

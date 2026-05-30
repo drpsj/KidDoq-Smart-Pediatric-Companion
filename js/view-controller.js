@@ -191,11 +191,8 @@ window.loadPatientFromDB = function(pId) {
     if (typeof updateStickyBanner === 'function') updateStickyBanner(pId);
 
     if (typeof window.openClinicalTool === 'function') {
-        window.openClinicalTool('prescriptionFeatureView');
-        setTimeout(() => {
-            let ledgerTabBtn = document.querySelector('[onclick*="rxNotesTab"]');
-            if(ledgerTabBtn) window.switchSubTab('rxNotesTab', ledgerTabBtn);
-        }, 50);
+        window.openClinicalTool('patientProfileView');
+        if (typeof populatePatientProfile === 'function') populatePatientProfile(pId);
     }
 
     setTimeout(() => {

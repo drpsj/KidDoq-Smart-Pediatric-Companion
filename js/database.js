@@ -194,7 +194,18 @@ const drugsDb = [
         { name: "Curd / Yogurt (100g)", cat: "Pediatric Diet", p: 11.0, c: 4.0, f: 4.0, k: 98 },
         { name: "Idli (100g ~ 2 medium)", cat: "Pediatric Diet", p: 4.0, c: 30.0, f: 1.0, k: 144 },
         { name: "Dosa (100g ~ 1 large)", cat: "Pediatric Diet", p: 5.0, c: 55.0, f: 5.0, k: 280 },
-        { name: "Upma / Suji (100g cooked)", cat: "Pediatric Diet", p: 3.5, c: 25.0, f: 1.5, k: 130 }
+        { name: "Upma / Suji (100g cooked)", cat: "Pediatric Diet", p: 3.5, c: 25.0, f: 1.5, k: 130 },
+        
+        // --- Specialized Clinical Formulas & Enteral Feeds ---
+        { name: "Standard Infant Formula (20 kcal/oz)", cat: "Clinical Formula", p: 1.4, c: 7.3, f: 3.6, k: 67 },
+        { name: "Preemie Formula (24 kcal/oz)", cat: "Clinical Formula", p: 2.2, c: 8.5, f: 4.2, k: 80 },
+        { name: "High-Cal Preemie (30 kcal/oz)", cat: "Clinical Formula", p: 2.8, c: 10.6, f: 5.3, k: 100 },
+        { name: "Extensively Hydrolyzed (e.g. Nutramigen)", cat: "Clinical Formula", p: 1.9, c: 7.5, f: 3.4, k: 68 },
+        { name: "Amino Acid Formula (e.g. Neocate)", cat: "Clinical Formula", p: 1.8, c: 7.2, f: 3.4, k: 67 },
+        { name: "Peptamen Junior (1.0 kcal/mL)", cat: "Enteral Feed", p: 3.0, c: 13.8, f: 3.8, k: 100 },
+        { name: "Peptamen Junior 1.5 (1.5 kcal/mL)", cat: "Enteral Feed", p: 4.5, c: 17.0, f: 5.6, k: 150 },
+        { name: "F-75 Therapeutic Diet (SAM)", cat: "Therapeutic", p: 0.9, c: 16.0, f: 3.2, k: 75 },
+        { name: "F-100 Therapeutic Diet (SAM)", cat: "Therapeutic", p: 2.9, c: 11.0, f: 5.3, k: 100 }
     ];
 
     // Explicitly map these to the global window so the rest of the app can always find them

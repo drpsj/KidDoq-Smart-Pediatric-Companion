@@ -89,6 +89,7 @@ window.saveAndRegisterPatient = async function(isBackgroundUpdate = false) {
         else { let modal = document.getElementById('registryModal'); if(modal) modal.classList.remove('active'); }
         if (typeof loadPatientFromDB === 'function') loadPatientFromDB(id);
         if (typeof renderFullDatabase === 'function') renderFullDatabase();
+        if (typeof populatePatientProfile === 'function') populatePatientProfile(id); // Refresh profile if open
     } else {
         if(document.getElementById('activeWorkspace') && document.getElementById('activeWorkspace').style.display === 'block') {
             if(typeof calcInlineDose === 'function') calcInlineDose(); 
@@ -139,9 +140,8 @@ function renderFullDatabase() {
                     </div>
                     <div style="font-size:1.1rem; font-weight:bold; color:var(--primary); background:var(--primary-light); padding:4px 10px; border-radius:12px;">${p.weight} kg</div>
                 </div>
-                ${p.phone ? `<div style="font-size:0.85rem; margin-bottom:5px;">📞 ${p.phone}</div>` : ''}
-                ${p.diagnosis ? `<div style="font-size:0.85rem; margin-bottom:15px; color:var(--warning);"><b>Dx:</b> ${p.diagnosis}</div>` : '<div style="margin-bottom:15px;"></div>'}
-                <button onclick="loadPatientFromDB('${id}')" class="action" style="margin:0; background:var(--primary-light); color:var(--primary-dark); box-shadow:none; border:1px solid var(--primary);">📂 Open Patient File</button>
+                ${p.phone ? `<div style="font-size:0.85rem; margin-bottom:15px;">📞 ${p.phone}</div>` : '<div style="margin-bottom:15px;"></div>'}
+                <button onclick="loadPatientFromDB('${id}')" class="action" style="margin:0; background:var(--primary-light); color:var(--primary-dark); box-shadow:none; border:1px solid var(--primary);">📂 Open Patient Profile</button>
             </div>`;
         }
     });
@@ -192,4 +192,61 @@ window.restoreDatabase = function(input) {
     };
     reader.readAsText(input.files[0]);
     input.value = ""; 
+};
+
+// --- PATIENT PROFILE & MANAGEMENT ---
+window.populatePatientProfile = function(pId) {
+    const p = AppStore.getPatient(pId);
+    if(!p) return;
+    
+    document.getElementById('profileName').innerText = p.name;
+    document.getElementById('profileAge').innerText = `${p.ageYrs || 0}Y ${p.ageMos || 0}M`;
+    document.getElementById('profileWeight').innerText = `${p.weight || '--'} kg`;
+    document.getElementById('profileGender').innerText = p.gender ? p.gender.toUpperCase() : '--';
+    document.getElementById('profilePhone').innerText = p.phone || '--';
+    document.getElementById('profileHt').innerText = p.htCm ? `${p.htCm} cm` : '--';
+    
+    // Vax Summary
+    const vaxOut = document.getElementById('profileVaxSummary');
+    let vaxHtml = "";
+    if(p.vaccineHistory && Object.keys(p.vaccineHistory).length > 0) {
+        Object.keys(p.vaccineHistory).forEach(v => {
+            vaxHtml += `<div style="padding:6px 0; border-bottom:1px dashed var(--border-soft);">✔️ <b>${v}</b>: ${new Date(p.vaccineHistory[v]).toLocaleDateString('en-IN')}</div>`;
+        });
+    } else { vaxHtml = "No vaccines logged yet."; }
+    if(vaxOut) vaxOut.innerHTML = vaxHtml;
+    
+    // Milestones Summary
+    const mileOut = document.getElementById('profileMilesSummary');
+    let mileHtml = "";
+    if(p.achievedMilestones && Object.keys(p.achievedMilestones).length > 0) {
+        Object.keys(p.achievedMilestones).forEach(m => {
+            if(p.achievedMilestones[m]) mileHtml += `<div style="padding:6px 0; border-bottom:1px dashed var(--border-soft);">⭐ Marker ${m.replace('m','')} achieved</div>`;
+        });
+    } else { mileHtml = "No milestones logged yet."; }
+    if(mileOut) mileOut.innerHTML = mileHtml;
+};
+
+window.editActivePatient = function() {
+    const p = AppStore.getPatient(activePatientId);
+    if(!p) return;
+    document.getElementById('pName').value = p.name || "";
+    document.getElementById('pPhone').value = p.phone || "";
+    document.getElementById('dob').value = p.dob || "";
+    document.getElementById('ageYrs').value = p.ageYrs || 0;
+    document.getElementById('ageMos').value = p.ageMos || 0;
+    document.getElementById('pWeight').value = p.weight || "";
+    document.getElementById('htCm').value = p.htCm || "";
+    if(document.getElementById('gender')) document.getElementById('gender').value = p.gender || "male";
+    document.getElementById('registryModal').classList.add('active');
+};
+
+window.deleteActivePatient = function() {
+    if(!activePatientId) return;
+    if(confirm("🚨 Are you sure you want to PERMANENTLY delete this patient? This cannot be undone.")) {
+        AppStore.deletePatient(activePatientId);
+        closePatientFile();
+        if(typeof renderFullDatabase === 'function') renderFullDatabase();
+        if(typeof showSystemToast === 'function') showSystemToast("🗑️ Patient deleted successfully.");
+    }
 };
