@@ -23,7 +23,9 @@
     justify-content: flex-start; 
     padding: 30px 20px; 
     border-top: none; 
-    border-right: 1px solid var(--border-soft); 
+    border-right: none; /* Removed the stubborn partition line */
+    background: transparent !important; /* Let the background image flow entirely through the sidebar */
+    box-shadow: none;
     align-items: stretch; 
     gap: 10px;
 }

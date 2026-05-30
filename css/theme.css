@@ -29,9 +29,12 @@
         
        /* KIDDOQ TOP HEADER */
         header {
-            background: var(--bg-surface); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
-            box-shadow: var(--shadow-sm); z-index: 100; flex-shrink: 0; border-bottom: 1px solid var(--border-soft);
+            background: rgba(255, 255, 255, 0.4); /* Frosted glass effect */
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; flex-shrink: 0; border-bottom: none; box-shadow: none;
         }
+        body.dark-mode header { background: rgba(20, 20, 43, 0.5); }
         .brand-logo { 
             font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin: 0 auto; 
             background: linear-gradient(135deg, var(--brand-pink), var(--brand-cyan), var(--brand-blue)); 
@@ -146,10 +149,13 @@
 
         /* TAB BAR (MOBILE) / SIDEBAR (DESKTOP) */
         .main-nav {
-            background: var(--bg-surface); border-top: 1px solid var(--border-soft); display: flex;
-            justify-content: space-around; padding: 10px 5px 25px 5px; box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+            background: rgba(255, 255, 255, 0.6); /* Frosted glass effect */
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-top: none; display: flex;
+            justify-content: space-around; padding: 10px 5px 25px 5px; box-shadow: none;
             position: fixed; bottom: 0; left: 0; width: 100%; z-index: 5000;
         }
+        body.dark-mode .main-nav { background: rgba(20, 20, 43, 0.6); }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: transparent; border: none; color: var(--text-muted); gap: 4px; font-family: 'Poppins', sans-serif;
