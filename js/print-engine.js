@@ -1,15 +1,12 @@
-window.generateMilestonesReport = function(pId) {
-    const p = AppStore.getPatient(pId);
-    if (!p) return "<p>No patient data found.</p>";
-    return `<p style="font-family:sans-serif; color:#64748b;">Milestone tracking data secured in digital vault.</p>`; 
-};
-
 // js/print-engine.js
 
 function getPrintHeaderHTML(title, patientObj) {
-    const p = patientObj || globalPatientsStore[activePatientId]; 
+    const p = patientObj || AppStore.getPatient(activePatientId); 
     if(!p) return "";
-    let logoHtml = appSettings.logo ? `<img src="${appSettings.logo}" style="max-height:80px;">` : `<div style="font-size:40px;">🏥</div>`;
+    
+    // Fix: Force logo to be small and professional
+    let logoHtml = appSettings.logo ? `<img src="${appSettings.logo}" style="max-height: 60px; max-width: 60px; object-fit: contain;">` : `<div style="font-size:40px;">🏥</div>`;
+    
     return `
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:15px; margin-bottom:20px;">
             ${logoHtml}
@@ -34,22 +31,42 @@ function getPrintHeaderHTML(title, patientObj) {
                 <span><b>Weight:</b> ${p.weight || '___'} kg</span>
                 <span><b>Gender:</b> ${p.gender ? p.gender.toUpperCase() : "___"}</span>
             </div>
-            ${p.diagnosis ? `<div style="font-size: 14px; margin-bottom:20px;"><b>Diagnosis / C.C:</b> ${p.diagnosis}</div>` : '<div style="margin-bottom:20px;"></div>'}
+            </div>
+    `;
+}
+
+function getPrintFooterHTML() {
+    const sigSettings = typeof AppStore !== 'undefined' ? AppStore.getSettings() : {};
+    let sigData = sigSettings.signature || localStorage.getItem('doctor_sig');
+    let sigImg = sigData ? `<img src="${sigData}" style="max-height:60px; display:block; margin: 0 auto 5px auto;">` : `<div style="height:40px;"></div>`;
+
+    return `
+        <div style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 15px; display: flex; justify-content: space-between; align-items:flex-end; font-family:sans-serif;">
+            <div style="font-size: 0.75rem; color: #777;">
+                Reference: IAP Guidelines 2024 | WHO MGRS<br>
+                <em>Clinical reference only. Verify doses against standard protocols.</em>
+            </div>
+            <div style="text-align: center; width: 200px;">
+                ${sigImg}
+                <div style="border-top: 1px dashed #333; padding-top: 5px; font-weight: bold; font-size: 0.9rem; color:#000;">
+                    ${sigSettings.docName || localStorage.getItem('doc_name') || 'Doctor'}
+                </div>
+            </div>
         </div>
     `;
 }
 
-function extractToolResult(elId) {
+window.extractToolResult = function(elId) {
     let el = document.getElementById(elId); if(!el) return ""; let txt = el.innerHTML;
     if(txt.includes("Execute calculation") || txt.includes("Provide") || txt.includes("Enter") || txt.includes("Awaiting data")) return "";
     return `<div style="background:#f1f5f9; padding:15px; border-radius:8px; margin-bottom:15px; font-family:sans-serif; line-height:1.6;">${txt}</div>`;
-}
+};
 
-function generateCertTemplate() {
+window.generateCertTemplate = function() {
     let pId = activePatientId;
-    let pName = pId ? globalPatientsStore[pId].name : (document.getElementById('pName').value || "________________");
-    let pAgeY = pId ? globalPatientsStore[pId].ageYrs : (document.getElementById('ageYrs').value || "_");
-    let pAgeM = pId ? globalPatientsStore[pId].ageMos : (document.getElementById('ageMos').value || "_");
+    let pName = pId ? AppStore.getPatient(pId).name : (document.getElementById('pName').value || "________________");
+    let pAgeY = pId ? AppStore.getPatient(pId).ageYrs : (document.getElementById('ageYrs').value || "_");
+    let pAgeM = pId ? AppStore.getPatient(pId).ageMos : (document.getElementById('ageMos').value || "_");
     let pDiag = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "________________";
     let cDates = document.getElementById('certDates').value || "________________";
     let cat = document.getElementById('certCategory').value;
@@ -80,7 +97,7 @@ function generateCertTemplate() {
     }
     
     if (cat !== "none") body.value = text;
-}
+};
 
 window.generateCompactVaccineTable = function(pId) {
     const p = AppStore.getPatient(pId);
@@ -191,7 +208,6 @@ window.generateNutritionReport = function(pId) {
     return html;
 };
 
-// --- SURGICAL PATCH: MISSING MILESTONES PRINT LOGIC ---
 window.generateMilestonesReport = function(pId) {
     const p = AppStore.getPatient(pId);
     if (!p) return "<p>No patient data found.</p>";
@@ -208,7 +224,7 @@ window.generateMilestonesReport = function(pId) {
         <tbody>`;
 
     if(window.milestonesDb) {
-        Object.keys(window.milestonesDb).forEach(age => {
+        Object.keys(window.milestonesDb).sort((a,b) => parseInt(a)-parseInt(b)).forEach(age => {
             window.milestonesDb[age].forEach((m, idx) => {
                 let status = achieved[m.id] ? '<span style="color:#188038; font-weight:bold;">✔ Achieved</span>' : '<span style="color:#64748b;">Pending</span>';
                 html += `<tr>
@@ -226,30 +242,13 @@ window.generateMilestonesReport = function(pId) {
 
 window.executePrint = function(mode) {
     const currentPId = typeof AppStore !== 'undefined' ? AppStore.getActivePatientId() : null;
-
-    if (!currentPId && mode !== 'prescription' && mode !== 'rx' && mode !== 'certificate') { 
-        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select or add a patient first!"); 
+    if (!currentPId && mode !== 'certificate') { 
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a patient first!"); 
         return; 
     }
+    
     const engine = document.getElementById('printEngine'); 
-    
-    let p = AppStore.getPatient(currentPId);
-    
-    if (!p) {
-        p = {
-            name: document.getElementById('pName').value || "____________________",
-            ageYrs: document.getElementById('ageYrs').value || "_",
-            ageMos: document.getElementById('ageMos').value || "_",
-            weight: document.getElementById('pWeight').value || "___",
-            gender: document.getElementById('gender').value || "___",
-            diagnosis: document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "",
-            tests: document.getElementById('rxTests') ? document.getElementById('rxTests').value : "",
-            advice: document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "",
-            review: document.getElementById('rxReview') ? document.getElementById('rxReview').value : "",
-            rxList: []
-        };
-    }
-    
+    let p = AppStore.getPatient(currentPId) || { name: "", ageYrs: "", ageMos: "", weight: "", gender: "", rxList: [] };
     let html = "";
 
     if (mode === 'nutrition') {
@@ -266,63 +265,48 @@ window.executePrint = function(mode) {
         html += getPrintHeaderHTML("IMMUNIZATION SCHEDULE REPORT", p) + generateCompactVaccineTable(currentPId); 
         if (mode === 'comprehensive') html += `<div class="page-break"></div>`; 
     }
-    
+
     if (mode === 'prescription' || mode === 'rx') {
         html += getPrintHeaderHTML("PRESCRIPTION", p);
         
-        let printRxList = [];
+        let printRxList = p.rxList || [];
         let printDx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
         let printAdvice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
         let printTests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
+        let hopi = document.getElementById('rxHopi') ? document.getElementById('rxHopi').value.replace(/\n/g, '<br>') : "";
         
-        // Grab exams
-        let printExamRS = p.examRS || "";
-        let printExamCVS = p.examCVS || "";
-        let printExamPA = p.examPA || "";
-        let printExamCNS = p.examCNS || "";
-        
-        if (p.rxList && p.rxList.length > 0) {
-            printRxList = p.rxList;
-        } else if (p.visits && p.visits.length > 0) {
-            let latestVisit = p.visits[p.visits.length - 1];
-            printRxList = latestVisit.rxList || [];
-            if (!printDx) printDx = latestVisit.diagnosis || "";
-            if (!printAdvice) printAdvice = latestVisit.advice || "";
-            if (!printTests) printTests = latestVisit.tests || "";
-            // Fallback to ledger exams
-            if (!printExamRS) printExamRS = latestVisit.examRS || "";
-            if (!printExamCVS) printExamCVS = latestVisit.examCVS || "";
-            if (!printExamPA) printExamPA = latestVisit.examPA || "";
-            if (!printExamCNS) printExamCNS = latestVisit.examCNS || "";
+        let examHTML = "";
+        ['RS', 'CVS', 'PA', 'CNS'].forEach(sys => {
+            let val = document.getElementById('exam' + sys) ? document.getElementById('exam' + sys).value.trim() : "";
+            if(val) examHTML += `<li style="margin-bottom:4px;"><b>${sys}:</b> ${val}</li>`;
+        });
+
+        let sympHtml = "";
+        const tags = document.querySelectorAll('#symptomTagsArea .symptom-tag');
+        if(tags.length > 0) {
+            let sList = [];
+            tags.forEach(t => sList.push(t.innerText.replace('✖', '').trim()));
+            sympHtml = sList.join(", ");
         }
-        
-        html += `<div style="margin-bottom: 20px; font-family: sans-serif; color: #333;">
-                    <b style="color: #1e3a8a;">Diagnosis:</b> ${printDx || "____________________"}
-                 </div>`;
-                 
-        // Print Exams Block
-        if (printExamRS || printExamCVS || printExamPA || printExamCNS) {
-            html += `<div style="margin-bottom: 15px; font-family: sans-serif; color: #333;">
-                        <b style="color: #1e3a8a;">Systemic Examination:</b>
-                        <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 0.95rem;">
-                            ${printExamRS ? `<li><b>RS:</b> ${printExamRS}</li>` : ''}
-                            ${printExamCVS ? `<li><b>CVS:</b> ${printExamCVS}</li>` : ''}
-                            ${printExamPA ? `<li><b>P/A:</b> ${printExamPA}</li>` : ''}
-                            ${printExamCNS ? `<li><b>CNS:</b> ${printExamCNS}</li>` : ''}
-                        </ul>
-                     </div>`;
-        }
-        
-        html += `<h3 style="border-bottom: 2px solid #ccc; padding-bottom: 5px; margin-top: 20px; font-family: sans-serif; color: #1e3a8a;">Rx</h3>`;
+
+        if(sympHtml) html += `<div style="margin-bottom:10px; font-size:1rem; font-family:sans-serif; color:#333;"><b>Presenting Complaints:</b> ${sympHtml}</div>`;
+        if(hopi) html += `<div style="margin-bottom:10px; font-size:0.95rem; font-family:sans-serif; color:#333;"><b>HOPI:</b><br>${hopi}</div>`;
+        if(examHTML) html += `<div style="margin-bottom:15px; font-size:0.95rem; font-family:sans-serif; color:#333;"><b>Systemic Examination:</b><ul style="margin:5px 0; padding-left:20px;">${examHTML}</ul></div>`;
+        if(printDx) html += `<div style="margin-bottom:20px; font-size:1.1rem; color:#1e3a8a; font-family:sans-serif;"><b>Diagnosis:</b> ${printDx}</div>`;
+
+        html += `<h3 style="border-bottom: 2px solid #ccc; padding-bottom: 5px; margin-top: 20px; font-family: serif; font-size: 2rem; color: #1e3a8a;">Rx</h3>`;
         
         if (printRxList.length === 0) {
             html += `<p style="color:#64748b; font-family: sans-serif;">No medications prescribed.</p>`;
         } else {
             html += `<ul style="list-style-type: none; padding-left: 0; line-height: 1.8; font-family: sans-serif; color: #333;">`;
-            printRxList.forEach(rx => {
-                html += `<li style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
-                            <strong style="font-size: 1.15rem; color: #0f172a;">${rx.name}</strong><br>
-                            <span style="font-size: 1rem;">Give <b style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${rx.vol} ${rx.unit}</b> — <i>${rx.freq}</i></span>
+            printRxList.forEach((rx, index) => {
+                let translatedFreq = (typeof translateFreqToLocal === 'function') ? translateFreqToLocal(rx.freq) : rx.freq;
+                let durText = rx.dur ? ` <span style="color:#555;">x ${rx.dur}</span>` : "";
+                
+                html += `<li style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px; break-inside: avoid;">
+                            <strong style="font-size: 1.15rem; color: #0f172a;">${index + 1}. ${rx.name}</strong><br>
+                            <span style="font-size: 1.05rem;">Give <b style="font-weight:bold;">${rx.vol} ${rx.unit}</b> — <span style="margin-left:10px; font-weight:bold;">${translatedFreq}</span>${durText}</span>
                             ${rx.details ? `<div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">${rx.details}</div>` : ''}
                          </li>`;
             });
@@ -331,6 +315,8 @@ window.executePrint = function(mode) {
         
         if (printTests) html += `<div style="margin-top: 25px; font-family: sans-serif; color: #333;"><b style="color: #1e3a8a;">Required Investigations:</b><br>${printTests.replace(/\n/g, '<br>')}</div>`;
         if (printAdvice) html += `<div style="margin-top: 20px; font-family: sans-serif; color: #333;"><b style="color: #1e3a8a;">General Advice:</b><br>${printAdvice.replace(/\n/g, '<br>')}</div>`;
+        
+        html += getPrintFooterHTML();
     }
     
     if (mode === 'certificate') {
@@ -370,7 +356,7 @@ window.executePrint = function(mode) {
                          ${visit.examCNS ? `CNS: ${visit.examCNS}` : ''}
                        </div>`.replace(/ \|\s*<\//, '</') : ''}
                        
-                    ${visit.rxList && visit.rxList.length > 0 ? `<div style="font-size:14px; margin-bottom:8px;"><b>Medications Prescribed:</b><ul style="margin:5px 0; padding-left:20px;">${visit.rxList.map(rx => `<li>${rx.name} - ${rx.freq} (${rx.vol} ${rx.unit})</li>`).join('')}</ul></div>` : ''}
+                    ${visit.rxList && visit.rxList.length > 0 ? `<div style="font-size:14px; margin-bottom:8px;"><b>Medications Prescribed:</b><ul style="margin:5px 0; padding-left:20px;">${visit.rxList.map(rx => `<li>${rx.name} - ${translateFreqToLocal(rx.freq)} (${rx.vol} ${rx.unit})</li>`).join('')}</ul></div>` : ''}
                     ${visit.tests ? `<div style="font-size:14px; margin-bottom:8px;"><b>Investigations:</b> ${visit.tests}</div>` : ''}
                     ${visit.advice ? `<div style="font-size:14px; margin-bottom:8px;"><b>Advice/Care Plan:</b> ${visit.advice}</div>` : ''}
                 </div>`;
@@ -378,34 +364,28 @@ window.executePrint = function(mode) {
         } else {
             html += `<p style="font-family:sans-serif; color:#64748b;">No historical encounters recorded.</p>`;
         }
-        
-        html += `<div class="page-break"></div>`;
-        html += getPrintHeaderHTML("IMMUNIZATION STATUS", p);
-        
-        html += generateCompactVaccineTable(currentPId); 
     }
-
-    html += `
-        <div style="margin-top:50px; border-top:1px solid #ccc; padding-top:15px; text-align:center; font-family:sans-serif;">
-            <div style="font-size:10px; color:#555; font-weight:bold; margin-bottom:5px;">
-                Reference: IAP Guidelines 2024 · WHO MGRS · ICMR-NIN · Harriet Lane 22nd Ed.
-            </div>
-            <div style="font-size:9px; color:#777; margin-bottom:8px;">
-                ⚠️ Clinical reference only. Verify doses against standard institutional protocols before administration.
-            </div>
-        </div>
-    `;
     
-    engine.innerHTML = ""; 
     engine.innerHTML = html; 
     
-    const wasDarkMode = document.body.classList.contains('dark-mode');
-    if (wasDarkMode) document.body.classList.remove('dark-mode');
-
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @media print {
+            body * { visibility: hidden; }
+            #printEngine, #printEngine * { visibility: visible; }
+            #printEngine { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; box-sizing: border-box; background: white;}
+            .chip-checkbox { display: none !important; }
+        }
+    `;
+    document.head.appendChild(style);
+    
     setTimeout(() => {
         window.print();
-        if (wasDarkMode) document.body.classList.add('dark-mode');
-    }, 500);
+        setTimeout(() => {
+            engine.innerHTML = "";
+            style.remove();
+        }, 500);
+    }, 250);
 };
 
 window.sendWACompReport = function() {
@@ -442,7 +422,7 @@ window.sendWACompReport = function() {
     if (p.rxList && p.rxList.length > 0) {
         msg += `💊 *Active Prescriptions:*\n`;
         p.rxList.forEach((rx, i) => { 
-            msg += `${i+1}. *${rx.name}*\n   ↳ ${rx.vol} ${rx.unit || 'mL'} (${rx.freq})\n`;
+            msg += `${i+1}. *${rx.name}*\n   ↳ ${rx.vol} ${rx.unit || 'mL'} (${translateFreqToLocal(rx.freq)})\n`;
             if (rx.details) msg += `   ℹ️ _${rx.details}_\n`;
         });
         msg += `\n`;
@@ -456,15 +436,6 @@ window.sendWACompReport = function() {
         msg += `🩸 *Investigations:* ${p.tests}\n\n`;
     }
 
-    if (p.upcomingVaccinesForWhatsapp && p.upcomingVaccinesForWhatsapp.length > 0) {
-        msg += `💉 *Upcoming Vaccines:*\n- ${p.upcomingVaccinesForWhatsapp.join('\n- ')}\n\n`;
-    }
-
-    if (p.review) {
-        const reviewDate = new Date(p.review).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-        msg += `🔄 *Next Review:* ${reviewDate}\n\n`;
-    }
-
     msg += `_Note: This is an auto-generated clinical summary._`;
 
     let phone = p.phone ? p.phone.replace(/\D/g, '') : ""; 
@@ -476,5 +447,4 @@ window.sendWACompReport = function() {
     const waLink = phone ? `https://wa.me/${phone}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
 
     window.open(waLink, '_blank');
-    if(typeof showSystemToast === 'function') showSystemToast("📱 Opening WhatsApp...");
 };
