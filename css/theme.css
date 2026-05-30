@@ -93,10 +93,26 @@
         ::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: var(--radius-pill); border: 2px solid var(--bg-body); }
         
         .view-content { display: none; width: 100%; max-width: 1200px; margin: 0 auto; }
-        .view-content.active-view { display: block; opacity: 1; animation: springSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .sub-tab-content { display: none; } 
-        .sub-tab-content.active { display: block; opacity: 1; animation: springSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes springSlideUp { 0% { opacity: 0; transform: translateY(20px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* High-Performance Screen Transitions */
+        .view-content.active-view { 
+            display: block; 
+            animation: iosFadeInScale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+        }
+        .sub-tab-content.active { 
+            display: block; 
+            animation: iosSlideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+        }
+
+        @keyframes iosFadeInScale { 
+            0% { opacity: 0; transform: scale(0.97); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
+        @keyframes iosSlideUp { 
+            0% { opacity: 0; transform: translateY(15px); } 
+            100% { opacity: 1; transform: translateY(0); } 
+        }
 
         /* FORMS & INPUTS */
         .panel { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;}
@@ -117,9 +133,18 @@
         }
 
         .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        button.action { width: 100%; background: var(--primary); color: white; border: none; padding: 0.85rem; font-size: 0.95rem; font-weight: 600; border-radius: var(--radius-md); cursor: pointer; margin-top: 1rem; box-shadow: var(--shadow-sm); transition: transform 0.1s;}
-        button.action:active { transform: translateY(1px); }
-        button.secondary { background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-soft); padding: 0.6rem; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; width: 100%; transition: background-color 0.2s;}
+        /* Universal Button Animation Physics */
+        button, .tool-btn { 
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s, box-shadow 0.2s !important; 
+        }
+        
+        /* The Native "Squish" Effect on Tap */
+        button:active, .tool-btn:active, .profile-btn:active, .nav-item:active { 
+            transform: scale(0.95) !important; 
+        }
+
+        button.action { width: 100%; background: var(--primary); color: white; border: none; padding: 0.85rem; font-size: 0.95rem; font-weight: 600; border-radius: var(--radius-md); cursor: pointer; margin-top: 1rem; box-shadow: var(--shadow-sm); }
+        button.secondary { background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-soft); padding: 0.6rem; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; width: 100%; }
 
         .timeline-section { background: var(--bg-surface); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); margin-bottom: 2rem; border: none; transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .section-title { color: var(--text-main); border-bottom: none; padding-bottom: 0; margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 800; display: flex; justify-content: space-between; align-items: center; letter-spacing: -0.5px;}
@@ -179,7 +204,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(20,20,43,0.6); z-index: 999999; display: none; backdrop-filter: blur(4px); animation: fadeIn 0.2s ease;}
         .modal-overlay.active { display: flex; align-items: flex-end; justify-content: center; }
         .modal-content { background: var(--bg-surface); width: 100%; max-width: 600px; max-height: 80dvh; overflow-y: auto; overscroll-behavior: contain; border-radius: 24px 24px 0 0; padding: 24px; animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @media (min-width: 1024px) { .modal-content { border-radius: var(--radius-xl); align-self: center; } }
+        /* Desktop overrides are strictly handled in desktop.css */
         @keyframes fadeIn { 0%{opacity:0;} 100%{opacity:1;} }
         @keyframes slideUpModal { 0%{transform:translateY(100%);} 100%{transform:translateY(0);} }
 

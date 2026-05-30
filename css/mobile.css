@@ -129,3 +129,49 @@ input, select, textarea {
 #rxCartList {
     min-height: auto !important;
 }
+
+/* =========================================
+   NATIVE MOBILE SCROLL PHYSICS & GESTURES
+   ========================================= */
+
+/* 1. Eliminate the blue highlight flash when tapping on Android/iOS */
+* {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* 2. Enable buttery momentum scrolling for all scrollable areas */
+.main-content, .modal-content, .rx-desktop-grid, .timeline-section, .sub-tabs-nav, #rxLedgerList {
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important; /* Hides in Firefox */
+}
+
+/* 3. Completely hide the ugly scrollbars on mobile */
+.main-content::-webkit-scrollbar, 
+.modal-content::-webkit-scrollbar, 
+.rx-desktop-grid::-webkit-scrollbar, 
+.timeline-section::-webkit-scrollbar,
+.sub-tabs-nav::-webkit-scrollbar,
+#rxLedgerList::-webkit-scrollbar {
+    display: none !important; /* Hides in Safari/Chrome */
+}
+
+/* =========================================
+   STRICT MOBILE LAYOUT ENFORCEMENT
+   ========================================= */
+
+/* 1. Force the Case Sheet to stack neatly on mobile */
+.rx-desktop-grid { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    gap: 20px !important; 
+    width: 100% !important; 
+}
+
+/* 2. Lock the Modal so it slides up from the bottom edge like iOS */
+.modal-overlay.active { 
+    align-items: flex-end !important; 
+}
+.modal-content { 
+    border-radius: 24px 24px 0 0 !important; 
+    width: 100% !important;
+}
