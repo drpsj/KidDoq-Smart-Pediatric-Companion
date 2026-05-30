@@ -4,8 +4,8 @@ function getPrintHeaderHTML(title, patientObj) {
     const p = patientObj || AppStore.getPatient(activePatientId); 
     if(!p) return "";
     
-    // Fix: Force logo to be small and professional
-    let logoHtml = appSettings.logo ? `<img src="${appSettings.logo}" style="max-height: 60px; max-width: 60px; object-fit: contain;">` : `<div style="font-size:40px;">🏥</div>`;
+    // Fix: Force logo to be small and professional, removed default emoji
+    let logoHtml = appSettings.logo ? `<img src="${appSettings.logo}" style="max-height: 80px; max-width: 80px; object-fit: contain;">` : ``;
     
     return `
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:15px; margin-bottom:20px;">
@@ -302,11 +302,13 @@ window.executePrint = function(mode) {
             html += `<ul style="list-style-type: none; padding-left: 0; line-height: 1.8; font-family: sans-serif; color: #333;">`;
             printRxList.forEach((rx, index) => {
                 let translatedFreq = (typeof translateFreqToLocal === 'function') ? translateFreqToLocal(rx.freq) : rx.freq;
-                let durText = rx.dur ? ` <span style="color:#555;">x ${rx.dur}</span>` : "";
+                let durText = rx.dur ? ` <span style="display:inline-block; margin-left:8px; padding:3px 8px; background-color:#1e3a8a; color:white; border-radius:4px; font-weight:900; letter-spacing:0.5px;">For ${rx.dur}</span>` : "";
                 
                 html += `<li style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px; break-inside: avoid;">
                             <strong style="font-size: 1.15rem; color: #0f172a;">${index + 1}. ${rx.name}</strong><br>
-                            <span style="font-size: 1.05rem;">Give <b style="font-weight:bold;">${rx.vol} ${rx.unit}</b> — <span style="margin-left:10px; font-weight:bold;">${translatedFreq}</span>${durText}</span>
+                            <div style="font-size: 1.05rem; margin-top: 4px; display:flex; align-items:center;">
+                                Give <b style="font-weight:bold; margin: 0 5px;">${rx.vol} ${rx.unit}</b> — <span style="margin:0 5px; font-weight:bold;">${translatedFreq}</span> ${durText}
+                            </div>
                             ${rx.details ? `<div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">${rx.details}</div>` : ''}
                          </li>`;
             });
@@ -371,9 +373,9 @@ window.executePrint = function(mode) {
     const style = document.createElement('style');
     style.innerHTML = `
         @media print {
-            body * { visibility: hidden; }
-            #printEngine, #printEngine * { visibility: visible; }
-            #printEngine { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; box-sizing: border-box; background: white;}
+            /* Using display:none completely collapses the white space pushing the print to the bottom half */
+            body > *:not(#printEngine) { display: none !important; }
+            #printEngine { display: block !important; position: static !important; width: 100%; padding: 0; background: white; }
             .chip-checkbox { display: none !important; }
         }
     `;

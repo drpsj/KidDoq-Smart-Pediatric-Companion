@@ -63,6 +63,9 @@ function applySettingsToUI() {
     if(appSettings.signature && document.getElementById('sigPreview')) {
         document.getElementById('sigPreview').innerHTML = `<img src="${appSettings.signature}" style="max-height:60px; border-radius:8px;">`;
     }
+    if(appSettings.logo && document.getElementById('logoPreview')) {
+        document.getElementById('logoPreview').innerHTML = `<img src="${appSettings.logo}" style="max-height:60px; border-radius:8px;">`;
+    }
     if (typeof renderSettingsChecklist === 'function') renderSettingsChecklist();
     if (typeof renderHomeQuickTools === 'function') renderHomeQuickTools();
 }
@@ -92,6 +95,19 @@ function handleSignatureUpload(input) {
             document.getElementById('sigPreview').innerHTML = `<img src="${e.target.result}" style="max-height:60px; border-radius:8px;">`;
             localStorage.setItem('clinic_settings', JSON.stringify(appSettings));
             if(typeof showSystemToast === 'function') showSystemToast("Signature Uploaded!");
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function handleLogoUpload(input) {
+    if (input.files && input.files[0]) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            appSettings.logo = e.target.result;
+            document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}" style="max-height:60px; border-radius:8px;">`;
+            localStorage.setItem('clinic_settings', JSON.stringify(appSettings));
+            if(typeof showSystemToast === 'function') showSystemToast("Clinic Logo Uploaded!");
         };
         reader.readAsDataURL(input.files[0]);
     }

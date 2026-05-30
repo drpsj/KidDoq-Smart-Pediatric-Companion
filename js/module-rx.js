@@ -527,14 +527,14 @@ window.renderRxCartList = function() {
         html += `<div style="font-size:1.3rem; font-weight:bold; color:var(--primary); margin-bottom:15px; font-family:serif;">Rx</div>`;
         p.rxList.forEach((rx, index) => {
             let translatedFreq = translateFreqToLocal(rx.freq);
-            let durText = rx.dur ? ` x ${rx.dur}` : "";
+            let durText = rx.dur ? ` <span style="background:var(--primary-dark); color:white; padding:2px 8px; border-radius:4px; font-weight:800; font-size:0.85rem; margin-left:8px; display:inline-block;">For ${rx.dur}</span>` : "";
             
             html += `
             <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:12px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
                 <div>
-                    <div style="font-weight:700; color:#1e293b; font-size:1.05rem; margin-bottom:4px;">${index+1}. ${rx.name}</div>
-                    <div style="font-size:0.95rem; color:#475569;">
-                        Give <span style="font-weight:bold; color:var(--primary);">${rx.vol} ${rx.unit}</span> 
+                    <div style="font-weight:700; color:#1e293b; font-size:1.05rem; margin-bottom:6px;">${index+1}. ${rx.name}</div>
+                    <div style="font-size:0.95rem; color:#475569; display:flex; align-items:center;">
+                        Give <span style="font-weight:bold; color:var(--primary); margin:0 5px;">${rx.vol} ${rx.unit}</span> 
                         <span style="font-weight:bold; color:var(--danger);">${translatedFreq}</span>${durText}
                     </div>
                 </div>

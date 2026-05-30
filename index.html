@@ -289,9 +289,18 @@
                         <div class="row-inputs"><div><label>Medical Reg. No.</label><input type="text" id="setRegNo" placeholder="e.g. KMC 12345"></div><div><label>Clinic Name</label><input type="text" id="setClinic" placeholder="Sunrise Clinic"></div></div>
                         <label>Tagline</label><input type="text" id="setTagline" placeholder="Child Development Center">
                         <div class="row-inputs"><div><label>Phone</label><input type="text" id="setPhone" placeholder="Phone"></div><div><label>Address</label><input type="text" id="setAddress" placeholder="Location"></div></div>
-                        <label style="margin-top:10px;">Upload Signature (PNG/JPG)</label>
-                        <input type="file" accept="image/*" onchange="handleSignatureUpload(this)" style="padding:0.5rem; font-size:0.85rem;">
-                        <div id="sigPreview" style="margin-top:10px; border:1px dashed var(--border-soft); padding:10px; text-align:center; min-height:50px; border-radius:var(--radius-md); background:var(--bg-surface);">No signature loaded.</div>
+                        <div class="row-inputs" style="margin-top:10px;">
+                            <div>
+                                <label>Upload Signature (PNG/JPG)</label>
+                                <input type="file" accept="image/*" onchange="handleSignatureUpload(this)" style="padding:0.5rem; font-size:0.85rem;">
+                                <div id="sigPreview" style="margin-top:10px; border:1px dashed var(--border-soft); padding:10px; text-align:center; min-height:50px; border-radius:var(--radius-md); background:var(--bg-surface);">No sig loaded.</div>
+                            </div>
+                            <div>
+                                <label>Upload Clinic Logo (PNG/JPG)</label>
+                                <input type="file" accept="image/*" onchange="handleLogoUpload(this)" style="padding:0.5rem; font-size:0.85rem;">
+                                <div id="logoPreview" style="margin-top:10px; border:1px dashed var(--border-soft); padding:10px; text-align:center; min-height:50px; border-radius:var(--radius-md); background:var(--bg-surface);">No logo loaded.</div>
+                            </div>
+                        </div>
                         <button class="action" onclick="saveSettings()" style="background:var(--primary); color:white;">💾 Save Profile</button>
                     </div>
                 </div>
@@ -814,7 +823,11 @@
                                 </select>
                             </div>
                             
-                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px; align-items:start; width:100%;">
+                            <style>
+                                .rx-desktop-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; width: 100%; }
+                                @media(min-width: 1024px) { .rx-desktop-grid { grid-template-columns: 1.2fr 1fr; } }
+                            </style>
+                            <div class="rx-desktop-grid">
                                 
                                 <div style="min-width:0;">
                                     <label>Chief Complaints</label>
