@@ -435,7 +435,7 @@
             </div>
 
             <!-- ER & RESUSCITATION HUB -->
-        <div id="erFeatureView" class="view-content">
+        <div id="erFeatureView" class="view-content" style="display:none;">
             <h2 class="section-title" style="color:var(--danger)">🚨 ER & Resuscitation Hub</h2>
             
             <div class="tools-grid">
@@ -459,9 +459,9 @@
         </div>
 
         <!-- 1. ADVANCED CRASH CART & AIRWAY (Harriet Lane) -->
-        <div id="erCrashView" class="view-content">
+        <div id="erCrashView" class="view-content" style="display:none;">
             <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
-                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <button class="secondary" onclick="openClinicalTool('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
                 <h2 class="section-title" style="margin:0; border:none; color:var(--danger);">⚡ Code Blue & Airway</h2>
             </div>
 
@@ -485,9 +485,9 @@
         </div>
 
         <!-- 2. TIME-GATED SEIZURE PROTOCOL (Harriet Lane) -->
-        <div id="erSeizureView" class="view-content">
+        <div id="erSeizureView" class="view-content" style="display:none;">
             <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
-                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <button class="secondary" onclick="openClinicalTool('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
                 <h2 class="section-title" style="margin:0; border:none; color:var(--warning);">🧠 Status Epilepticus</h2>
             </div>
 
@@ -510,9 +510,9 @@
         </div>
         
         <!-- 3. IV FLUIDS -->
-        <div id="erFluidsView" class="view-content">
+        <div id="erFluidsView" class="view-content" style="display:none;">
             <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
-                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <button class="secondary" onclick="openClinicalTool('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
                 <h2 class="section-title" style="margin:0; border:none; color:var(--info);">💧 IV Fluids</h2>
             </div>
 
@@ -539,9 +539,9 @@
         </div>
 
         <!-- 4. NICU / APGAR -->
-        <div id="erNicuView" class="view-content">
+        <div id="erNicuView" class="view-content" style="display:none;">
             <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
-                <button class="secondary" onclick="switchNavTab('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+                <button class="secondary" onclick="openClinicalTool('erFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
                 <h2 class="section-title" style="margin:0; border:none; color:var(--primary);">🍼 NICU Metrics</h2>
             </div>
 
@@ -568,7 +568,6 @@
                 </div>
             </div>
         </div>
-
             <div id="prescriptionFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">📝 Prescription & Dosing</h2>
@@ -1024,27 +1023,27 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <!-- 1. Core Data & Storage -->
-<script src="js/database.js?v=24"></script>
-<script src="js/store.js?v=24"></script>
-<script src="js/patient-store.js?v=24"></script>
-<script src="js/patient-registry.js?v=24"></script> <!-- ADD THIS NEW FILE HERE -->
+<script src="js/database.js?v=29"></script>
+<script src="js/store.js?v=29"></script>
+<script src="js/patient-store.js?v=29"></script>
+<script src="js/patient-registry.js?v=29"></script> <!-- ADD THIS NEW FILE HERE -->
 
 <!-- 2. Clinical Math Engine (Must load before modules) -->
-<script src="js/clinical-math.js?v=24"></script>
+<script src="js/clinical-math.js?v=29"></script>
 
 <!-- 3. Clinical Modules -->
-<script src="js/encounter-ledger.js?v=24"></script> <!-- ADD THIS NEW FILE HERE -->
-<script src="js/module-rx.js?v=24"></script>
-<script src="js/module-er.js?v=24"></script>
-<script src="js/module-nutrition.js?v=24"></script>
-<script src="js/module-growth.js?v=24"></script>
-<script src="js/module-vax.js?v=24"></script>
+<script src="js/encounter-ledger.js?v=29"></script> <!-- ADD THIS NEW FILE HERE -->
+<script src="js/module-rx.js?v=29"></script>
+<script src="js/module-er.js?v=29"></script>
+<script src="js/module-nutrition.js?v=29"></script>
+<script src="js/module-growth.js?v=29"></script>
+<script src="js/module-vax.js?v=29"></script>
 
 <!-- 4. UI & App Logic -->
-<script src="js/app.js?v=24"></script> <!-- Moved to the top of this section -->
-<script src="js/core-settings.js?v=24"></script>
-<script src="js/print-engine.js?v=24"></script>
-<script src="js/view-controller.js?v=24"></script>
+<script src="js/app.js?v=29"></script> <!-- Moved to the top of this section -->
+<script src="js/core-settings.js?v=29"></script>
+<script src="js/print-engine.js?v=29"></script>
+<script src="js/view-controller.js?v=29"></script>
 <<script>
     // EMERGENCY MOBILE CACHE WIPE
     if ('serviceWorker' in navigator) {

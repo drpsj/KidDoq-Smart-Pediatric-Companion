@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiddoq-v26-cache';
+const CACHE_NAME = 'kiddoq-v29-cache';
 
 const urlsToCache = [
     './',

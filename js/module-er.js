@@ -243,74 +243,69 @@ window.calcJaundice = function() {
 // ==========================================
 
 window.openErView = function(viewId) {
-    // 1. Fetch data from active patient vault
-    if (activePatientId) {
-        let p = AppStore.getPatient(activePatientId);
-        
-        // Auto-populate weight
-        if (p.weight) {
-            ['crashWeight', 'seizureWeight', 'fluidWeight', 'girWt'].forEach(id => {
-                if(document.getElementById(id)) document.getElementById(id).value = p.weight;
-            });
+    // 1. Safely fetch data from active patient vault
+    try {
+        if (typeof activePatientId !== 'undefined' && activePatientId && typeof AppStore !== 'undefined') {
+            let p = AppStore.getPatient(activePatientId);
+            if (p && p.weight) {
+                ['crashWeight', 'seizureWeight', 'fluidWeight', 'girWt'].forEach(id => {
+                    let el = document.getElementById(id);
+                    if(el) el.value = p.weight;
+                });
+            }
+            if (p && p.ageYrs !== undefined) {
+                let el = document.getElementById('crashAge');
+                if(el) el.value = p.ageYrs;
+            }
         }
-        
-        // Auto-populate age (in years)
-        if (p.ageYrs !== undefined && document.getElementById('crashAge')) {
-            document.getElementById('crashAge').value = p.ageYrs;
-        }
+    } catch(e) { console.log("ER Sync skipped:", e); }
+    
+    // 2. Pre-calculate the views
+    if(viewId === 'erCrashView') { if(typeof calcCrash === 'function') calcCrash(); }
+    if(viewId === 'erSeizureView') { if(typeof calcSeizure === 'function') calcSeizure(); }
+    if(viewId === 'erFluidsView') { if(typeof calcFluids === 'function') calcFluids(); }
+    if(viewId === 'erNicuView') { 
+        if(typeof calcGIR === 'function') calcGIR(); 
+        if(typeof calcAPGAR === 'function') calcAPGAR(); 
     }
     
-    // 2. Pre-calculate the views so they are ready before the user even clicks
-    if(viewId === 'erCrashView') calcCrash();
-    if(viewId === 'erSeizureView') calcSeizure();
-    if(viewId === 'erFluidsView') calcFluids();
-    if(viewId === 'erNicuView') { calcGIR(); calcAPGAR(); }
-    
-    // 3. Switch to the selected page
-    if(typeof switchNavTab === 'function') switchNavTab(viewId);
+    // 3. Bulletproof Navigation
+    if (typeof openClinicalTool === 'function') {
+        openClinicalTool(viewId);
+    } else if (typeof switchNavTab === 'function') {
+        switchNavTab(viewId);
+    } else if (typeof ViewController !== 'undefined') {
+        ViewController.openClinicalTool(viewId);
+    }
 };
 
 window.syncErWeight = function(newWeight) {
-    // 1. Save to Patient Vault
-    if (activePatientId) {
+    if (typeof activePatientId !== 'undefined' && activePatientId && typeof AppStore !== 'undefined') {
         let p = AppStore.getPatient(activePatientId);
         p.weight = newWeight;
-        AppStore.savePatient(p); // Saves to global memory and localStorage
+        AppStore.savePatient(p); 
     }
-    
-    // 2. Sync all ER weight inputs instantly
     ['crashWeight', 'seizureWeight', 'fluidWeight', 'girWt'].forEach(id => {
         let el = document.getElementById(id);
-        if(el && el.value !== newWeight) {
-            el.value = newWeight;
-        }
+        if(el && el.value !== newWeight) el.value = newWeight;
     });
-    
-    // 3. Sync the main prescription pad weight if it exists
     let inlineWt = document.getElementById('inlineCalcWeight');
     if(inlineWt && inlineWt.value !== newWeight) inlineWt.value = newWeight;
     
-    // 4. Trigger recalculations across all modules
-    calcCrash(); 
-    calcSeizure(); 
-    calcFluids(); 
-    calcGIR();
+    if(typeof calcCrash === 'function') calcCrash(); 
+    if(typeof calcSeizure === 'function') calcSeizure(); 
+    if(typeof calcFluids === 'function') calcFluids(); 
+    if(typeof calcGIR === 'function') calcGIR();
 };
 
 window.syncErAge = function(newAge) {
-    // 1. Save to Patient Vault
-    if (activePatientId) {
+    if (typeof activePatientId !== 'undefined' && activePatientId && typeof AppStore !== 'undefined') {
         let p = AppStore.getPatient(activePatientId);
         p.ageYrs = newAge;
         AppStore.savePatient(p);
     }
-    
-    // 2. Sync age inputs instantly
     let crashAgeEl = document.getElementById('crashAge');
-    if(crashAgeEl && crashAgeEl.value !== newAge) {
-        crashAgeEl.value = newAge;
-    }
+    if(crashAgeEl && crashAgeEl.value !== newAge) crashAgeEl.value = newAge;
     
-    // 3. Recalculate
-    calcCrash();
+    if(typeof calcCrash === 'function') calcCrash();
 };
