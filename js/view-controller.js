@@ -159,6 +159,20 @@ window.openClinicalTool = function(viewId, skipHistory = false) {
 
     document.getElementById('activeWorkspace').style.display = 'block';
     
+    // 🧠 SYNC THE MEGA CASE FILE TABS
+    const subNavTabs = document.querySelectorAll('.case-tab');
+    if (subNavTabs.length > 0) {
+        subNavTabs.forEach(tab => {
+            if (tab.getAttribute('data-target') === viewId) {
+                tab.classList.add('active');
+                // Automatically scroll the selected tab into view on mobile
+                tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+    }
+    
     // Hide all currently open tools
     document.querySelectorAll('.view-content').forEach(v => {
         v.style.display = 'none';

@@ -159,7 +159,7 @@ input, select, textarea {
    STRICT MOBILE LAYOUT ENFORCEMENT
    ========================================= */
 
-/* 1. Force the Case Sheet to stack neatly on mobile */
+/* 1. Force the Case File to stack neatly on mobile */
 .rx-desktop-grid { 
     display: flex !important; 
     flex-direction: column !important; 

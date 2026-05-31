@@ -101,7 +101,7 @@ window.updateCopilot = function(pId) {
     if (p.rxList && p.rxList.length > 0) {
         suggestions.push({ icon: '💊', text: 'Review Active Meds', action: "window.openClinicalTool('prescriptionFeatureView')" });
     } else {
-        suggestions.push({ icon: '📝', text: 'Start Case Sheet', action: "window.openClinicalTool('prescriptionFeatureView')" });
+        suggestions.push({ icon: '📝', text: 'Start Case File', action: "window.openClinicalTool('prescriptionFeatureView')" });
     }
 
     // RENDER THE UI

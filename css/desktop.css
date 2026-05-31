@@ -53,7 +53,7 @@
    STRICT DESKTOP LAYOUT ENFORCEMENT
    ========================================= */
 
-/* 1. Force the Case Sheet into a beautiful 2-column split */
+/* 1. Force the Case File into a beautiful 2-column split */
 .rx-desktop-grid { 
     display: grid !important; 
     grid-template-columns: 1.2fr 1fr !important; 

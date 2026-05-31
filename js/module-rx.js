@@ -497,7 +497,7 @@ window.addInlineDrugToCart = function() {
     renderRxCartList();
     
     document.getElementById('inlineDrugSelect').value = ""; res.innerHTML = ""; freqInput.value = ""; document.getElementById('inlineDurVal').value = "";
-    showSystemToast(`✅ ${drug.name} added to Case Sheet`);
+    showSystemToast(`✅ ${drug.name} added to Case File`);
 };
 
 // --- LIVE PREVIEW BUILDER ---
@@ -758,7 +758,7 @@ window.toggleMilestone = function(msId, isAchieved) {
 };
 
 // ==========================================
-// ⚙️ PROGRESSIVE DISCLOSURE (CASE SHEET)
+// ⚙️ PROGRESSIVE DISCLOSURE (Case File)
 // ==========================================
 window.toggleAdvancedClinicalFields = function() {
     const sec = document.getElementById('advancedClinicalSection');
