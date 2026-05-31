@@ -4,90 +4,123 @@
  * Handles the NIS Schedule, editable timeline, and Catch-Up calculations.
  */
 
-window.updateVaccineDate = function(pId, vaxId, dateVal) {
+// --- DYNAMIC VACCINATION TRACKER ---
+window.updateVaccineDate = function(pId, vaxId, isChecked, dateVal) {
     let p = AppStore.getPatient(pId);
     if(!p) return;
     if(!p.givenDates) p.givenDates = {};
-    
-    // If doctor picks a date, save it. If they clear it, delete it.
-    if (dateVal) p.givenDates[vaxId] = dateVal;
-    else delete p.givenDates[vaxId];
-    
+
+    // If checked, save the chosen date. If unchecked, remove it.
+    if (isChecked) {
+        p.givenDates[vaxId] = dateVal || new Date().toISOString().split('T')[0];
+    } else {
+        delete p.givenDates[vaxId];
+    }
+
     AppStore.savePatient(p);
-    calculateAndRenderTimeline(pId); // Recalculate everything
+    calculateAndRenderTimeline(pId); // Re-render to hide completed items
 };
 
 window.calculateAndRenderTimeline = function(pId) {
-    const patient = AppStore.getPatient(pId);
-    if (!patient) return;
-    
-    const computedTimeline = ClinicalMath.calculateVaccineTimeline(patient, baseVaccineSchema);
-    
+    const p = AppStore.getPatient(pId);
+    if (!p) return;
+
     const leftCol = document.getElementById('vaxLeftCol');
-    const midCol = document.getElementById('vaxMidCol');
-    const rightCol = document.getElementById('vaxRightCol');
-    if (!leftCol || !midCol || !rightCol) return;
+    if (!leftCol) return;
 
-    leftCol.innerHTML = "<h3 style='margin-top:0; color:var(--text-main); font-size:1.1rem; border-bottom:2px solid var(--border-soft); padding-bottom:8px;'>📜 Master Log (Editable)</h3>";
-    midCol.innerHTML = "<h3 style='margin-top:0; color:var(--danger); font-size:1.1rem; border-bottom:2px solid rgba(239, 68, 68, 0.2); padding-bottom:8px;'>🚨 Due Now / Catch-Up</h3>";
-    rightCol.innerHTML = "<h3 style='margin-top:0; color:var(--primary); font-size:1.1rem; border-bottom:2px solid rgba(91, 97, 246, 0.2); padding-bottom:8px;'>📅 Future Schedule</h3>";
+    let dob = p.dob ? new Date(p.dob) : null;
+    let given = p.givenDates || {};
 
-    let today = new Date();
-    let thirtyDaysFromNow = new Date(); thirtyDaysFromNow.setDate(today.getDate() + 30);
-    let groups = {};
-    
-    Object.values(computedTimeline).forEach(v => {
-        if(!groups[v.group]) groups[v.group] = [];
-        groups[v.group].push(v);
-    });
+    // Standardized NIS Schema with Age in Days
+    const schema = [
+        { id: 'v_bcg', name: 'BCG', ageDays: 0, group: 'Birth' },
+        { id: 'v_opv0', name: 'OPV-0', ageDays: 0, group: 'Birth' },
+        { id: 'v_hepb0', name: 'Hep B-0', ageDays: 0, group: 'Birth' },
+        { id: 'v_penta1', name: 'Pentavalent-1', ageDays: 42, group: '6 Weeks' },
+        { id: 'v_opv1', name: 'OPV-1', ageDays: 42, group: '6 Weeks' },
+        { id: 'v_rvv1', name: 'RVV-1', ageDays: 42, group: '6 Weeks' },
+        { id: 'v_fipv1', name: 'fIPV-1', ageDays: 42, group: '6 Weeks' },
+        { id: 'v_penta2', name: 'Pentavalent-2', ageDays: 70, group: '10 Weeks' },
+        { id: 'v_opv2', name: 'OPV-2', ageDays: 70, group: '10 Weeks' },
+        { id: 'v_rvv2', name: 'RVV-2', ageDays: 70, group: '10 Weeks' },
+        { id: 'v_penta3', name: 'Pentavalent-3', ageDays: 98, group: '14 Weeks' },
+        { id: 'v_opv3', name: 'OPV-3', ageDays: 98, group: '14 Weeks' },
+        { id: 'v_rvv3', name: 'RVV-3', ageDays: 98, group: '14 Weeks' },
+        { id: 'v_fipv2', name: 'fIPV-2', ageDays: 98, group: '14 Weeks' },
+        { id: 'v_mr1', name: 'MR-1', ageDays: 270, group: '9 Months' },
+        { id: 'v_pcvb', name: 'PCV Booster', ageDays: 270, group: '9 Months' },
+        { id: 'v_je1', name: 'JE-1 (If Endemic)', ageDays: 270, group: '9 Months' },
+        { id: 'v_mr2', name: 'MR-2', ageDays: 480, group: '16-24 Months' },
+        { id: 'v_dptb1', name: 'DPT Booster-1', ageDays: 480, group: '16-24 Months' },
+        { id: 'v_opvb', name: 'OPV Booster', ageDays: 480, group: '16-24 Months' },
+        { id: 'v_je2', name: 'JE-2 (If Endemic)', ageDays: 480, group: '16-24 Months' },
+        { id: 'v_dptb2', name: 'DPT Booster-2', ageDays: 1825, group: '5 Years' },
+        { id: 'v_td', name: 'Td', ageDays: 3650, group: '10 Years' }
+    ];
 
-    for (const [gName, vaxList] of Object.entries(groups)) {
-        let html = `<div style="margin-bottom:15px;">
-            <h4 style="margin:0 0 5px 0; color:var(--primary-dark); font-size:0.85rem; text-transform:uppercase;">${gName}</h4>`;
-        vaxList.forEach(v => {
-            const isDone = v.actual !== "";
-            html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="font-size:0.85rem; font-weight:600; color:${isDone ? 'var(--text-muted)' : 'var(--text-main)'}; text-decoration:${isDone ? 'line-through' : 'none'};">${v.name}</span>
-                <input type="date" value="${v.actual}" onchange="updateVaccineDate('${pId}', '${v.id}', this.value)" style="padding:4px; border:1px solid var(--border-soft); border-radius:4px; font-size:0.8rem; width:130px; background:${isDone ? 'rgba(16,185,129,0.1)' : '#fff'}; cursor:pointer;">
+    let pendingHTML = "<h3 style='margin-top:0; color:var(--primary); font-size:1.1rem; border-bottom:2px solid var(--border-soft); padding-bottom:8px;'>📅 Pending / Due Vaccines</h3><div style='display:flex; flex-direction:column; gap:12px;'>";
+    let pendingCount = 0;
+    let todayStr = new Date().toISOString().split('T')[0];
+
+    schema.forEach(vax => {
+        // ONLY render if the vaccine has NOT been given
+        if (!given[vax.id]) {
+            pendingCount++;
+            
+            // Calculate Exact Calendar Due Date
+            let dueDateStr = "Set DOB in Registry";
+            let isOverdue = false;
+            if (dob) {
+                let targetDate = new Date(dob);
+                targetDate.setDate(targetDate.getDate() + vax.ageDays);
+                dueDateStr = targetDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                // If today is past the target date, flag as overdue
+                if (new Date() > targetDate) isOverdue = true;
+            }
+
+            pendingHTML += `
+            <div style="background:var(--bg-surface); border:1px solid ${isOverdue ? 'var(--danger)' : 'var(--border-soft)'}; padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm);">
+                <div>
+                    <div style="font-weight:800; color:var(--text-main); font-size:1.05rem;">${vax.name}</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px;">Window: ${vax.group}</div>
+                    <div style="font-size:0.85rem; padding:4px 8px; border-radius:4px; display:inline-block; background:${isOverdue ? 'rgba(239, 68, 68, 0.1)' : 'rgba(91, 97, 246, 0.1)'}; color:${isOverdue ? 'var(--danger)' : 'var(--primary)'}; font-weight:700;">
+                        Target: ${dueDateStr} ${isOverdue ? '⚠️ OVERDUE' : ''}
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                    <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">Date Administered</label>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="date" id="date_${vax.id}" style="padding:8px; border-radius:6px; border:1px solid var(--border-soft); font-size:0.9rem;" value="${todayStr}">
+                        <button onclick="updateVaccineDate('${pId}', '${vax.id}', true, document.getElementById('date_${vax.id}').value)" style="background:var(--success); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; box-shadow:var(--shadow-sm); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">✅ Mark Given</button>
+                    </div>
+                </div>
             </div>`;
-        });
-        html += `</div>`;
-        leftCol.innerHTML += html;
-    }
-
-    let upcomingWAPush = [];
-    let dueNowCount = 0; let futureCount = 0;
-
-    Object.values(computedTimeline).forEach(v => {
-        if (v.actual !== "") return; 
-
-        const projDate = new Date(v.projected);
-        const prettyProj = projDate.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
-        const delayedBadge = v.isDelayed ? `<span style="background:var(--warning); color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-left:5px;">Catch-up Adjusted</span>` : "";
-
-        let cardHtml = `<div style="background:var(--bg-surface); border-left:4px solid ${v.status === 'overdue' ? 'var(--danger)' : 'var(--primary)'}; padding:10px; margin-bottom:10px; border-radius:6px; box-shadow:var(--shadow-sm);">
-            <div style="font-weight:bold; font-size:0.9rem; color:var(--text-main);">${v.name} ${delayedBadge}</div>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
-                <b>Target Date:</b> ${prettyProj}
-            </div>
-        </div>`;
-
-        if (projDate <= thirtyDaysFromNow) {
-            midCol.innerHTML += cardHtml;
-            upcomingWAPush.push(v.name);
-            dueNowCount++;
-        } else {
-            rightCol.innerHTML += cardHtml;
-            futureCount++;
         }
     });
 
-    if (dueNowCount === 0) midCol.innerHTML += `<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; margin-top:20px;">No vaccines currently due.</div>`;
-    if (futureCount === 0) rightCol.innerHTML += `<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; margin-top:20px;">Schedule complete!</div>`;
+    pendingHTML += "</div>";
 
-    patient.upcomingVaccinesForWhatsapp = upcomingWAPush;
-    AppStore.savePatient(patient);
+    if (pendingCount === 0) {
+        pendingHTML += `
+        <div style="padding:40px; text-align:center; background:rgba(16, 185, 129, 0.05); border:2px dashed var(--success); border-radius:12px;">
+            <span style="font-size:3rem;">🎉</span>
+            <h3 style="color:var(--success); margin:10px 0 0 0;">All Caught Up!</h3>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin:5px 0 0 0;">There are no pending vaccines for this patient.</p>
+        </div>`;
+    }
 
+    leftCol.innerHTML = pendingHTML;
+    
+    // Hide the secondary columns to give the main tracker full screen width
+    const midCol = document.getElementById('vaxMidCol');
+    if (midCol) midCol.style.display = 'none';
+    const rightCol = document.getElementById('vaxRightCol');
+    if (rightCol) rightCol.style.display = 'none';
+    
+    const grid = leftCol.parentElement;
+    if(grid) grid.style.gridTemplateColumns = "1fr";
+
+    // Rebuild the NIS reference table
     const nisArea = document.getElementById('nisReferenceArea');
     if (nisArea) {
         nisArea.innerHTML = `

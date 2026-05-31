@@ -349,6 +349,16 @@ window.executePrint = function(mode) {
 
         let maln = typeof extractToolResult === 'function' ? extractToolResult('malnGridOutput') : ""; 
         if(maln) html += `${maln}`;
+
+        // 💉 Inject the Vaccine Timeline
+        if (typeof generateCompactVaccineTable === 'function') {
+            html += generateCompactVaccineTable(currentPId);
+        }
+        
+        // 🧠 Inject the Milestones Progress
+        if (typeof generateMilestonesReport === 'function') {
+            html += generateMilestonesReport(currentPId);
+        }
         
         html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">Longitudinal Medical History</h3>`;
         
@@ -446,6 +456,32 @@ window.sendWACompReport = function() {
 
     if (p.tests) {
         msg += `🩸 *Investigations:* ${p.tests}\n\n`;
+    }
+
+    // 📈 Inject the Dynamic Growth Assessment
+    if (p.growthExplanation) {
+        // Strip out HTML tags (like <br> and <b>) so it formats cleanly in WhatsApp
+        let cleanGrowth = p.growthExplanation.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>?/gm, '');
+        msg += `📈 *Growth Update:*\n${cleanGrowth}\n\n`;
+    }
+
+    // 💉 Inject Smart Vaccine Reminders (Next 30 Days)
+    if (typeof ClinicalMath !== 'undefined' && typeof baseVaccineSchema !== 'undefined') {
+        const timeline = ClinicalMath.calculateVaccineTimeline(p, baseVaccineSchema);
+        let dueVax = [];
+        let thirtyDays = new Date(); thirtyDays.setDate(thirtyDays.getDate() + 30);
+        
+        Object.values(timeline).forEach(v => {
+            if (!v.actual && new Date(v.projected) <= thirtyDays) {
+                let dateStr = new Date(v.projected).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+                let alert = v.status === 'overdue' ? ' ⚠️ (OVERDUE)' : '';
+                dueVax.push(`- ${v.name} (Due: ${dateStr})${alert}`);
+            }
+        });
+        
+        if (dueVax.length > 0) {
+            msg += `💉 *Upcoming / Due Vaccines:*\n${dueVax.join('\n')}\n\n`;
+        }
     }
 
     msg += `_Note: This is an auto-generated clinical summary._`;

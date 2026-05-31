@@ -58,7 +58,12 @@ window.renderHistoricalLedger = function() {
             ${dietHtml} ${vaxHtml}
         </div>`;
     });
-    container.innerHTML = html;
+    
+    // Inject the history into BOTH the Global Ledger AND the Case Sheet Ledger
+    if (container) container.innerHTML = html;
+    
+    const caseSheetLedger = document.getElementById('rxLedgerList');
+    if (caseSheetLedger) caseSheetLedger.innerHTML = html;
 };
 
 window.openActiveSummary = function(btnElem) {
@@ -194,14 +199,27 @@ window.lockVisit = async function() {
     if(typeof DB !== 'undefined') await DB.savePatient(p); 
     if(typeof showSystemToast === 'function') showSystemToast("✅ Visit securely locked to historical ledger.");
     
-    let ledgerBtn = document.querySelectorAll('.nav-item')[2]; 
-    if(typeof openHistoricalEncounters === 'function') openHistoricalEncounters(ledgerBtn);
+    // ROUTE BACK TO CASE SHEET & SHOW LEDGER
+    window.openClinicalTool('prescriptionFeatureView');
+    document.getElementById('rxDraftView').style.display = 'none';
+    document.getElementById('rxLedgerView').style.display = 'block';
+    
+    if(typeof renderHistoricalLedger === 'function') renderHistoricalLedger();
+    if(typeof updateCopilot === 'function') updateCopilot(AppStore.getActivePatientId());
 };
 
 window.cancelNewVisit = function() {
     if(confirm("Discard this draft? Unsaved changes will be lost.")) {
-        renderVisitLedger(); // Found in module-rx.js, safely redirects UI
+        document.getElementById('rxDraftView').style.display = 'none';
+        document.getElementById('rxLedgerView').style.display = 'block';
     }
+};
+
+window.editDraft = function() {
+    // Jump back to the draft from the Summary Review screen
+    window.openClinicalTool('prescriptionFeatureView');
+    document.getElementById('rxLedgerView').style.display = 'none';
+    document.getElementById('rxDraftView').style.display = 'block';
 };
 
 window.fillNormalExams = function() {

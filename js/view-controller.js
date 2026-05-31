@@ -115,34 +115,56 @@ window.switchMainFeature = ViewController.switchNavTab;
 window.switchSubTab = ViewController.switchSubTab;
 
 // --- TOOL ROUTING & VITAL SYNCING ---
+// 🔄 PHASE 2: THE GLOBAL AUTO-FILL ENGINE
+window.updateGlobalVital = function(vitalType, val) {
+    if (!activePatientId) return;
+    const p = AppStore.getPatient(activePatientId);
+    if (!p) return;
+
+    let numVal = parseFloat(val);
+    if (isNaN(numVal)) numVal = "";
+
+    // 1. Save directly to the secure Vault (AppStore)
+    if (vitalType === 'weight') p.weight = numVal;
+    if (vitalType === 'height') p.htCm = numVal;
+    if (typeof AppStore !== 'undefined') AppStore.savePatient(p);
+
+    // 2. Broadcast the update to ALL tools simultaneously
+    const weightInputs = ['inlineCalcWeight', 'fluidWeight', 'crashWeight', 'seizureWeight', 'girWt', 'umbilicalWt', 'sbeWeight', 'triageWt', 'growthWtOnTheGo', 'pWeight'];
+    const heightInputs = ['triageHt', 'htCmOnTheGo', 'htCm'];
+
+    if (vitalType === 'weight') {
+        weightInputs.forEach(id => {
+            let el = document.getElementById(id);
+            // Change value without stealing focus from the box the doctor is typing in
+            if (el && el.value != numVal && document.activeElement !== el) el.value = numVal;
+        });
+        // Update Sticky Banner instantly
+        let bannerWt = document.getElementById('bannerPWeight');
+        if (bannerWt) bannerWt.innerText = numVal ? `${numVal} kg` : "-- kg";
+    }
+
+    if (vitalType === 'height') {
+        heightInputs.forEach(id => {
+            let el = document.getElementById(id);
+            if (el && el.value != numVal && document.activeElement !== el) el.value = numVal;
+        });
+    }
+
+    // 3. Force calculators to instantly recalculate with the new data
+    if (typeof calcInlineDose === 'function') calcInlineDose();
+    if (typeof calcGrowth === 'function') calcGrowth();
+    if (typeof calcMalnutrition === 'function') calcMalnutrition();
+    if (typeof updateCopilot === 'function') updateCopilot(activePatientId);
+};
+
+// Fire this when opening a patient file to seed the initial data
 window.syncVitalsToTools = function() {
     if(!activePatientId) return;
     const p = AppStore.getPatient(activePatientId);
     if(!p) return;
-    
-    // Map of input IDs to the patient's data
-    const fieldsToSync = {
-        'inlineCalcWeight': p.weight,
-        'fluidWeight': p.weight,
-        'crashWeight': p.weight,
-        'seizureWeight': p.weight,
-        'burnBsa': '', 
-        'girWt': p.weight,
-        'umbilicalWt': p.weight,
-        'sbeWeight': p.weight,
-        'triageHt': p.htCm,
-        'triageMac': '' 
-    };
-    
-    for (let id in fieldsToSync) {
-        let el = document.getElementById(id);
-        if (el) {
-            // Only overwrite if the field is currently empty
-            if(!el.value && fieldsToSync[id]) {
-                el.value = fieldsToSync[id];
-            }
-        }
-    }
+    if(p.weight) window.updateGlobalVital('weight', p.weight);
+    if(p.htCm) window.updateGlobalVital('height', p.htCm);
 };
 
 window.openClinicalTool = function(viewId, skipHistory = false) {

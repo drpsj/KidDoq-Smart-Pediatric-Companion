@@ -4,65 +4,95 @@
  * Handles Chart.js WHO curves and Developmental check-ins.
  */
 
-// --- MILESTONES ---
+// --- DYNAMIC MILESTONE TRACKER ---
 window.renderMilestoneDashboard = function() {
     const pId = AppStore.getActivePatientId();
     if(!pId) return;
 
     const patient = AppStore.getPatient(pId);
     const achieved = patient.achievedMilestones || {};
-    const ageInMonths = patient.totalMonths || 0; 
+    let dob = patient.dob ? new Date(patient.dob) : null;
 
-    const availableAges = Object.keys(milestonesDb).map(Number).sort((a,b)=>a-b);
-    let currentBracket = 0; let upcomingBracket = 0;
-    
-    for(let i=0; i<availableAges.length; i++){ 
-        if(ageInMonths >= availableAges[i]) currentBracket = availableAges[i]; 
-        else break; 
-    }
-    upcomingBracket = availableAges.find(age => age > ageInMonths) || null;
-    
     const evalContainer = document.getElementById('milestoneTimelineContainer');
-    // Safety check: Only manipulate the DOM if the container actually exists
-    if (evalContainer) {
-        if (currentBracket === 0) { 
-            evalContainer.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:20px;'>Patient under milestone tracker bracket parameters.</p>"; 
-        } else {
-        let evalHTML = "";
-        availableAges.forEach(age => {
-            if (age <= currentBracket) {
-                let isCurrent = (age === currentBracket);
-                let borderStyle = isCurrent ? "border: 2px solid var(--primary);" : "border: 1px solid var(--border-soft);";
-                let bgStyle = isCurrent ? "background: var(--primary-light);" : "background: var(--bg-surface);";
-                evalHTML += `<div style="${borderStyle} ${bgStyle} padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1rem; box-shadow: var(--shadow-sm);"><h4 style="margin-top:0; color:var(--primary); margin-bottom:1rem; font-size:1.1rem; border-bottom:1px solid var(--border-soft); padding-bottom:10px;">${isCurrent ? `Current Age Milestone Bracket (${age} Mos)` : `Historical Check Target (${age} Mos)`}</h4>`;
-                milestonesDb[age].forEach(m => { evalHTML += `<div style="display:flex; align-items:start; margin-bottom:8px;"><input type="checkbox" id="${m.id}" ${achieved[m.id] ? 'checked' : ''} onchange="toggleMilestone('${m.id}', this.checked)" style="margin-right:10px; margin-top:4px;"><div><span style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); text-transform:uppercase;">${m.domain}</span><div style="font-size:0.95rem;"><label for="${m.id}" style="cursor:pointer; font-weight:normal; margin:0; text-transform:none;">${m.text}</label></div></div></div>`; });
-                evalHTML += `</div>`;
+    if (!evalContainer) return;
+
+    if (typeof milestonesDb === 'undefined') {
+        evalContainer.innerHTML = "<p>Milestone Database loading...</p>";
+        return;
+    }
+
+    let pendingHTML = "<div style='display:flex; flex-direction:column; gap:12px;'>";
+    let pendingCount = 0;
+
+    Object.keys(milestonesDb).sort((a,b)=>a-b).forEach(month => {
+        let msArray = milestonesDb[month];
+        
+        let targetDateStr = "Set DOB in Registry";
+        let isOverdue = false;
+        if (dob) {
+            let tDate = new Date(dob);
+            tDate.setMonth(tDate.getMonth() + parseInt(month));
+            targetDateStr = tDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            if (new Date() > tDate) isOverdue = true;
+        }
+
+        msArray.forEach(ms => {
+            let isAchieved = achieved[ms.id];
+            
+            // ONLY render if NOT achieved
+            if (!isAchieved) {
+                pendingCount++;
+                pendingHTML += `
+                <label style="background:var(--bg-surface); padding:16px; border-radius:8px; border:1px solid ${isOverdue ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-soft)'}; display:flex; align-items:center; gap:15px; cursor:pointer; box-shadow:var(--shadow-sm); transition:all 0.2s;">
+                    <input type="checkbox" value="${ms.id}" onchange="toggleMilestone('${ms.id}', this.checked)" style="width:26px; height:26px; accent-color:var(--brand-pink); cursor:pointer;">
+                    <div style="flex-grow:1;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div style="font-weight:800; color:var(--text-main); font-size:1.05rem;">
+                                ${ms.text} 
+                            </div>
+                            <span style="font-size:0.75rem; background:var(--primary-light); color:var(--primary-dark); padding:4px 8px; border-radius:4px; font-weight:bold; text-transform:uppercase;">${ms.domain}</span>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:8px;">
+                            <span style="font-size:0.85rem; padding:4px 8px; border-radius:4px; background:${isOverdue ? 'rgba(239, 68, 68, 0.1)' : 'var(--bg-body)'}; color:${isOverdue ? 'var(--danger)' : 'var(--text-muted)'}; font-weight:600;">
+                                Target: ${month} Months (${targetDateStr})
+                            </span>
+                        </div>
+                    </div>
+                </label>`;
             }
         });
-        evalContainer.innerHTML = evalHTML;
+    });
+    
+    pendingHTML += "</div>";
+
+    if (pendingCount === 0) {
+        pendingHTML = `
+        <div style="padding:40px; text-align:center; background:rgba(255, 92, 171, 0.05); border:2px dashed var(--brand-pink); border-radius:12px;">
+            <span style="font-size:3rem;">🧠✨</span>
+            <h3 style="color:var(--brand-pink); margin:10px 0 0 0;">Development on Track!</h3>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin:5px 0 0 0;">All required milestones have been achieved and hidden from view.</p>
+        </div>`;
     }
 
-    let completedHTML = ""; let missedHTML = "";
-    availableAges.forEach(age => {
-        let aHTML = ""; milestonesDb[age].forEach(m => { if(achieved[m.id]) aHTML += `<div>✅ <b>${m.domain}</b>: ${m.text}</div>`; });
-        if(aHTML) completedHTML += `<h5 style="margin:1rem 0 0.25rem 0; color:var(--success); font-size:0.95rem; border-bottom:1px solid #bbf7d0; padding-bottom:5px;">Achieved via ${age}m vectors:</h5>${aHTML}`;
-        if(age <= currentBracket) { milestonesDb[age].forEach(m => { if(!achieved[m.id]) missedHTML += `<div style="padding:10px; border:1px solid #fecaca; background:rgba(239, 68, 68, 0.05); border-radius:8px; margin-bottom:10px;"><h4 style="margin:0 0 5px 0; color:#991b1b;">🚨 Flagged: ${m.text} (Expected by ${age} Mos)</h4><span style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); text-transform:uppercase;">${m.domain}</span><div style="font-size:0.85rem; margin-top:5px; color:#7f1d1d;"><b>Significance:</b> ${m.sig}</div></div>`; }); }
-    });
-    document.getElementById('msCompletedContainer').innerHTML = completedHTML || "<p>No milestones recorded.</p>";
-    document.getElementById('msMissedContainer').innerHTML = missedHTML || "<div style='padding:1.5rem; background:rgba(16, 185, 129, 0.1); border:1px solid #16a34a; border-radius:var(--radius-lg); color:#166534; font-weight:bold;'>✅ All verification targets achieved.</div>";
-    document.getElementById('msUpcomingContainer').innerHTML = upcomingBracket ? `<h4 style="margin:1rem 0 0.5rem 0; color:var(--primary); font-size:1.1rem; border-bottom:1px solid var(--border-soft); padding-bottom:5px;">Targeting: ${upcomingBracket} Months</h4>` + milestonesDb[upcomingBracket].map(m => `<div style="padding:1rem; border:1px solid var(--border-soft); border-radius:var(--radius-md); margin-bottom:0.75rem; background:var(--bg-surface); font-size:0.95rem; box-shadow:var(--shadow-sm);"><span style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); text-transform:uppercase;">${m.domain}</span><div style="font-weight:600; margin-top:5px; color:var(--text-main);">${m.text}</div></div>`).join("") : "<p>Advanced baseline clearance parameters.</p>";
+    evalContainer.innerHTML = pendingHTML;
 };
 
-window.toggleMilestone = function(mId, isChecked) {
-    const pId = AppStore.getActivePatientId();
-    if(!pId) return;
+window.toggleMilestone = function(msId, isAchieved) {
+    let pId = AppStore.getActivePatientId();
+    if (!pId) return;
+    const p = AppStore.getPatient(pId);
+    if (!p.achievedMilestones) p.achievedMilestones = {};
     
-    let p = AppStore.getPatient(pId);
-    if(!p.achievedMilestones) p.achievedMilestones = {};
-    p.achievedMilestones[mId] = isChecked;
+    if (isAchieved) {
+        p.achievedMilestones[msId] = new Date().toISOString().split('T')[0];
+    } else {
+        delete p.achievedMilestones[msId];
+    }
     
     AppStore.savePatient(p);
-    renderMilestoneDashboard();
+    
+    if (typeof renderMilestoneDashboard === 'function') renderMilestoneDashboard();
+    if (typeof updateCopilot === 'function') updateCopilot(pId);
 };
 
 window.buildMilestoneReference = function() {
@@ -78,7 +108,6 @@ window.buildMilestoneReference = function() {
 }
 
 // --- GROWTH CHARTS ---
-// Helper to estimate the exact WHO curve value for a specific month
 function getInterpolatedVal(ageM, xArr, yArr) {
     if (ageM <= 0) return yArr[0];
     if (ageM >= 36) return yArr[6];
@@ -102,7 +131,6 @@ window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeigh
     const height3rd  = patientGender === 'male' ? [46, 63, 71, 76, 81, 85, 89] : [45, 61, 69, 74, 79, 83, 87];
     const height97th = patientGender === 'male' ? [54, 71, 81, 88, 93, 99, 103] : [53, 69, 79, 86, 91, 97, 101];
 
-    // Evaluate significance
     let exact3rd = getInterpolatedVal(patientAgeMonths, standardXLabels, weight3rd);
     let exact50th = getInterpolatedVal(patientAgeMonths, standardXLabels, weight50th);
     
@@ -124,7 +152,6 @@ window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeigh
         explanationText = `At ${currentWeight} kg, the patient is plotting at or above the 50th percentile average.<br><br><b>Significance for Parents:</b> Excellent growth and nutritional status! Your child is tracking perfectly along the upper median WHO curve.`;
     }
 
-    // Update UI
     const area = document.getElementById('growthResultArea');
     if (area) {
         area.style.display = 'block';
@@ -134,7 +161,6 @@ window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeigh
         document.getElementById('growthExplanationText').innerHTML = explanationText;
     }
 
-    // Save to patient profile for the print summary
     if (typeof activePatientId !== 'undefined' && activePatientId) {
         let p = AppStore.getPatient(activePatientId);
         if (p) {
@@ -143,7 +169,6 @@ window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeigh
         }
     }
 
-    // TENSION 0.4 adds beautiful bezier curves to the chart lines!
     const ctxW = document.getElementById('weightChartCanvas');
     if(ctxW) {
         wtChartInstance = new Chart(ctxW.getContext('2d'), { type: 'line', data: { labels: standardXLabels, datasets: [ { label: 'Patient', data: [{x: patientAgeMonths, y: currentWeight}], backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', pointRadius: 8, showLine: false }, { label: '97th %', data: weight97th, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0, tension: 0.4 }, { label: '50th %', data: weight50th, borderColor: 'rgba(16, 185, 129, 0.8)', fill: false, pointRadius: 0, tension: 0.4 }, { label: '3rd %', data: weight3rd, borderColor: 'rgba(220, 38, 38, 0.4)', borderDash: [5,5], fill: false, pointRadius: 0, tension: 0.4 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Age (Mos)' }, min:0, max:36 } } } });
@@ -156,7 +181,7 @@ window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeigh
 
 window.calcGrowth = function() {
     const pWtElem = document.getElementById('pWeight');
-    const inlineWtElem = document.getElementById('inlineCalcWeight'); // Ensure we pull the most recent weight
+    const inlineWtElem = document.getElementById('inlineCalcWeight'); 
     const wt = parseFloat((inlineWtElem ? inlineWtElem.value : 0) || (pWtElem ? pWtElem.value : 0) || 10);
     
     let htObj = document.getElementById('htCm'); 

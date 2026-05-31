@@ -953,7 +953,7 @@
                                             <h4 style="margin:0; color:var(--primary);">🧮 Calculator</h4>
                                             <div style="display:flex; align-items:center; gap:5px;">
                                                 <label style="margin:0; font-size:0.8rem; color:var(--text-muted); font-weight:bold;">Wt (kg)</label>
-                                                <input type="number" id="inlineCalcWeight" step="0.1" oninput="calcInlineDose()" style="width:65px; padding:4px 8px; border:2px solid var(--border-soft); border-radius:6px; font-size:0.95rem; font-weight:bold; text-align:center; color:var(--primary-dark);">
+                                                <input type="number" id="inlineCalcWeight" step="0.1" oninput="updateGlobalVital('weight', this.value)" style="width:65px; padding:4px 8px; border:2px solid var(--border-soft); border-radius:6px; font-size:0.95rem; font-weight:bold; text-align:center; color:var(--primary-dark);">
                                             </div>
                                         </div>
 
@@ -1109,13 +1109,14 @@
                 <div id="malnCalcTab" class="sub-tab-content active">
                     <div class="timeline-section tool-grid">
                         <div>
-                            <div class="formula-box">
+                            <div class="formula-box" style="margin-bottom:10px;">
                                 <b>Weech's Expected Weight Formula:</b><br>
-                                &lt;1 yr: <code>(Age in mos + 9) / 2</code><br>
-                                1 - 6 yrs: <code>(Age in yrs × 2) + 8</code><br>
-                                7 - 12 yrs: <code>(Age in yrs × 7 - 5) / 2</code>
+                                &lt;1 yr: <code>(Age + 9) / 2</code> | 1 - 6 yrs: <code>(Age × 2) + 8</code> | 7 - 12 yrs: <code>(Age × 7 - 5) / 2</code>
                             </div>
-                            <label>Bedside Height/Length (cm)</label><input type="number" id="triageHt" oninput="document.getElementById('htCm').value=this.value; calcMalnutrition();">
+                            <div class="row-inputs" style="margin-bottom:15px;">
+                                <div><label>Weight (kg)</label><input type="number" id="triageWt" step="0.1" oninput="updateGlobalVital('weight', this.value)"></div>
+                                <div><label>Height (cm)</label><input type="number" id="triageHt" step="0.1" oninput="updateGlobalVital('height', this.value)"></div>
+                            </div>
                             <label>Mid-Arm Circumference (cm)</label><input type="number" id="triageMac" step="0.1" oninput="evalMAC(this.value)">
                             <div style="margin-top:15px; background:var(--bg-body); padding:10px; border-radius:8px; border:1px solid var(--border-soft);"><input type="checkbox" id="malnOedemaToggle" onchange="calcMalnutrition()"> <label style="display:inline;">Bilateral Pitting Oedema Present?</label></div>
                         </div>
@@ -1272,9 +1273,15 @@
                 <h2 class="section-title">📈 Interactive Growth Curves</h2>
                 <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 2fr;">
                     <div style="display: flex; flex-direction: column; gap: 15px;">
-                        <div>
-                            <label>Length / Stature (cm)</label>
-                            <input type="number" id="htCmOnTheGo" placeholder="e.g., 75" oninput="syncGrowthFieldsAndCalc()" style="font-size: 1.1rem; font-weight: bold; color: var(--primary-dark);">
+                        <div class="row-inputs">
+                            <div>
+                                <label>Weight (kg)</label>
+                                <input type="number" id="growthWtOnTheGo" placeholder="e.g., 10.5" oninput="updateGlobalVital('weight', this.value)" style="font-size: 1.1rem; font-weight: bold; color: var(--primary-dark);">
+                            </div>
+                            <div>
+                                <label>Length / Stature (cm)</label>
+                                <input type="number" id="htCmOnTheGo" placeholder="e.g., 75" oninput="updateGlobalVital('height', this.value)" style="font-size: 1.1rem; font-weight: bold; color: var(--primary-dark);">
+                            </div>
                         </div>
                         <div id="growthResultArea" style="background: var(--bg-surface); padding: 15px; border-radius: 8px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm); display: none;">
                             <div id="growthStatusTitle" style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;"></div>
