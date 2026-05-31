@@ -147,44 +147,88 @@
                 <p>What would you like to calculate today?</p>
             </div>
 
-            <div class="usp-dose-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; position:relative; z-index:2;">
-                    <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.47 5.08a6.1 6.1 0 0 0-8.6 8.61l6.1 6.1a6.1 6.1 0 0 0 8.61-8.61l-6.1-6.1Z"></path><line x1="6.81" y1="13.19" x2="16.3" y2="3.7"></line></svg> Quick Dose Calc
-                    </h3>
-                </div>
-                
-                <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2;">
-                    <div>
-                        <label>Patient Weight (kg)</label>
-                        <input type="number" id="homeWeight" placeholder="e.g. 12.5" oninput="runHomeDoseCalc()" style="font-size: 1.1rem;">
+            <div class="tool-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <!-- 1. QUICK DOSE CARD -->
+                <div class="usp-dose-card" style="margin-bottom: 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; position:relative; z-index:2;">
+                        <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.47 5.08a6.1 6.1 0 0 0-8.6 8.61l6.1 6.1a6.1 6.1 0 0 0 8.61-8.61l-6.1-6.1Z"></path><line x1="6.81" y1="13.19" x2="16.3" y2="3.7"></line></svg> Quick Dose Calc
+                        </h3>
                     </div>
-                    <div>
-                        <label>Drug Category</label>
-                        <select id="homeCategory" onchange="populateHomeDrugs(); runHomeDoseCalc();">
-    <option value="">-- Select --</option>
-    <option value="antibiotics">Antibiotics</option>
-    <option value="antipyretics">Antipyretics / Pain</option>
-    <option value="antihistamines">Allergy / Cold</option>
-    <option value="respiratory">Respiratory</option>
-    <option value="git">Gastrointestinal</option>
-    <option value="vitamins">Vitamins & Minerals</option>
-    <option value="musclerelaxants">Muscle Relaxants</option>
-    <option value="emergency">ER & Resuscitation</option>
-    <option value="neurology">Neurology & Seizures</option>
-    <option value="topical">Topical (Skin/Eye/ENT)</option>
-</select>
+                    
+                    <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2; align-items: flex-end;">
+                        <div>
+                            <label>Patient Weight (kg)</label>
+                            <input type="number" id="homeWeight" placeholder="e.g. 12.5" oninput="runHomeDoseCalc()" style="font-size: 1.1rem;">
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <div style="flex: 1;">
+                                <label>Age</label>
+                                <input type="number" id="homeAgeVal" placeholder="Age" style="font-size: 1.1rem;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Unit</label>
+                                <select id="homeAgeUnit">
+                                    <option value="months">Mos</option>
+                                    <option value="years">Yrs</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div style="position:relative; z-index:2;">
-                    <label>Formulation</label>
-                    <select id="homeFormulation" onchange="runHomeDoseCalc()" style="margin-bottom: 10px;">
-                        <option value="">-- Choose Category First --</option>
-                    </select>
+                    
+                    <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2;">
+                        <div>
+                            <label>Drug Category</label>
+                            <select id="homeCategory" onchange="populateHomeDrugs(); runHomeDoseCalc();">
+                                <option value="">-- Select --</option>
+                                <option value="antibiotics">Antibiotics</option>
+                                <option value="antipyretics">Antipyretics / Pain</option>
+                                <option value="antihistamines">Allergy / Cold</option>
+                                <option value="respiratory">Respiratory</option>
+                                <option value="git">Gastrointestinal</option>
+                                <option value="vitamins">Vitamins & Minerals</option>
+                                <option value="musclerelaxants">Muscle Relaxants</option>
+                                <option value="emergency">ER & Resuscitation</option>
+                                <option value="neurology">Neurology & Seizures</option>
+                                <option value="topical">Topical (Skin/Eye/ENT)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Formulation</label>
+                            <select id="homeFormulation" onchange="runHomeDoseCalc()">
+                                <option value="">-- Choose Category First --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="homeDoseResult" style="position:relative; z-index:2;"></div>
                 </div>
 
-                <div id="homeDoseResult" style="margin-top:15px; position:relative; z-index:2;"></div>
+                <!-- 2. BMI WIDGET CARD -->
+                <div class="usp-dose-card" style="margin-bottom: 0; background: linear-gradient(135deg, var(--brand-pink), #e11d48);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; position:relative; z-index:2;">
+                        <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1.4rem;">📏</span> Smart BMI Calculator
+                        </h3>
+                    </div>
+                    
+                    <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2;">
+                        <div>
+                            <label>Weight (kg)</label>
+                            <input type="number" id="homeBmiWt" placeholder="e.g. 15.5" oninput="runHomeBmiCalc()" style="font-size: 1.1rem;">
+                        </div>
+                        <div>
+                            <label>Height (cm)</label>
+                            <input type="number" id="homeBmiHt" placeholder="e.g. 105" oninput="runHomeBmiCalc()" style="font-size: 1.1rem;">
+                        </div>
+                    </div>
+
+                    <div id="homeBmiResult" style="position:relative; z-index:2;">
+                        <div style="text-align:center; padding:15px; color:rgba(255,255,255,0.8); font-size:0.9rem; border:1px dashed rgba(255,255,255,0.3); border-radius:8px;">
+                            Enter weight and height to classify BMI based on WHO & Asian criteria.
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div style="margin-bottom: 25px; position:relative; z-index: 10;">

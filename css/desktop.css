@@ -78,3 +78,10 @@
     width: 70px !important; 
     height: 70px !important; 
 }
+
+/* 4. Fix Chart.js collapsing on Desktop */
+.chart-card-wrapper {
+    position: relative;
+    height: 400px !important;
+    width: 100%;
+}

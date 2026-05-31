@@ -184,3 +184,54 @@ document.addEventListener('click', function(e) {
         searchBox.style.display = 'none';
     }
 });
+
+// ==========================================
+// 📏 SMART BMI CALCULATOR (DASHBOARD)
+// ==========================================
+window.runHomeBmiCalc = function() {
+    const wt = parseFloat(document.getElementById('homeBmiWt').value);
+    const htCm = parseFloat(document.getElementById('homeBmiHt').value);
+    const resBox = document.getElementById('homeBmiResult');
+
+    if (!wt || !htCm || htCm <= 0) {
+        resBox.innerHTML = `
+            <div style="text-align:center; padding:15px; color:rgba(255,255,255,0.8); font-size:0.9rem; border:1px dashed rgba(255,255,255,0.3); border-radius:8px;">
+                Enter weight and height to classify BMI based on WHO & Asian criteria.
+            </div>`;
+        return;
+    }
+
+    const htM = htCm / 100;
+    const bmi = wt / (htM * htM);
+
+    // Standard WHO
+    let whoClass = "Normal"; let whoColor = "var(--success)";
+    if (bmi < 18.5) { whoClass = "Underweight"; whoColor = "var(--warning)"; }
+    else if (bmi >= 25 && bmi <= 29.9) { whoClass = "Overweight"; whoColor = "var(--warning)"; }
+    else if (bmi >= 30) { whoClass = "Obese"; whoColor = "var(--danger)"; }
+
+    // Asian Pacific Guidelines
+    let asianClass = "Normal"; let asianColor = "var(--success)";
+    if (bmi < 18.5) { asianClass = "Underweight"; asianColor = "var(--warning)"; }
+    else if (bmi >= 23 && bmi <= 24.9) { asianClass = "Overweight (At Risk)"; asianColor = "var(--warning)"; }
+    else if (bmi >= 25) { asianClass = "Obese"; asianColor = "var(--danger)"; }
+
+    resBox.innerHTML = `
+        <div style="background:var(--bg-surface); padding:15px; border-radius:8px; text-align:center; box-shadow:var(--shadow-md);">
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Calculated BMI</div>
+            <div style="font-size:2.8rem; color:var(--text-main); font-weight:900; margin:5px 0; line-height:1;">${bmi.toFixed(1)}</div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; text-align:left;">
+                <div style="padding:10px; border-radius:6px; border:1px solid var(--border-soft); background:rgba(91,97,246,0.05);">
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">WHO Standard</div>
+                    <div style="color:${whoColor}; font-weight:800; font-size:0.9rem;">${whoClass}</div>
+                </div>
+                <div style="padding:10px; border-radius:6px; border:1px solid var(--border-soft); background:rgba(225,29,72,0.05);">
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">Asian Criteria</div>
+                    <div style="color:${asianColor}; font-weight:800; font-size:0.9rem;">${asianClass}</div>
+                </div>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">*Note: For children <18y, IAP/WHO BMI percentiles are preferred for exact clinical diagnosis.</div>
+        </div>
+    `;
+};

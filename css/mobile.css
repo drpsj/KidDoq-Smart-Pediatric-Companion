@@ -46,20 +46,24 @@ input, select, textarea { font-size: 16px !important; }
    ========================================= */
 .splash-screen {
     display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
-    background: #0B0E14; z-index: 9999999; align-items: center; justify-content: center;
+    background: var(--bg-body); z-index: 9999999; align-items: center; justify-content: center;
     flex-direction: column; transition: opacity 0.6s ease, visibility 0.6s;
 }
 .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .splash-waves {
     position: absolute; bottom: 0; left: 0; width: 100%; height: 35vh;
-    background: linear-gradient(135deg, var(--brand-blue), var(--brand-pink));
+    background: linear-gradient(135deg, var(--brand-cyan), var(--brand-blue));
     mask-image: radial-gradient(ellipse at top, transparent 50%, black 100%);
     -webkit-mask-image: radial-gradient(ellipse at top, transparent 50%, black 100%);
-    opacity: 0.8; z-index: 1;
+    opacity: 0.2; z-index: 1;
 }
 .splash-content { z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.splash-content h1 { color: white; font-size: 3.5rem; margin: 0; letter-spacing: -1px; }
-.splash-content p { color: #9CA3AF; font-size: 1.1rem; margin-top: 5px; font-weight: 500; }
+.splash-content h1 { color: var(--primary-dark); font-size: 3.5rem; margin: 0; letter-spacing: -1px; }
+.splash-content p { color: var(--text-muted); font-size: 1.1rem; margin-top: 5px; font-weight: 600; }
+.splash-loader {
+    margin-top: 50px; width: 40px; height: 40px; border: 4px solid var(--border-soft);
+    border-left-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
+}
 .splash-loader {
     margin-top: 50px; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
     border-left-color: var(--brand-cyan); border-radius: 50%; animation: spin 1s linear infinite;
