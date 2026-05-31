@@ -441,6 +441,7 @@
                 </div>
 
                 <div class="case-subnav" id="caseFileSubNav">
+                    <button class="case-tab" onclick="window.openClinicalTool('patientProfileView'); populatePatientProfile(activePatientId);" data-target="patientProfileView">👤 Profile</button>
                     <button class="case-tab active" onclick="window.openClinicalTool('prescriptionFeatureView')" data-target="prescriptionFeatureView">📝 Case Sheet</button>
                     <button class="case-tab" onclick="window.openClinicalTool('growthFeatureView')" data-target="growthFeatureView">📈 Growth</button>
                     <button class="case-tab" onclick="window.openClinicalTool('trackerFeatureView')" data-target="trackerFeatureView">💉 Vaccines</button>
@@ -448,6 +449,39 @@
                     <button class="case-tab" onclick="window.openClinicalTool('malnutritionFeatureView')" data-target="malnutritionFeatureView">🚨 Vitals & Anthro</button>
                     <button class="case-tab" onclick="window.openClinicalTool('nutritionFeatureView')" data-target="nutritionFeatureView">🍎 Diet</button>
                 </div>
+            </div>
+
+            <div id="patientProfileView" class="view-content" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="section-title" style="margin:0; border:none;">👤 Patient Details</h2>
+                    <button onclick="editActivePatient()" class="secondary" style="width:auto; margin:0; font-weight:bold;">✏️ Edit Patient</button>
+                </div>
+                
+                <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div style="background:var(--bg-surface); padding:1.5rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); box-shadow:var(--shadow-sm);">
+                        <h4 style="margin:0 0 15px 0; color:var(--primary); font-size:1.1rem; border-bottom:1px solid var(--border-soft); padding-bottom:10px;">📋 Demographics</h4>
+                        <p style="margin:8px 0; font-size:1.05rem; display:flex; justify-content:space-between;"><b>Name:</b> <span id="profileName" style="color:var(--primary-dark); font-weight:600;">--</span></p>
+                        <p style="margin:8px 0; font-size:1.05rem; display:flex; justify-content:space-between;"><b>Age:</b> <span id="profileAge">--</span></p>
+                        <p style="margin:8px 0; font-size:1.05rem; display:flex; justify-content:space-between;"><b>Weight:</b> <span id="profileWeight">--</span></p>
+                        <p style="margin:8px 0; font-size:1.05rem; display:flex; justify-content:space-between;"><b>Height:</b> <span id="profileHt">--</span></p>
+                        <p style="margin:8px 0; font-size:1.05rem; display:flex; justify-content:space-between;"><b>Gender:</b> <span id="profileGender">--</span></p>
+                        <p style="margin:8px 0; font-size:1.05rem; display:flex; justify-content:space-between;"><b>Phone:</b> <span id="profilePhone">--</span></p>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        <div style="background:var(--bg-surface); padding:1.5rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); box-shadow:var(--shadow-sm);">
+                            <h4 style="margin:0 0 10px 0; color:var(--success); font-size:1.1rem; border-bottom:1px solid var(--border-soft); padding-bottom:10px;">💉 Vaccination Summary</h4>
+                            <div id="profileVaxSummary" style="font-size:0.95rem; color:var(--text-main); max-height:120px; overflow-y:auto; line-height:1.5;"></div>
+                        </div>
+                        
+                        <div style="background:var(--bg-surface); padding:1.5rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); box-shadow:var(--shadow-sm);">
+                            <h4 style="margin:0 0 10px 0; color:var(--brand-pink); font-size:1.1rem; border-bottom:1px solid var(--border-soft); padding-bottom:10px;">🧠 Milestones Summary</h4>
+                            <div id="profileMilesSummary" style="font-size:0.95rem; color:var(--text-main); max-height:120px; overflow-y:auto; line-height:1.5;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="action" onclick="deleteActivePatient()" style="background:var(--danger); color:white; width:100%; padding:15px; font-size:1.1rem; margin-top:10px; box-shadow:var(--shadow-sm); border-radius:var(--radius-md);">🚨 Delete Patient Permanently</button>
             </div>
 
             <div id="historicalEncountersView" class="view-content">
