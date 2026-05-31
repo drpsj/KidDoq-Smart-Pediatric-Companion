@@ -249,8 +249,8 @@ window.loadPatientFromDB = function(pId) {
     if (typeof updateStickyBanner === 'function') updateStickyBanner(pId);
 
     if (typeof window.openClinicalTool === 'function') {
-        window.openClinicalTool('patientProfileView');
-        if (typeof populatePatientProfile === 'function') populatePatientProfile(pId);
+        // Direct routing into the Mega Case File Tab 1 (Rx/Notes)
+        window.openClinicalTool('prescriptionFeatureView');
     }
 
     setTimeout(() => {
@@ -310,3 +310,14 @@ window.addEventListener('popstate', function(event) {
 document.addEventListener("DOMContentLoaded", () => {
     history.replaceState({ type: 'nav', id: 'homeDashboardView' }, "", "#homeDashboardView");
 });
+
+// ==========================================
+// WORKSPACE NAVIGATION CONTROLS
+// ==========================================
+window.closePatientFile = function() {
+    AppStore.clearActivePatient();
+    activePatientId = null;
+    document.getElementById('activeWorkspace').style.display = 'none';
+    ViewController.switchNavTab('databaseFeatureView');
+    showSystemToast("Patient file closed.");
+};

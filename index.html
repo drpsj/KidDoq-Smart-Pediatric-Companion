@@ -429,7 +429,7 @@
                     </div>
                     <div style="display:flex; gap:8px;">
                         <button class="secondary" onclick="editActivePatient()" style="padding:6px 12px; font-size:0.85rem; margin:0; border:1px solid var(--border-soft);">✏️ Edit</button>
-                        <button class="banner-close-btn" onclick="closePatientFile()" style="margin:0;">✖ Close</button>
+                        <button class="banner-close-btn" onclick="closePatientFile()" style="margin:0;">🔙 Close File</button>
                     </div>
                 </div>
 
@@ -445,42 +445,8 @@
                     <button class="case-tab" onclick="window.openClinicalTool('growthFeatureView')" data-target="growthFeatureView">📈 Growth</button>
                     <button class="case-tab" onclick="window.openClinicalTool('trackerFeatureView')" data-target="trackerFeatureView">💉 Vaccines</button>
                     <button class="case-tab" onclick="window.openClinicalTool('milestoneFeatureView')" data-target="milestoneFeatureView">🧠 Milestones</button>
-                    <button class="case-tab" onclick="window.openClinicalTool('malnutritionFeatureView')" data-target="malnutritionFeatureView">🚨 Triage</button>
+                    <button class="case-tab" onclick="window.openClinicalTool('malnutritionFeatureView')" data-target="malnutritionFeatureView">🚨 Vitals & Anthro</button>
                     <button class="case-tab" onclick="window.openClinicalTool('nutritionFeatureView')" data-target="nutritionFeatureView">🍎 Diet</button>
-                </div>
-            </div>
-
-                <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 1.5fr;">
-                    <div style="background:var(--bg-body); padding:1.5rem; border-radius:8px; border:1px solid var(--border-soft);">
-                        <h3 id="profileName" style="margin:0 0 15px 0; color:var(--primary-dark); font-size:1.5rem;"></h3>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; font-size:0.95rem;">
-                            <div><b style="color:var(--text-muted);">Age:</b> <span id="profileAge"></span></div>
-                            <div><b style="color:var(--text-muted);">Weight:</b> <span id="profileWeight"></span></div>
-                            <div><b style="color:var(--text-muted);">Gender:</b> <span id="profileGender"></span></div>
-                            <div><b style="color:var(--text-muted);">Phone:</b> <span id="profilePhone"></span></div>
-                            <div><b style="color:var(--text-muted);">Height:</b> <span id="profileHt"></span></div>
-                        </div>
-                        <button class="secondary" onclick="editActivePatient()" style="width:100%; margin-bottom:10px; background:white;">✏️ Edit Details</button>
-                        <button class="action" onclick="window.openClinicalTool('prescriptionFeatureView')" style="width:100%; margin-bottom:10px; box-shadow:var(--shadow-md);">📝 Open Case File</button>
-                        <button class="secondary" onclick="deleteActivePatient()" style="width:100%; border-color:var(--danger); color:var(--danger); background:white;">🗑️ Delete Patient</button>
-                    </div>
-
-                    <div style="display:flex; flex-direction:column; gap:15px;">
-                        <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                <h4 style="margin:0; color:var(--success);">💉 Vaccination Status</h4>
-                                <button class="secondary" onclick="window.openClinicalTool('trackerFeatureView')" style="margin:0; padding:4px 8px; font-size:0.8rem; width:auto;">Update</button>
-                            </div>
-                            <div id="profileVaxSummary" style="font-size:0.85rem; color:var(--text-main); max-height:150px; overflow-y:auto;"></div>
-                        </div>
-                        <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--border-soft); box-shadow:var(--shadow-sm);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                <h4 style="margin:0; color:var(--brand-pink);">👶 Milestones Achieved</h4>
-                                <button class="secondary" onclick="window.openClinicalTool('milestoneFeatureView')" style="margin:0; padding:4px 8px; font-size:0.8rem; width:auto;">Update</button>
-                            </div>
-                            <div id="profileMilesSummary" style="font-size:0.85rem; color:var(--text-main); max-height:150px; overflow-y:auto;"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1133,9 +1099,9 @@
                 </div>
             </div> 
 
-            <div id="malnutritionFeatureView" class="view-content" style="display:none;">
+            <<div id="malnutritionFeatureView" class="view-content" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                    <h2 class="section-title" style="margin:0; border:none;">🩺 Triage & Clinical Math</h2>
+                    <h2 class="section-title" style="margin:0; border:none;">🩺 Vitals & Anthropometry</h2>
                 </div>
                 <div class="sub-tabs-nav">
                     <button class="sub-tab-btn active" onclick="switchSubTab('malnCalcTab', this)">🧮 Anthropometry</button>
