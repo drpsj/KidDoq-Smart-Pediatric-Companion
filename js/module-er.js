@@ -35,14 +35,47 @@ window.calcMalnutrition = function() {
     const wfaPercent = (actualWt / expectedWt) * 100;
     const wellcomeClass = ClinicalMath.classifyWellcomeTrust(wfaPercent, hasOedema);
 
+    // --- NEW: Actionable Advice Generation ---
+    let actionPlan = "";
+    let dietAdvice = "";
+    
+    if (wellcomeClass.includes("Kwashiorkor") || wellcomeClass === "Marasmus" || wellcomeClass === "Marasmic-Kwashiorkor") {
+        actionPlan = "🚨 SEVERE ACUTE MALNUTRITION (SAM):\n- Assess for medical complications (hypoglycemia, hypothermia, severe infection).\n- If complicated: Admit for inpatient management (F-75 diet, IV antibiotics).\n- If uncomplicated: Start RUTF (Ready-to-Use Therapeutic Food) and oral antibiotics.\n- Weekly follow-up mandatory.";
+        dietAdvice = "High-calorie, high-protein therapeutic diet. Frequent small feeds. Ensure adequate hydration.";
+    } else if (wellcomeClass === "Underweight") {
+        actionPlan = "⚠️ MODERATE ACUTE MALNUTRITION (MAM):\n- Start supplementary feeding program.\n- Treat concurrent infections.\n- Follow up in 14 days.";
+        dietAdvice = "Increase caloric density of home foods (add ghee, oil, jaggery). Include protein-rich foods (eggs, dal, milk). Give daily multivitamin/mineral supplement.";
+    } else {
+        actionPlan = "✅ Normal Nutritional Status. Continue routine growth monitoring.";
+        dietAdvice = "Continue age-appropriate balanced diet per ICMR guidelines.";
+    }
+
+    // Expose to window for the auto-appender
+    window.latestMalnutritionAdvice = actionPlan + "\n\nDietary Advice:\n" + dietAdvice;
+
     out.innerHTML = `
         <div style="margin-bottom:10px;">Expected Weight (Weech): <b>${expectedWt.toFixed(1)} kg</b></div>
         <div style="margin-bottom:10px;">Actual Weight for Age: <b>${wfaPercent.toFixed(1)}%</b></div>
-        <div style="padding:10px; border-radius:6px; background:rgba(91,97,246,0.1); border:1px solid var(--primary);">
+        <div style="padding:10px; border-radius:6px; background:rgba(91,97,246,0.1); border:1px solid var(--primary); margin-bottom:10px;">
             Wellcome Trust Classification:<br>
             <b style="font-size:1.1rem; color:var(--primary-dark);">${wellcomeClass}</b>
         </div>
+        <div style="background:var(--bg-surface); padding:10px; border-radius:6px; border-left:4px solid var(--warning); font-size:0.85rem; white-space:pre-wrap; margin-bottom:10px; line-height:1.5;">${actionPlan}\n\n<b>Dietary Advice:</b>\n${dietAdvice}</div>
+        <button class="action" onclick="appendMalnutritionAdvice()" style="padding:10px; font-size:0.95rem; margin-top:5px; background:var(--primary-dark); box-shadow:var(--shadow-sm);">📋 Add Advice to Rx Pad</button>
     `;
+};
+
+// --- NEW: Auto-Appender Function ---
+window.appendMalnutritionAdvice = function() {
+    const rxAdvice = document.getElementById('rxAdvice');
+    if (rxAdvice && window.latestMalnutritionAdvice) {
+        let current = rxAdvice.value.trim();
+        rxAdvice.value = current ? current + "\n\n" + window.latestMalnutritionAdvice : window.latestMalnutritionAdvice;
+        if(typeof showSystemToast === 'function') showSystemToast("✅ Nutritional Plan sent to Prescription Pad");
+        if(typeof renderRxCartList === 'function') renderRxCartList();
+    } else {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Prescription pad not found or no advice generated.");
+    }
 };
 
 // --- SENSORY SCREENING ---
@@ -50,22 +83,74 @@ window.renderSensory = function() {
     const out = document.getElementById('sensoryOutputArea');
     if (!out) return;
     const items = [
-        { cat: "Vision", text: "Fixes and follows moving objects" }, { cat: "Vision", text: "Recognizes familiar faces" },
-        { cat: "Hearing", text: "Startles to loud noises" }, { cat: "Hearing", text: "Turns head towards sound" },
-        { cat: "Speech/Social", text: "Responds to name" }, { cat: "Speech/Social", text: "Engages in reciprocal play" }
+        { id: "s_v1", cat: "Vision", text: "Fixes and follows moving objects" }, 
+        { id: "s_v2", cat: "Vision", text: "Recognizes familiar faces" },
+        { id: "s_h1", cat: "Hearing", text: "Startles to loud noises" }, 
+        { id: "s_h2", cat: "Hearing", text: "Turns head towards sound" },
+        { id: "s_c1", cat: "Speech/Social", text: "Responds to name" }, 
+        { id: "s_c2", cat: "Speech/Social", text: "Engages in reciprocal play" }
     ];
-    let html = `<div style="display:grid; gap:10px;">`;
+    let html = `<div style="display:grid; gap:10px;" id="sensoryGrid">`;
     items.forEach(item => {
         html += `
         <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm);">
             <div><small style="color:var(--primary); font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">${item.cat}</small>
             <div style="font-size:1.05rem; margin-top:4px; font-weight:500;">${item.text}</div></div>
-            <select style="width:auto; padding:8px 12px; border:2px solid var(--border-soft); border-radius:6px; font-weight:bold;">
+            <select class="sensory-eval-select" data-cat="${item.cat}" onchange="evaluateSensory()" style="width:auto; padding:8px 12px; border:2px solid var(--border-soft); border-radius:6px; font-weight:bold;">
                 <option value="pending">-- Assess --</option><option value="pass">✅ Pass</option><option value="concern">🚨 Concern</option>
             </select>
         </div>`;
     });
-    out.innerHTML = html + `</div>`;
+    out.innerHTML = html + `</div><div id="sensoryReferralArea" style="margin-top:15px;"></div>`;
+};
+
+window.evaluateSensory = function() {
+    const selects = document.querySelectorAll('.sensory-eval-select');
+    let concerns = new Set();
+    
+    selects.forEach(sel => {
+        if (sel.value === 'concern') {
+            concerns.add(sel.getAttribute('data-cat'));
+        }
+    });
+
+    const refArea = document.getElementById('sensoryReferralArea');
+    if (!refArea) return;
+
+    if (concerns.size === 0) {
+        refArea.innerHTML = "";
+        return;
+    }
+
+    let referrals = [];
+    if (concerns.has("Vision")) referrals.push("👁️ Pediatric Ophthalmology for formal visual assessment.");
+    if (concerns.has("Hearing")) referrals.push("👂 Audiology for BERA / OAE hearing screening.");
+    if (concerns.has("Speech/Social")) referrals.push("🧠 Developmental Pediatrics / Early Intervention for ASD/Speech evaluation.");
+
+    let refHtml = `
+        <div style="background:rgba(239, 68, 68, 0.05); border:1px solid var(--danger); padding:15px; border-radius:8px; border-left:4px solid var(--danger);">
+            <h4 style="margin:0 0 10px 0; color:var(--danger);">🚨 Required Referrals Detected</h4>
+            <ul style="margin:0; padding-left:20px; font-size:0.95rem; color:var(--text-main); line-height:1.6;">
+                ${referrals.map(r => `<li><b>${r}</b></li>`).join('')}
+            </ul>
+            <button class="action" onclick="appendSensoryReferral()" style="background:var(--danger); color:white; padding:10px; font-size:0.95rem; margin-top:10px; box-shadow:var(--shadow-sm);">📋 Append Referrals to Rx Advice</button>
+        </div>
+    `;
+    
+    window.latestSensoryAdvice = "Referrals Required:\n" + referrals.map(r => "- " + r).join("\n");
+    refArea.innerHTML = refHtml;
+};
+
+window.appendSensoryReferral = function() {
+    const rxAdvice = document.getElementById('rxAdvice');
+    if (rxAdvice && window.latestSensoryAdvice) {
+        let current = rxAdvice.value.trim();
+        rxAdvice.value = current ? current + "\n\n" + window.latestSensoryAdvice : window.latestSensoryAdvice;
+        if(typeof showSystemToast === 'function') showSystemToast("✅ Referrals sent to Prescription Pad");
+        if(typeof renderRxCartList === 'function') renderRxCartList();
+    } else {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Prescription pad not found or no referrals generated.");
+    }
 };
 
 // --- 1. HARRIET LANE CRASH CART & AIRWAY ---
