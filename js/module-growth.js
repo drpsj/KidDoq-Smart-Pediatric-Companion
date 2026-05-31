@@ -22,10 +22,12 @@ window.renderMilestoneDashboard = function() {
     }
     upcomingBracket = availableAges.find(age => age > ageInMonths) || null;
     
-    const evalContainer = document.getElementById('msEvalContainer');
-    if (currentBracket === 0) { 
-        evalContainer.innerHTML = "<p>Patient under milestone tracker bracket parameters.</p>"; 
-    } else {
+    const evalContainer = document.getElementById('milestoneTimelineContainer');
+    // Safety check: Only manipulate the DOM if the container actually exists
+    if (evalContainer) {
+        if (currentBracket === 0) { 
+            evalContainer.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:20px;'>Patient under milestone tracker bracket parameters.</p>"; 
+        } else {
         let evalHTML = "";
         availableAges.forEach(age => {
             if (age <= currentBracket) {
