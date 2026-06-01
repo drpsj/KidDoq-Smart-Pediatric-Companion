@@ -161,3 +161,68 @@
     grid-template-columns: repeat(3, 1fr) !important; /* 3 cards across */
     gap: 20px !important;
 }
+
+/* =========================================
+   DESKTOP CORTEX DASHBOARD RECONSTRUCTION
+   ========================================= */
+#homeDashboardView {
+    display: grid !important;
+    grid-template-columns: 320px 1fr !important;
+    grid-template-rows: auto 1fr !important;
+    gap: 25px !important;
+    align-items: start !important;
+}
+
+/* 1. Top Bar: Greeting (Left) & Anchor Pill (Right) */
+.cortex-top-section {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 10px !important;
+    padding-top: 10px !important;
+}
+
+.cortex-greeting {
+    margin-top: 0 !important;
+    order: -1 !important; /* Forces greeting to the left side */
+}
+
+#cortexAnchorPill {
+    margin-bottom: 0 !important;
+    width: auto !important;
+    min-width: 380px !important;
+}
+
+/* Float the Drawer so it doesn't break the layout when opened */
+#cortexDrawer {
+    position: absolute !important;
+    top: 70px !important;
+    right: 20px !important;
+    width: 380px !important;
+    background: var(--bg-surface) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-md) !important;
+    border: 1px solid var(--border-soft) !important;
+    z-index: 5000 !important;
+}
+
+/* 2. Left Sidebar: Hero Dose Engine */
+#heroDoseEngine {
+    grid-column: 1 / 2 !important;
+    position: sticky !important;
+    top: 20px !important;
+    margin-bottom: 0 !important;
+}
+
+#hudSmartDoseCards {
+    flex-direction: column !important; /* Stacks the dose cards vertically on desktop */
+    gap: 12px !important;
+}
+
+/* 3. Right Content: Bento Grid expands */
+.cortex-bento-grid {
+    grid-column: 2 / 3 !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 cards wide */
+    gap: 20px !important;
+}
