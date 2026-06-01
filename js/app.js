@@ -288,7 +288,7 @@ function renderHudSmartCards(wt) {
     let amox228 = (wt * 40) / (200/5);
     let amox457 = (wt * 40) / (400/5);
 
-    const cardStyle = `scroll-snap-align: start; flex: 0 0 140px; background: rgba(91,97,246,0.05); border: 1px solid var(--primary-light); padding: 12px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center;`;
+    const cardStyle = `scroll-snap-align: start; flex: 0 0 130px; background: rgba(91,97,246,0.05); border: 1px solid var(--primary-light); padding: 10px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);`;
     
     out.innerHTML = `
         <div style="${cardStyle} border-color:#fca5a5; background:rgba(254,226,226,0.3);">
