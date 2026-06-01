@@ -646,3 +646,28 @@ body.dark-mode .case-file-header { background: rgba(20, 20, 43, 0.85); }
     transition: opacity 0.2s ease !important;
     backdrop-filter: none !important; /* Removes blur so you can see behind it clearly */
 }
+
+/* ==========================================
+   DIRECT-SCRUB ANCHOR PHYSICS
+   ========================================== */
+.scrub-zone {
+    position: relative;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    transition: background 0.2s ease;
+    cursor: ew-resize;
+    touch-action: pan-y; /* CRITICAL: Allows vertical page scrolling, but blocks horizontal swiping so you can drag numbers */
+    user-select: none; -webkit-user-select: none;
+}
+.scrub-zone:active {
+    background: rgba(0, 212, 255, 0.15); /* Lights up when thumb touches */
+}
+.scrub-hint-mini {
+    color: var(--brand-pink);
+    font-size: 0.55rem;
+    text-transform: lowercase;
+    letter-spacing: 0;
+    opacity: 0.9;
+    margin-left: 4px;
+    vertical-align: middle;
+}

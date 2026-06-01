@@ -145,44 +145,47 @@
         <div id="homeDashboardView" class="view-content active-view cortex-fusion-mode">
             
             <div class="cortex-top-section">
-                <div id="cortexAnchorPill" class="anchor-pill-premium" onclick="toggleCortexDrawer()">
-                    <div class="anchor-avatar">
+                <div id="cortexAnchorPill" class="anchor-pill-premium">
+                    
+                    <input type="hidden" id="hudAgeYrs" value="0">
+                    <input type="hidden" id="hudAgeMos" value="0">
+                    <input type="hidden" id="hudAge" value="0">
+                    <input type="hidden" id="hudWeight" value="0">
+                    <select id="hudGender" style="display:none;"><option value="male">Male</option><option value="female">Female</option></select>
+
+                    <div class="anchor-avatar" onclick="toggleCortexDrawer()">
                         <img src="kiddoq lite.png" alt="Patient">
                     </div>
-                    <div class="anchor-stat">
-                        <span class="stat-label">AGE</span>
-                        <span class="stat-value" id="anchorAge">--</span>
+                    
+                    <div class="anchor-stat scrub-zone" id="scrubAgeZone">
+                        <span class="stat-label" style="color:var(--brand-cyan);">AGE <span class="scrub-hint-mini">‹ drag ›</span></span>
+                        <span class="stat-value" id="anchorAgeDisplay">0Y 0M</span>
                     </div>
+                    
                     <div class="anchor-divider"></div>
-                    <div class="anchor-stat">
-                        <span class="stat-label">WEIGHT</span>
-                        <span class="stat-value"><span id="anchorWt">--</span> <small style="font-size: 0.7rem;">kg</small></span>
+                    
+                    <div class="anchor-stat scrub-zone" id="scrubWtZone">
+                        <span class="stat-label" style="color:var(--brand-cyan);">WEIGHT <span class="scrub-hint-mini">‹ drag ›</span></span>
+                        <span class="stat-value"><span id="anchorWtDisplay">0.0</span> <small style="font-size: 0.7rem;">kg</small></span>
                     </div>
+                    
                     <div class="anchor-divider"></div>
-                    <div class="anchor-stat">
-                        <span class="stat-icon">♂️</span>
-                        <span class="stat-value" id="anchorGender" style="font-size: 0.9rem;">--</span>
+                    
+                    <div class="anchor-stat" id="tapGenderZone" onclick="toggleAnchorGender()" style="cursor:pointer; padding: 0 5px;">
+                        <span class="stat-icon" id="anchorGenderIcon" style="font-size: 1.3rem; color: var(--brand-blue);">♂️</span>
+                        <span class="stat-value" id="anchorGenderDisplay" style="font-size: 0.75rem; margin-top: 2px;">Male</span>
                     </div>
-                    <div class="anchor-action">
+                    
+                    <div class="anchor-action" onclick="toggleCortexDrawer()" style="padding-left: 10px;">
                         <div class="anchor-chevron">⌄</div>
                     </div>
                 </div>
-                <div class="pull-down-hint">Pull down for more vitals ⌄</div>
                 
                 <div id="cortexDrawer" class="cortex-collapsed">
-                    <div class="drawer-inputs">
-                        <div class="cortex-input-group">
-                            <label>Ht (cm)</label>
-                            <input type="number" pattern="[0-9]*" step="0.1" id="hudHeight" oninput="broadcastGlobalParameters()" placeholder="--">
-                        </div>
-                        <div class="cortex-input-group">
-                            <label>HC (cm)</label>
-                            <input type="number" pattern="[0-9]*" step="0.1" id="hudHc" oninput="broadcastGlobalParameters()" placeholder="--">
-                        </div>
-                        <div class="cortex-input-group">
-                            <label>MAC (cm)</label>
-                            <input type="number" pattern="[0-9]*" step="0.1" id="hudMac" oninput="broadcastGlobalParameters()" placeholder="--">
-                        </div>
+                    <div class="drawer-inputs" style="margin-top: 10px;">
+                        <div class="cortex-input-group"><label>Ht (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHeight" oninput="broadcastGlobalParameters()" placeholder="--"></div>
+                        <div class="cortex-input-group"><label>HC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHc" oninput="broadcastGlobalParameters()" placeholder="--"></div>
+                        <div class="cortex-input-group"><label>MAC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudMac" oninput="broadcastGlobalParameters()" placeholder="--"></div>
                     </div>
                 </div>
 
@@ -191,10 +194,7 @@
                         <h1>Good Morning, Dr. Peter 🌙</h1>
                         <p>Ready to make a difference today</p>
                     </div>
-                    <div class="opd-queue">
-                        <span class="queue-label">OPD Queue</span>
-                        <span class="queue-count">12</span>
-                    </div>
+                    <div class="opd-queue"><span class="queue-label">OPD Queue</span><span class="queue-count">12</span></div>
                 </div>
             </div>
 
@@ -295,54 +295,6 @@
                 </div>
 
             </div>
-
-            <!-- 3. FIXED FLOATING ACTION BAR (Hardcoded inline styles to override cache) -->
-            <div id="cortexActionContainer" style="position: fixed; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 9999;">
-                <button id="cortexActionBtn" onclick="activateCortexInput()" style="width: 100%; display: flex; align-items: center; justify-content: space-between; background: rgba(17, 20, 36, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 9999px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0, 229, 255, 0.15); color: var(--text-main); font-size: 0.95rem; font-weight: 700; cursor: pointer;">
-                    <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);">＋</div>
-                    <span style="flex-grow: 1; text-align: left; margin-left: 12px;">Quick add vitals...</span>
-                </button>
-            </div>
-            <div id="cortexInputPod" class="cortex-hidden">
-                <div class="pod-header">
-                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main);">Core Vitals</h3>
-                    <button class="action-btn-mini" onclick="executeCortexSnap()">Confirm ➔</button>
-                </div>
-                
-                <div class="pod-inputs">
-                    <div class="cortex-row" style="margin-bottom: 25px;">
-                        <div class="cortex-input-group" style="flex: 1; position: relative;">
-                            <label>Age (Yrs)</label>
-                            <input type="number" pattern="[0-9]*" id="hudAgeYrs" oninput="syncHudAge(); broadcastGlobalParameters(); checkCortexReadiness();" placeholder="0">
-                            <div class="scrub-hint">‹ slide ›</div>
-                        </div>
-                        <div class="cortex-input-group" style="flex: 1; position: relative;">
-                            <label>Age (Mos)</label>
-                            <input type="number" pattern="[0-9]*" id="hudAgeMos" oninput="syncHudAge(); broadcastGlobalParameters(); checkCortexReadiness();" placeholder="0">
-                            <input type="hidden" id="hudAge">
-                            <div class="scrub-hint">‹ slide ›</div>
-                        </div>
-                    </div>
-                    
-                    <div class="cortex-row">
-                        <div class="cortex-input-group" style="flex: 1.5; position: relative;">
-                            <label>Weight (kg)</label>
-                            <input type="number" pattern="[0-9]*" step="0.1" id="hudWeight" oninput="broadcastGlobalParameters(); checkCortexReadiness();" placeholder="0.0">
-                            <div class="scrub-hint">‹ slide ›</div>
-                        </div>
-                        <div class="cortex-input-group" style="flex: 1;">
-                            <label>Gender</label>
-                            <select id="hudGender" onchange="broadcastGlobalParameters()">
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="cortexOverlay" class="cortex-hidden" onclick="dismissCortexInput()"></div>
-        </div>
 
         <div id="toolsTab" class="view-content">
             <div class="section-header" style="margin-bottom:20px;">
@@ -1590,18 +1542,9 @@
     }
 </script>
 <script>
-// 1. CORTEX UI CONTROLLERS
-function activateCortexInput() {
-    document.getElementById('cortexOverlay').classList.remove('cortex-hidden');
-    document.getElementById('cortexInputPod').classList.remove('cortex-hidden');
-    document.getElementById('cortexActionBtn').style.transform = 'translate(-50%, 150px)'; // Dive out
-}
-
-function dismissCortexInput() {
-    document.getElementById('cortexOverlay').classList.add('cortex-hidden');
-    document.getElementById('cortexInputPod').classList.add('cortex-hidden');
-    document.getElementById('cortexActionBtn').style.transform = 'translate(-50%, 0)'; // Return
-}
+// ==========================================
+// KINETIC CORTEX: DIRECT SCRUB TELEMETRY
+// ==========================================
 
 function toggleCortexDrawer() {
     const drawer = document.getElementById('cortexDrawer');
@@ -1618,7 +1561,6 @@ function toggleCortexDrawer() {
 function toggleDoseLayer2() {
     const layer2 = document.getElementById('layer2FullCalc');
     const hint = document.querySelector('.expand-hint');
-    
     if (layer2.classList.contains('cortex-collapsed')) {
         layer2.classList.remove('cortex-collapsed');
         hint.innerText = "Close Formulary ⌃";
@@ -1628,128 +1570,124 @@ function toggleDoseLayer2() {
     }
 }
 
-function checkCortexReadiness() {
-    const wt = parseFloat(document.getElementById('hudWeight').value);
-    const btn = document.querySelector('.action-btn-mini');
-    if (wt > 0) {
-        btn.disabled = false;
-        btn.style.boxShadow = "0 0 15px rgba(0, 250, 154, 0.4)";
+// 1. GENDER TOGGLE
+function toggleAnchorGender() {
+    const sel = document.getElementById('hudGender');
+    const icon = document.getElementById('anchorGenderIcon');
+    const disp = document.getElementById('anchorGenderDisplay');
+    
+    if (sel.value === 'male') {
+        sel.value = 'female';
+        icon.innerText = '♀️';
+        disp.innerText = 'Female';
+        icon.style.color = 'var(--brand-pink)';
     } else {
-        btn.disabled = true;
-        btn.style.boxShadow = "none";
+        sel.value = 'male';
+        icon.innerText = '♂️';
+        disp.innerText = 'Male';
+        icon.style.color = 'var(--brand-blue)';
     }
+    if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
 }
 
-// 2. THE MAGNETIC SNAP (Data routing)
-function executeCortexSnap() {
-    dismissCortexInput();
-    
-    const ageYrs = parseInt(document.getElementById('hudAgeYrs').value) || 0;
-    const ageMos = parseInt(document.getElementById('hudAgeMos').value) || 0;
-    const wt = document.getElementById('hudWeight').value;
-    const gender = document.getElementById('hudGender').value;
+// 2. DIRECT SCRUB ENGINE
+function attachDirectScrub(zoneId, type) {
+    const zone = document.getElementById(zoneId);
+    let startX = 0;
+    let startVal = 0; 
+    let startTotalMonths = 0; 
 
-    let ageText = '';
-    if(ageYrs > 0) ageText += `${ageYrs}Y `;
-    if(ageMos > 0 || ageYrs === 0) ageText += `${ageMos}M`;
-    
-    document.getElementById('anchorAge').innerText = ageText;
-    document.getElementById('anchorWt').innerText = wt;
-    document.getElementById('anchorGender').innerText = gender === 'male' ? 'Male' : 'Female';
+    zone.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        if (type === 'weight') {
+            startVal = parseFloat(document.getElementById('hudWeight').value) || 0;
+        } else if (type === 'age') {
+            const y = parseInt(document.getElementById('hudAgeYrs').value) || 0;
+            const m = parseInt(document.getElementById('hudAgeMos').value) || 0;
+            startTotalMonths = (y * 12) + m;
+        }
+        zone.style.background = 'rgba(0, 212, 255, 0.15)'; // Highlight
+    }, { passive: true });
 
-    // Calculate total months for the Telemetry Engine
-    const totalMonths = (ageYrs * 12) + ageMos;
-    runCortexTelemetry(totalMonths);
+    zone.addEventListener('touchmove', (e) => {
+        const currentX = e.touches[0].clientX;
+        const deltaX = currentX - startX;
+        
+        if (Math.abs(deltaX) > 5) {
+            e.preventDefault(); // Lock screen from bouncing
+            
+            if (type === 'weight') {
+                let steps = Math.floor(deltaX / 8); 
+                let newWt = startVal + (steps * 0.5); // 0.5kg increments
+                if (newWt < 0) newWt = 0;
+                
+                document.getElementById('hudWeight').value = newWt.toFixed(1);
+                document.getElementById('anchorWtDisplay').innerText = newWt.toFixed(1);
+                
+            } else if (type === 'age') {
+                let steps = Math.floor(deltaX / 10); 
+                let newTotal = startTotalMonths + steps; // 1 month increments
+                if (newTotal < 0) newTotal = 0;
+                
+                const newYrs = Math.floor(newTotal / 12);
+                const newMos = newTotal % 12;
+                document.getElementById('hudAgeYrs').value = newYrs;
+                document.getElementById('hudAgeMos').value = newMos;
+                
+                let ageStr = '';
+                if (newYrs > 0) ageStr += newYrs + 'Y ';
+                if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
+                document.getElementById('anchorAgeDisplay').innerText = ageStr;
+            }
+            
+            // Instantly fire clinical math & telemetry
+            if(typeof syncHudAge === 'function') syncHudAge();
+            if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
+            
+            const y = parseInt(document.getElementById('hudAgeYrs').value) || 0;
+            const m = parseInt(document.getElementById('hudAgeMos').value) || 0;
+            runCortexTelemetry((y*12)+m);
+        }
+    }, { passive: false });
+
+    zone.addEventListener('touchend', () => {
+        zone.style.background = 'transparent';
+    });
 }
 
-// 3. PHASE 4: INTELLIGENT TELEMETRY (The Reordering Engine)
+// 3. INTELLIGENT TELEMETRY (Reordering Grid)
 function runCortexTelemetry(totalMonths) {
-    const doses = document.getElementById('bentoDoses');
     const growth = document.getElementById('bentoGrowth');
     const nutrition = document.getElementById('bentoNutrition');
     const vitals = document.getElementById('bentoVitals');
     const vaccines = document.getElementById('bentoVaccines');
     
-    // Smooth transition trigger
-    const allCards = [doses, growth, nutrition, vitals, vaccines];
-    allCards.forEach(card => card.style.opacity = '0.5');
+    // Only reorder if the elements actually exist
+    if(!vitals || !growth || !nutrition || !vaccines) return;
 
-    setTimeout(() => {
-        if (totalMonths <= 1) {
-            // NEWBORN STATE (NICU/Jaundice prioritized)
-            vitals.style.order = 1;      // Jaundice/Fluids focus
-            growth.style.order = 2;      // Daily weight gain
-            nutrition.style.order = 3;   // Feeding
-            doses.style.order = 4;
-            vaccines.style.order = 5;
-        } else if (totalMonths > 1 && totalMonths <= 60) {
-            // INFANT / TODDLER STATE (Doses & Vaccines prioritized)
-            doses.style.order = 1;       // Fever/Antibiotics
-            vaccines.style.order = 2;    // Heavy NIS schedule
-            growth.style.order = 3;
-            nutrition.style.order = 4;
-            vitals.style.order = 5;
-        } else {
-            // SCHOOL-AGE / ADOLESCENT (Doses & Asthma/BP prioritized)
-            doses.style.order = 1;
-            vitals.style.order = 2;      // Asthma PRAM / BP Percentiles
-            growth.style.order = 3;
-            nutrition.style.order = 4;
-            vaccines.style.order = 5;
-        }
-        
-        // Restore opacity
-        allCards.forEach(card => card.style.opacity = '1');
-    }, 150); // slight delay for visual shuffle effect
+    if (totalMonths <= 1) {
+        vitals.style.order = 1;     // NICU Focus
+        growth.style.order = 2;     
+        nutrition.style.order = 3;  
+        vaccines.style.order = 4;
+    } else if (totalMonths > 1 && totalMonths <= 60) {
+        vaccines.style.order = 1;   // Vaccine Heavy
+        growth.style.order = 2;
+        nutrition.style.order = 3;
+        vitals.style.order = 4;
+    } else {
+        vitals.style.order = 1;     // Asthma/BP Focus
+        growth.style.order = 2;
+        nutrition.style.order = 3;
+        vaccines.style.order = 4;
+    }
 }
 
-// 4. THE SCRUB VORTEX (Haptic Mobile Engine with Transparency)
-function attachScrubVortex(inputId, stepVal) {
-    const el = document.getElementById(inputId);
-    let startX = 0;
-    let startVal = 0;
-    let isScrubbing = false;
-
-    el.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-        startVal = parseFloat(el.value) || 0;
-        isScrubbing = false;
-    }, { passive: true }); 
-
-    el.addEventListener('touchmove', (e) => {
-        const currentX = e.touches[0].clientX;
-        const deltaX = currentX - startX;
-        
-        if (Math.abs(deltaX) > 10) {
-            isScrubbing = true;
-            e.preventDefault(); // Lock screen from scrolling
-            if (document.activeElement === el) el.blur(); // Kill keyboard
-            
-            // Activate Real-Time Preview (Brightness Slider Effect)
-            document.getElementById('cortexInputPod').classList.add('cortex-preview-mode');
-            document.getElementById('cortexOverlay').classList.add('cortex-preview-mode');
-            
-            let steps = Math.floor(deltaX / 10);
-            let newVal = startVal + (steps * stepVal);
-            if(newVal < 0) newVal = 0;
-            
-            el.value = Number.isInteger(newVal) ? newVal : newVal.toFixed(1);
-            
-            // Fire math engine in real-time
-            if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
-            checkCortexReadiness();
-        }
-    }, { passive: false }); 
-
-    // Restore Opacity when thumb lifts
-    el.addEventListener('touchend', () => {
-        if(isScrubbing) {
-            document.getElementById('cortexInputPod').classList.remove('cortex-preview-mode');
-            document.getElementById('cortexOverlay').classList.remove('cortex-preview-mode');
-            isScrubbing = false;
-        }
-    });
-}
+// Initialize the Vortex
+document.addEventListener('DOMContentLoaded', () => {
+    attachDirectScrub('scrubAgeZone', 'age');
+    attachDirectScrub('scrubWtZone', 'weight');
+});
 </script>
 </body>
 </html>
