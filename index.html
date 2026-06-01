@@ -310,22 +310,25 @@
                 </div>
                 
                 <div class="pod-inputs">
-                    <div class="cortex-row">
-                        <div class="cortex-input-group" style="flex: 1;">
+                    <div class="cortex-row" style="margin-bottom: 25px;">
+                        <div class="cortex-input-group" style="flex: 1; position: relative;">
                             <label>Age (Yrs)</label>
                             <input type="number" pattern="[0-9]*" id="hudAgeYrs" oninput="syncHudAge(); broadcastGlobalParameters(); checkCortexReadiness();" placeholder="0">
+                            <div class="scrub-hint">‹ slide ›</div>
                         </div>
-                        <div class="cortex-input-group" style="flex: 1;">
+                        <div class="cortex-input-group" style="flex: 1; position: relative;">
                             <label>Age (Mos)</label>
                             <input type="number" pattern="[0-9]*" id="hudAgeMos" oninput="syncHudAge(); broadcastGlobalParameters(); checkCortexReadiness();" placeholder="0">
                             <input type="hidden" id="hudAge">
+                            <div class="scrub-hint">‹ slide ›</div>
                         </div>
                     </div>
                     
                     <div class="cortex-row">
-                        <div class="cortex-input-group" style="flex: 1.5;">
+                        <div class="cortex-input-group" style="flex: 1.5; position: relative;">
                             <label>Weight (kg)</label>
                             <input type="number" pattern="[0-9]*" step="0.1" id="hudWeight" oninput="broadcastGlobalParameters(); checkCortexReadiness();" placeholder="0.0">
+                            <div class="scrub-hint">‹ slide ›</div>
                         </div>
                         <div class="cortex-input-group" style="flex: 1;">
                             <label>Gender</label>
@@ -1700,15 +1703,17 @@ function runCortexTelemetry(totalMonths) {
     }, 150); // slight delay for visual shuffle effect
 }
 
-// 4. THE SCRUB VORTEX (Haptic Mobile Engine)
+// 4. THE SCRUB VORTEX (Haptic Mobile Engine with Transparency)
 function attachScrubVortex(inputId, stepVal) {
     const el = document.getElementById(inputId);
     let startX = 0;
     let startVal = 0;
+    let isScrubbing = false;
 
     el.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
         startVal = parseFloat(el.value) || 0;
+        isScrubbing = false;
     }, { passive: true }); 
 
     el.addEventListener('touchmove', (e) => {
@@ -1716,8 +1721,13 @@ function attachScrubVortex(inputId, stepVal) {
         const deltaX = currentX - startX;
         
         if (Math.abs(deltaX) > 10) {
+            isScrubbing = true;
             e.preventDefault(); // Lock screen from scrolling
             if (document.activeElement === el) el.blur(); // Kill keyboard
+            
+            // Activate Real-Time Preview (Brightness Slider Effect)
+            document.getElementById('cortexInputPod').classList.add('cortex-preview-mode');
+            document.getElementById('cortexOverlay').classList.add('cortex-preview-mode');
             
             let steps = Math.floor(deltaX / 10);
             let newVal = startVal + (steps * stepVal);
@@ -1730,15 +1740,16 @@ function attachScrubVortex(inputId, stepVal) {
             checkCortexReadiness();
         }
     }, { passive: false }); 
-}
 
-// Initialize on Load
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.action-btn-mini').disabled = true;
-    attachScrubVortex('hudAgeMos', 1);   
-    attachScrubVortex('hudAgeYrs', 1);   
-    attachScrubVortex('hudWeight', 0.5); 
-});
+    // Restore Opacity when thumb lifts
+    el.addEventListener('touchend', () => {
+        if(isScrubbing) {
+            document.getElementById('cortexInputPod').classList.remove('cortex-preview-mode');
+            document.getElementById('cortexOverlay').classList.remove('cortex-preview-mode');
+            isScrubbing = false;
+        }
+    });
+}
 </script>
 </body>
 </html>

@@ -625,3 +625,24 @@ body.dark-mode .case-file-header { background: rgba(20, 20, 43, 0.85); }
 
 .hero-layer-2 { overflow: hidden; transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s; max-height: 500px; opacity: 1; }
 .hero-layer-2.cortex-collapsed { max-height: 0; opacity: 0; margin: 0; padding: 0; border: none; pointer-events: none; }
+
+/* ==========================================
+   THE SCRUB VORTEX VISUALS & PHYSICS
+   ========================================== */
+
+/* Visual Drag Indicators */
+.scrub-hint {
+    position: absolute; 
+    bottom: -18px; left: 0; width: 100%;
+    text-align: center; font-size: 0.65rem; 
+    color: var(--brand-cyan); font-weight: 800; 
+    text-transform: uppercase; letter-spacing: 2px;
+    opacity: 0.8; pointer-events: none;
+}
+
+/* The Brightness-Slider Transparency Effect */
+.cortex-preview-mode {
+    opacity: 0.15 !important;
+    transition: opacity 0.2s ease !important;
+    backdrop-filter: none !important; /* Removes blur so you can see behind it clearly */
+}
