@@ -30,11 +30,11 @@
         document.addEventListener('DOMContentLoaded', () => document.head.appendChild(link));
     </script>
 
-    <link rel="stylesheet" href="css/theme.css?v=10">
+    <link rel="stylesheet" href="css/theme.css?v=99">
     
     <link rel="stylesheet" href="css/desktop.css?v=10" media="screen and (min-width: 1024px)">
     
-    <link rel="stylesheet" href="css/mobile.css?v=10" media="screen and (max-width: 1023px)">
+    <link rel="stylesheet" href="css/mobile.css?v=99" media="screen and (max-width: 1023px)">
 </head>
 <body>
     <div id="splashScreen" class="splash-screen">
@@ -324,105 +324,6 @@
             </div>
             
             <div id="cortexOverlay" class="cortex-hidden" onclick="dismissCortexInput()"></div>
-        </div>
-
-            <div class="usp-dose-card" style="margin-bottom: 20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; position:relative; z-index:2;">
-                    <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.47 5.08a6.1 6.1 0 0 0-8.6 8.61l6.1 6.1a6.1 6.1 0 0 0 8.61-8.61l-6.1-6.1Z"></path><line x1="6.81" y1="13.19" x2="16.3" y2="3.7"></line></svg> Ultimate Quick Dose Calculator
-                    </h3>
-                </div>
-                
-                <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2;">
-                    <div>
-                        <label>Drug Category</label>
-                        <select id="hudQuickCat" onchange="populateHudDrugs()" style="padding:12px; font-size:1.05rem;">
-                            <option value="">-- Select Category --</option>
-                            <option value="antibiotics">Antibiotics</option>
-                            <option value="antipyretics">Antipyretics / Pain</option>
-                            <option value="antihistamines">Allergy / Cold</option>
-                            <option value="respiratory">Respiratory</option>
-                            <option value="git">Gastrointestinal</option>
-                            <option value="vitamins">Vitamins & Minerals</option>
-                            <option value="musclerelaxants">Muscle Relaxants</option>
-                            <option value="emergency">ER & Resuscitation</option>
-                            <option value="neurology">Neurology & Seizures</option>
-                            <option value="topical">Topical (Skin/Eye/ENT)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Formulation</label>
-                        <select id="hudQuickForm" onchange="runHudQuickDose()" style="padding:12px; font-size:1.05rem;">
-                            <option value="">-- Choose Category First --</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="hudQuickDoseRes" style="position:relative; z-index:2;"></div>
-            </div>
-
-            <div class="hud-grid">
-                <div class="hud-col">
-                    <div class="hud-widget">
-                        <h4 class="hud-widget-title">📈 Growth & Nutrition Snapshot</h4>
-                        <div id="hudGrowthOutput" class="hud-empty-state">Enter Wt/Ht & Age to view triage.</div>
-                    </div>
-                    <div class="hud-widget">
-                        <h4 class="hud-widget-title">📏 Anthropometry Triage</h4>
-                        <div id="hudAnthroOutput" class="hud-empty-state">Enter HC & MAC for alerts.</div>
-                    </div>
-                    <div class="hud-widget">
-                        <h4 class="hud-widget-title">🩺 Vitals & BP Limits</h4>
-                        <div id="hudVitalsOutput" class="hud-empty-state">Enter Age for normal ranges.</div>
-                    </div>
-                </div>
-
-                <div class="hud-col">
-                    <div id="hudNeonatalContext" style="display: none; flex-direction: column; gap: 15px;">
-                        <div class="hud-widget" style="border-left: 4px solid var(--brand-cyan); background: rgba(0, 212, 255, 0.03);">
-                            <h4 class="hud-widget-title" style="color: var(--brand-cyan);">🍼 Neonatal Quick Modules</h4>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <button class="secondary" onclick="window.openClinicalTool('erFeatureView'); setTimeout(()=>openErView('erNicuView'), 100);" style="flex:1; margin:0; padding:10px; font-size:0.85rem;">APGAR / GIR</button>
-                                <button class="secondary" onclick="window.openClinicalTool('jaundiceFeatureView')" style="flex:1; margin:0; padding:10px; font-size:0.85rem;">Bhutani Nomogram</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="hudPediatricContext" style="display: flex; flex-direction: column; gap: 15px;">
-                        <div class="hud-widget" style="border-left: 4px solid var(--success); background: rgba(16,185,129,0.03);">
-                            <h4 class="hud-widget-title" style="color: var(--success);">💉 NIS Vaccines Due</h4>
-                            <div id="hudVaxOutput" class="hud-empty-state">Enter Age to see due vaccines.</div>
-                        </div>
-                        <div class="hud-widget" style="border-left: 4px solid var(--brand-pink); background: rgba(255,92,171,0.03);">
-                            <h4 class="hud-widget-title" style="color: var(--brand-pink);">🧠 Milestone Checklist</h4>
-                            <div id="hudMilestonesOutput" class="hud-empty-state">Enter Age for expected milestones.</div>
-                        </div>
-                    </div>
-
-                    <div class="hud-widget" style="border-left: 4px solid var(--danger); background: rgba(239,68,68,0.03);">
-                        <h4 class="hud-widget-title" style="color: var(--danger);">🚨 Anticipatory Red Flags</h4>
-                        <div id="hudRedFlagsOutput" class="hud-empty-state">Enter Age for clinical warnings.</div>
-                    </div>
-                </div>
-
-                <div class="hud-col">
-                    <div class="hud-widget" style="padding: 0; overflow: hidden; border: 2px solid var(--primary-light);">
-                        <h4 class="hud-widget-title" style="margin: 15px 15px 5px 15px;">⚡ Top 5 Smart Doses</h4>
-                        <div id="hudSmartDoseCards" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; padding: 10px 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
-                            <div class="hud-empty-state" style="width:100%;">Enter Wt to unlock Quick Cards.</div>
-                        </div>
-                        <style>#hudSmartDoseCards::-webkit-scrollbar { display: none; }</style>
-                    </div>
-                    
-                    <div class="hud-widget">
-                        <h4 class="hud-widget-title">💧 Fluids & Energy Targets</h4>
-                        <div id="hudFluidsOutput" class="hud-empty-state">Enter Wt/Age for maintenance goals.</div>
-                    </div>
-
-                    <button class="action" onclick="window.openClinicalTool('prescriptionFeatureView')" style="width: 100%; padding: 15px; font-size: 1.1rem; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--success), #059669); margin-top: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
-                        📝 Start Case File
-                    </button>
-                </div>
-            </div>
         </div>
 
         <div id="toolsTab" class="view-content">
