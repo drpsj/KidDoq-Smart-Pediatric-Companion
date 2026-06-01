@@ -119,52 +119,6 @@ window.calculateDose = function() {
     }
 };
 
-window.runHomeDoseCalc = function() {
-    const wt = parseFloat(document.getElementById('homeWeight').value);
-    const drugId = document.getElementById('homeFormulation').value;
-    const res = document.getElementById('homeDoseResult');
-
-    if(!wt || !drugId) { res.innerHTML = ''; return; }
-    const drug = getUnifiedDB().find(d => d.id === drugId);
-    if(!drug) return;
-
-    let math = ClinicalMath.computeDose(drug, wt);
-    let unit = ClinicalMath.getUnit(drug);
-    
-    let warnHTML = math.isMax ? `<div style="color:var(--danger); font-size:0.85rem; font-weight:bold; margin-top:8px;">⚠️ Adult Max Cap Enforced</div>` : "";
-    if (drug.warnings && drug.warnings.length > 0) {
-        warnHTML += `<div style="color:var(--warning); font-size:0.8rem; margin-top:8px; text-align:left; line-height:1.4;">${drug.warnings.join("<br>")}</div>`;
-    }
-    let indHTML = "";
-    if (drug.indications && drug.indications.length > 0) {
-        indHTML = `<div style="margin-top:10px; margin-bottom:5px;">` + drug.indications.map(i => `<span style="background:rgba(91,97,246,0.1); color:var(--primary); padding:2px 8px; border-radius:12px; font-size:0.7rem; margin-right:4px; display:inline-block; font-weight:bold;">${i}</span>`).join("") + `</div>`;
-    }
-
-    res.innerHTML = `
-        <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border:1px solid var(--primary); text-align:center; box-shadow:var(--shadow-md);">
-            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Calculated Quantity</div>
-            <div style="font-size:2.8rem; color:var(--primary); font-weight:800; margin:5px 0;">${math.reqVol.toFixed(1)} <span style="font-size:1.2rem;">${unit}</span></div>
-            <div style="font-size:1rem; color:var(--text-main); font-weight:700; background:rgba(91,97,246,0.1); padding:5px 10px; border-radius:4px; display:inline-block;">${drug.defaultFreq}</div>
-            ${indHTML}
-            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px; padding-top:10px; border-top:1px solid var(--border-soft);">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
-            ${warnHTML}
-        </div>
-    `;
-};
-
-window.populateHomeDrugs = function() {
-    const cat = document.getElementById('homeCategory').value;
-    const formSelect = document.getElementById('homeFormulation');
-    formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
-    if(!cat) return;
-    
-    const filtered = getUnifiedDB().filter(d => d.category === cat);
-    filtered.forEach(d => { 
-        const icon = d.isCustom ? "👤 " : "";
-        formSelect.innerHTML += `<option value="${d.id}">${icon}${d.name}</option>`; 
-    });
-};
-
 // --- 2. REVERSE AUDIT ENGINE ---
 window.populateRevDrugs = function() {
     const cat = document.getElementById('revCategory').value; 

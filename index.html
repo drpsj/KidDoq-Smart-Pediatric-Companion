@@ -147,13 +147,12 @@
                 <div id="omniSearchResults" style="display:none; position:absolute; top:calc(100% + 5px); left:0; width:100%; background:var(--bg-surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); box-shadow:var(--shadow-float); z-index:1000; max-height:350px; overflow-y:auto; padding:8px;"></div>
             </div>
 
-            <!-- 1. THE GLOBAL PARAMETER BAR (Engine) -->
             <div class="global-parameter-bar" style="background: linear-gradient(135deg, var(--primary), var(--brand-cyan)); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px; color: white; box-shadow: var(--shadow-float); position: sticky; top: -10px; z-index: 100;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h2 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">🚀 Pediatric Cockpit</h2>
                     <div style="display: flex; gap: 10px;">
-                        <button class="secondary" onclick="openPrefilledRegistry()" style="margin: 0; width: auto; padding: 6px 12px; font-size: 0.85rem; border: none; background: rgba(16,185,129,0.9); color: white; border-radius: var(--radius-pill); font-weight: bold; transition: background 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">💾 Save Patient</button>
-                        <button class="secondary" onclick="printGhostFile()" style="margin: 0; width: auto; padding: 6px 12px; font-size: 0.85rem; border: none; background: rgba(255,255,255,0.2); color: white; border-radius: var(--radius-pill); font-weight: bold; transition: background 0.2s;">🖨️ Print Quick-Sheet</button>
+                        <button class="secondary" onclick="openPrefilledRegistry()" style="margin: 0; width: auto; padding: 6px 12px; font-size: 0.85rem; border: none; background: rgba(16,185,129,0.9); color: white; border-radius: var(--radius-pill); font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">💾 Save Patient</button>
+                        <button class="secondary" onclick="printGhostFile()" style="margin: 0; width: auto; padding: 6px 12px; font-size: 0.85rem; border: none; background: rgba(255,255,255,0.2); color: white; border-radius: var(--radius-pill); font-weight: bold;">🖨️ Quick-Sheet</button>
                     </div>
                 </div>
                 <div class="hud-global-inputs" style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -199,12 +198,10 @@
                         </select>
                     </div>
                 </div>
-
                 <div id="hudQuickDoseRes" style="position:relative; z-index:2;"></div>
             </div>
 
             <div class="hud-grid">
-                
                 <div class="hud-col">
                     <div class="hud-widget">
                         <h4 class="hud-widget-title">📈 Growth & Nutrition Snapshot</h4>
@@ -217,10 +214,6 @@
                     <div class="hud-widget">
                         <h4 class="hud-widget-title">🩺 Vitals & BP Limits</h4>
                         <div id="hudVitalsOutput" class="hud-empty-state">Enter Age for normal ranges.</div>
-                    </div>
-                    <div class="hud-widget">
-                        <h4 class="hud-widget-title">💧 Fluids & Energy Targets</h4>
-                        <div id="hudFluidsOutput" class="hud-empty-state">Enter Wt/Age for maintenance goals.</div>
                     </div>
                 </div>
 
@@ -260,17 +253,16 @@
                         </div>
                         <style>#hudSmartDoseCards::-webkit-scrollbar { display: none; }</style>
                     </div>
-
-                    <div class="hud-widget" style="border: 2px solid var(--danger);">
-                        <h4 class="hud-widget-title" style="color: var(--danger); border-bottom: 1px solid rgba(239,68,68,0.2); padding-bottom:5px;">⚡ Crash Cart (Broselow)</h4>
-                        <div id="hudCrashOutput" class="hud-empty-state">Enter Wt for emergency dosing.</div>
-                    </div>
                     
+                    <div class="hud-widget">
+                        <h4 class="hud-widget-title">💧 Fluids & Energy Targets</h4>
+                        <div id="hudFluidsOutput" class="hud-empty-state">Enter Wt/Age for maintenance goals.</div>
+                    </div>
+
                     <button class="action" onclick="window.openClinicalTool('prescriptionFeatureView')" style="width: 100%; padding: 15px; font-size: 1.1rem; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--success), #059669); margin-top: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
                         📝 Start Case File
                     </button>
                 </div>
-                
             </div>
         </div>
 
