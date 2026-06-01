@@ -13,21 +13,31 @@
 .app-shell { flex-direction: row !important; }
 .main-content { padding-bottom: 40px !important; }
 
+.app-shell { 
+    flex-direction: row !important; 
+}
+
 .main-nav { 
-    position: relative; 
-    width: 280px; 
-    min-width: 280px; 
-    flex-shrink: 0;   
-    height: 100vh; 
-    flex-direction: column; 
-    justify-content: flex-start; 
-    padding: 30px 20px; 
-    border-top: none; 
-    border-right: none; /* Removed the stubborn partition line */
-    background: transparent !important; /* Let the background image flow entirely through the sidebar */
-    box-shadow: none;
-    align-items: stretch; 
-    gap: 10px;
+    position: fixed !important; 
+    top: 72px !important; /* Locks perfectly below the header */
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 280px !important; 
+    height: calc(100vh - 72px) !important; 
+    flex-direction: column !important; 
+    justify-content: flex-start !important; 
+    padding: 30px 20px !important; 
+    background: var(--bg-surface) !important;
+    border-right: 1px solid var(--border-soft) !important;
+    box-shadow: none !important;
+    align-items: stretch !important; 
+    gap: 10px !important;
+    z-index: 4000 !important;
+}
+
+.main-content {
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
 }
 
 .nav-item { 
