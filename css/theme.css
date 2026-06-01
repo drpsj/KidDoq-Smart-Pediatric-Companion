@@ -671,3 +671,44 @@ body.dark-mode .case-file-header { background: rgba(20, 20, 43, 0.85); }
     margin-left: 4px;
     vertical-align: middle;
 }
+
+/* ==========================================
+   CRYPTO-NEON GLASSMORPHISM OVERRIDE
+   ========================================== */
+body, html, body.dark-mode {
+    background-color: #05070A !important; /* Absolute deep void */
+    background-image: radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.05), transparent 60%);
+    color: #FFFFFF !important;
+}
+
+/* Deep Glass Bento Cards */
+.cortex-bento-grid .bento-card {
+    background: rgba(13, 17, 28, 0.6) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.5) !important;
+}
+
+/* Glowing Neon Borders for Cards */
+.card-doses    { box-shadow: inset 0 2px 0 var(--brand-blue), 0 10px 30px rgba(0,0,0,0.5) !important; }
+.card-growth   { box-shadow: inset 0 2px 0 var(--success), 0 10px 30px rgba(0,0,0,0.5) !important; }
+.card-nutrition{ box-shadow: inset 0 2px 0 var(--danger), 0 10px 30px rgba(0,0,0,0.5) !important; }
+.card-vitals   { box-shadow: inset 0 2px 0 var(--brand-cyan), 0 10px 30px rgba(0,0,0,0.5) !important; }
+.card-vaccines { box-shadow: inset 0 2px 0 var(--brand-pink), 0 10px 30px rgba(0,0,0,0.5) !important; }
+
+/* The Hero Dose Engine Glass */
+.cortex-hero-card {
+    background: linear-gradient(145deg, rgba(13, 17, 28, 0.8), rgba(6, 9, 15, 0.95)) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 229, 255, 0.2) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 229, 255, 0.05) !important;
+}
+
+/* The Top Anchor Glass */
+.anchor-pill-premium {
+    background: rgba(13, 17, 28, 0.75) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 42, 133, 0.2) !important; /* Pink neon tint */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 15px rgba(255, 42, 133, 0.05) !important;
+}
