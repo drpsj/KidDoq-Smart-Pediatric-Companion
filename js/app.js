@@ -53,8 +53,83 @@ document.addEventListener("DOMContentLoaded", function() {
 // ==========================================
 // 🚀 MAGIC HUD ENGINE (Cockpit Dashboard)
 // ==========================================
+window.syncHudAge = function() {
+    const yrs = parseInt(document.getElementById('hudAgeYrs').value) || 0;
+    const mos = parseInt(document.getElementById('hudAgeMos').value) || 0;
+    document.getElementById('hudAge').value = (yrs * 12) + mos;
+};
+
 window.broadcastGlobalParameters = function() {
     const ageMos = parseInt(document.getElementById('hudAge').value) || 0;
+    const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
+    const ht = parseFloat(document.getElementById('hudHeight').value) || 0;
+    const gender = document.getElementById('hudGender').value || 'male';
+
+    // 1. Context Shifting
+    const neoView = document.getElementById('hudNeonatalContext');
+    const pedView = document.getElementById('hudPediatricContext');
+    if (neoView && pedView) {
+        if (ageMos > 0 && ageMos < 1) { 
+            neoView.style.display = 'flex'; pedView.style.display = 'none'; 
+        } else { 
+            neoView.style.display = 'none'; pedView.style.display = 'flex'; 
+        }
+    }
+
+    renderHudGrowth(wt, ht, ageMos, gender);
+    renderHudVitals(ageMos);
+    renderHudFluids(wt);
+    renderHudRedFlags(ageMos);
+    renderHudVax(ageMos);
+    renderHudMilestones(ageMos);
+    renderHudCrash(wt);
+    renderHudSmartCards(wt);
+    
+    // Trigger quick dose update if a drug is selected
+    if(typeof runHudQuickDose === 'function') runHudQuickDose();
+};
+
+function renderHudGrowth(wt, ht, ageMos, gender) {
+    const out = document.getElementById('hudGrowthOutput');
+    if(!out) return;
+    if(!wt || !ht || !ageMos) { out.innerHTML = 'Enter Wt, Ht & Age to view triage.'; out.className = 'hud-empty-state'; return; }
+    
+    // Approximate Expected Weight (Weech's Formula)
+    let expectedWt = 0; let ageYrs = ageMos/12;
+    if(ageYrs < 1) expectedWt = (ageMos + 9) / 2;
+    else if (ageYrs <= 6) expectedWt = (ageYrs * 2) + 8;
+    else if (ageYrs <= 12) expectedWt = (ageYrs * 7 - 5) / 2;
+    else expectedWt = wt; 
+
+    let wfaPercent = (wt / expectedWt) * 100;
+    let wfaLight = "🟢 Normal"; let wfaColor = "var(--success)";
+    if(wfaPercent < 60) { wfaLight = "🔴 Severe (SAM)"; wfaColor = "var(--danger)"; }
+    else if(wfaPercent < 80) { wfaLight = "🟡 Mod (MAM)"; wfaColor = "var(--warning)"; }
+
+    const htM = ht / 100;
+    const bmi = wt / (htM * htM);
+    
+    let bmiLight = "🟢 Normal"; let bmiColor = "var(--success)";
+    if (bmi < 14) { bmiLight = "🔴 SAM/Severe Wasting"; bmiColor = "var(--danger)"; }
+    else if (bmi < 15.5) { bmiLight = "🟡 MAM/Wasting"; bmiColor = "var(--warning)"; }
+    else if (bmi > 25) { bmiLight = "🔴 Overweight/Obese"; bmiColor = "var(--danger)"; }
+
+    out.className = '';
+    out.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;">
+            <span>Weight-for-Age:</span> <b style="color:${wfaColor};">${wfaLight}</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;">
+            <span>Height-for-Age:</span> <b style="color:var(--success);">🟢 Normal</b>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+            <span>BMI Classification:</span> <b style="color:${bmiColor};">${bmiLight}</b>
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px; text-align:center;">
+            Raw BMI: ${bmi.toFixed(1)} | Expected Wt: ~${expectedWt.toFixed(1)}kg
+        </div>
+    `;
+}
     const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
     const ht = parseFloat(document.getElementById('hudHeight').value) || 0;
     const gender = document.getElementById('hudGender').value || 'male';
@@ -248,28 +323,144 @@ function renderHudCrash(wt) {
     `;
 }
 
-function renderHudFever(wt) {
-    const out = document.getElementById('hudFeverOutput');
+function renderHudSmartCards(wt) {
+    const out = document.getElementById('hudSmartDoseCards');
     if(!out) return;
-    if(!wt) { out.innerHTML = 'Enter Wt for rapid dosing.'; out.className = 'hud-empty-state'; return; }
-    let pcmMg = wt * 15;
-    let ibuMg = wt * 10;
+    if(!wt) { out.innerHTML = '<div class="hud-empty-state" style="width:100%;">Enter Wt to unlock Quick Cards.</div>'; return; }
 
-    out.className = '';
+    let pcm120 = (wt * 15) / (120/5);
+    let pcm250 = (wt * 15) / (250/5);
+    let ibu = (wt * 10) / (100/5);
+    let amox228 = (wt * 40) / (200/5); // Amox/Clav 228 (200mg/5ml base) standard BID
+    let amox457 = (wt * 40) / (400/5); // Amox/Clav 457 (400mg/5ml base)
+
+    const cardStyle = `scroll-snap-align: start; flex: 0 0 140px; background: rgba(91,97,246,0.05); border: 1px solid var(--primary-light); padding: 12px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center;`;
+    
     out.innerHTML = `
-        <div style="background:var(--bg-body); padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid var(--border-soft);">
-            <div style="font-size:0.8rem; color:var(--text-muted); font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Paracetamol (15mg/kg)</div>
-            <div style="display:flex; justify-content:space-between;">
-                <span style="font-size:0.95rem;"><b>${(pcmMg/24).toFixed(1)} mL</b> <span style="font-size:0.75rem; color:var(--text-muted);">(120mg/5mL)</span></span>
-                <span style="font-size:0.95rem;"><b>${(pcmMg/50).toFixed(1)} mL</b> <span style="font-size:0.75rem; color:var(--text-muted);">(250mg/5mL)</span></span>
-            </div>
+        <div style="${cardStyle} border-color:#fca5a5; background:rgba(254,226,226,0.3);">
+            <div style="font-size:0.75rem; color:#e11d48; font-weight:800;">Paracetamol</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">120mg/5mL</div>
+            <div style="font-size:1.6rem; font-weight:900; color:#9f1239;">${pcm120.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">SOS (Q6H)</div>
         </div>
-        <div style="background:var(--bg-body); padding:10px; border-radius:6px; border:1px solid var(--border-soft);">
-            <div style="font-size:0.8rem; color:var(--text-muted); font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Ibuprofen (10mg/kg)</div>
-            <div style="font-size:0.95rem;"><b>${(ibuMg/20).toFixed(1)} mL</b> <span style="font-size:0.75rem; color:var(--text-muted);">(100mg/5mL)</span></div>
+        <div style="${cardStyle} border-color:#fca5a5; background:rgba(254,226,226,0.3);">
+            <div style="font-size:0.75rem; color:#e11d48; font-weight:800;">Paracetamol</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">250mg/5mL</div>
+            <div style="font-size:1.6rem; font-weight:900; color:#9f1239;">${pcm250.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">SOS (Q6H)</div>
+        </div>
+        <div style="${cardStyle} border-color:#fdba74; background:rgba(254,243,199,0.4);">
+            <div style="font-size:0.75rem; color:#d97706; font-weight:800;">Ibuprofen</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">100mg/5mL</div>
+            <div style="font-size:1.6rem; font-weight:900; color:#b45309;">${ibu.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">SOS (Q8H)</div>
+        </div>
+        <div style="${cardStyle}">
+            <div style="font-size:0.75rem; color:var(--primary); font-weight:800;">Co-Amoxiclav</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">228mg/5mL</div>
+            <div style="font-size:1.6rem; font-weight:900; color:var(--primary-dark);">${amox228.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">BID</div>
+        </div>
+        <div style="${cardStyle}">
+            <div style="font-size:0.75rem; color:var(--primary); font-weight:800;">Co-Amoxiclav</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">457mg/5mL</div>
+            <div style="font-size:1.6rem; font-weight:900; color:var(--primary-dark);">${amox457.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">BID</div>
         </div>
     `;
 }
+
+window.populateHudDrugs = function() {
+    const cat = document.getElementById('hudQuickCat').value;
+    const formSelect = document.getElementById('hudQuickForm');
+    formSelect.innerHTML = '<option value="">-- Select Drug --</option>';
+    if(!cat) return;
+    
+    let db = typeof getUnifiedDB === 'function' ? getUnifiedDB() : window.drugsDb;
+    if(!db) return;
+    const filtered = db.filter(d => d.category === cat);
+    filtered.forEach(d => { 
+        const icon = d.isCustom ? "👤 " : "";
+        formSelect.innerHTML += `<option value="${d.id}">${icon}${d.name}</option>`; 
+    });
+    runHudQuickDose();
+};
+
+window.runHudQuickDose = function() {
+    const wt = parseFloat(document.getElementById('hudWeight').value);
+    const drugId = document.getElementById('hudQuickForm').value;
+    const res = document.getElementById('hudQuickDoseRes');
+    if(!res) return;
+
+    if(!wt || !drugId) { res.innerHTML = ''; return; }
+    
+    let db = typeof getUnifiedDB === 'function' ? getUnifiedDB() : window.drugsDb;
+    const drug = db.find(d => d.id === drugId);
+    if(!drug) return;
+
+    // Use existing math engine
+    let math = ClinicalMath.computeDose(drug, wt);
+    let unit = ClinicalMath.getUnit(drug);
+    
+    res.innerHTML = `
+        <div style="background:var(--primary-light); padding:10px; border-radius:6px; text-align:center; border:1px solid var(--primary); margin-top:8px;">
+            <div style="font-size:1.8rem; color:var(--primary-dark); font-weight:900; line-height:1;">${math.reqVol.toFixed(1)} <span style="font-size:0.9rem;">${unit}</span></div>
+            <div style="font-size:0.85rem; color:var(--primary); font-weight:700; margin-top:4px;">${drug.defaultFreq}</div>
+        </div>
+    `;
+};
+
+window.printGhostFile = function() {
+    const wt = document.getElementById('hudWeight').value;
+    const yrs = document.getElementById('hudAgeYrs').value || "0";
+    const mos = document.getElementById('hudAgeMos').value || "0";
+    
+    if(!wt) {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Enter Weight to print Quick-Sheet.");
+        return;
+    }
+
+    const engine = document.getElementById('printEngine'); 
+    
+    // Grab HTML directly from the HUD
+    let growthHtml = document.getElementById('hudGrowthOutput').innerHTML;
+    let vitalsHtml = document.getElementById('hudVitalsOutput').innerHTML;
+    let pcm = (wt * 15) / 24; // 120/5
+    let ibu = (wt * 10) / 20; // 100/5
+
+    let html = `
+        <div style="font-family: sans-serif; padding: 20px;">
+            <h2 style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px;">PEDIATRIC QUICK-SHEET</h2>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-weight:bold; font-size:1.1rem;">
+                <span>Age: ${yrs} Yrs ${mos} Mos</span>
+                <span>Weight: ${wt} kg</span>
+            </div>
+            
+            <h3 style="background:#f1f5f9; padding:5px;">Growth & Vitals</h3>
+            <div style="margin-bottom:20px; font-size:1rem;">${vitalsHtml}</div>
+
+            <h3 style="background:#f1f5f9; padding:5px;">Emergency / Fever Quick Dose</h3>
+            <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
+                <tr><td style="padding:8px; border:1px solid #ccc;"><b>Paracetamol (120mg/5ml)</b></td><td style="padding:8px; border:1px solid #ccc; font-weight:bold;">${pcm.toFixed(1)} mL (SOS)</td></tr>
+                <tr><td style="padding:8px; border:1px solid #ccc;"><b>Ibuprofen (100mg/5ml)</b></td><td style="padding:8px; border:1px solid #ccc; font-weight:bold;">${ibu.toFixed(1)} mL (SOS)</td></tr>
+            </table>
+
+            <div style="font-size:0.8rem; color:#666; text-align:center; border-top:1px dashed #ccc; padding-top:10px; margin-top:30px;">
+                *Clinical reference only. Do not administer without doctor confirmation.
+            </div>
+        </div>
+    `;
+    
+    engine.innerHTML = html;
+    const style = document.createElement('style');
+    style.innerHTML = `@media print { body > *:not(#printEngine) { display: none !important; } #printEngine { display: block !important; position: static !important; } }`;
+    document.head.appendChild(style);
+    
+    setTimeout(() => {
+        window.print();
+        setTimeout(() => { engine.innerHTML = ""; style.remove(); }, 500);
+    }, 250);
+};
 
 // ==========================================
 // 🧠 KIDDOQ PREDICTIVE AI ENGINE (COPILOT)
