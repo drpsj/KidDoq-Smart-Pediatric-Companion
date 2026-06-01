@@ -8,18 +8,27 @@
 // 🍎 NUTRITION & DIET CONTROLLER
 // ==========================================
 
+window.sessionDietLogs = window.sessionDietLogs || []; // Temporary session storage
+
 // 1. Tab 1: Calculate ICMR Targets based on Patient Weight
 window.calcNutrition = function() {
-    const pId = AppStore.getActivePatientId();
-    if (!pId) return;
-    
-    const p = AppStore.getPatient(pId);
     const out = document.getElementById('nutriTargetArea');
     if (!out) return;
 
-    const wt = parseFloat(p.weight) || 0;
-    if (wt === 0) {
-        out.innerHTML = "<div style='padding:20px; text-align:center; color:var(--text-muted);'>⚠️ Please enter patient weight in the registry to calculate targets.</div>";
+    // Try HUD Cockpit first, fallback to Patient Registry
+    let hudWt = document.getElementById('hudWeight') ? parseFloat(document.getElementById('hudWeight').value) : 0;
+    let wt = hudWt;
+    
+    if (!wt) {
+        const pId = AppStore.getActivePatientId();
+        if (pId) {
+            const p = AppStore.getPatient(pId);
+            wt = parseFloat(p.weight) || 0;
+        }
+    }
+
+    if (!wt || wt === 0) {
+        out.innerHTML = "<div style='padding:20px; text-align:center; color:var(--text-muted); border:1px dashed var(--border-soft); border-radius:8px;'>⚠️ Enter patient weight in the Cockpit or Registry to calculate targets.</div>";
         return;
     }
 
@@ -48,12 +57,6 @@ window.calcNutrition = function() {
 
 // 2. Tab 2: Add item to 24h Recall Log
 window.addDietRecall = function() {
-    const pId = AppStore.getActivePatientId();
-    if (!pId) {
-        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Select a patient first.");
-        return;
-    }
-    
     const meal = document.getElementById('recallMeal').value;
     const food = document.getElementById('recallFood').value;
     const qty = parseFloat(document.getElementById('recallQty').value);
@@ -63,30 +66,27 @@ window.addDietRecall = function() {
         return;
     }
 
-    // UNIFIED FORMAT: Look up food in foodsDb using the short keys (k, p, c, f)
     const foodItem = (typeof window.foodsDb !== 'undefined' ? window.foodsDb.find(f => f.name === food) : null) || { k: 100, p: 2 };
-    
     const cals = (foodItem.k / 100) * qty;
     const pro = (foodItem.p / 100) * qty;
 
-    const p = AppStore.getPatient(pId);
-    if (!p.dietLogs) p.dietLogs = [];
-    
-    // Save to secure vault
-    p.dietLogs.push({
-        id: 'log_' + Date.now().toString(),
-        mealType: meal,
-        foodName: food,
-        qty: qty + "g/ml",
-        calories: cals,
-        protein: pro
-    });
+    const logEntry = {
+        id: 'log_' + Date.now().toString(), mealType: meal, foodName: food, qty: qty + "g/ml", calories: cals, protein: pro
+    };
 
-    AppStore.savePatient(p);
+    const pId = AppStore.getActivePatientId();
+    if (pId) {
+        const p = AppStore.getPatient(pId);
+        if (!p.dietLogs) p.dietLogs = [];
+        p.dietLogs.push(logEntry);
+        AppStore.savePatient(p);
+    } else {
+        window.sessionDietLogs.push(logEntry); // Sandbox mode
+    }
     
-    document.getElementById('recallQty').value = ""; // Clear input for next item
+    document.getElementById('recallQty').value = ""; 
     if(typeof showSystemToast === 'function') showSystemToast("✅ Food Logged!");
-    renderRecallLog(); // Re-render the board
+    renderRecallLog(); 
 };
 
 window.updateLivePreview = function() {
@@ -114,66 +114,52 @@ window.updateLivePreview = function() {
 
 // 3. Tab 2: Render the 24h Recall Board
 window.renderRecallLog = function() {
-    const pId = AppStore.getActivePatientId();
-    if (!pId) return;
-    
-    const p = AppStore.getPatient(pId);
     const out = document.getElementById('recallListArea');
     if (!out) return;
 
-    const logs = p.dietLogs || [];
+    let logs = [];
+    const pId = AppStore.getActivePatientId();
+    if (pId) {
+        const p = AppStore.getPatient(pId);
+        logs = p.dietLogs || [];
+    } else {
+        logs = window.sessionDietLogs || [];
+    }
     
     if (logs.length === 0) {
-        out.innerHTML = "<div style='color:var(--text-muted); text-align:center; padding:30px; background:var(--bg-surface); border-radius:8px; border:1px dashed var(--border-soft);'>🍽️ No foods logged yet for the 24h recall. Add items above.</div>";
+        out.innerHTML = "<div style='color:var(--text-muted); text-align:center; padding:30px; background:var(--bg-surface); border-radius:8px; border:1px dashed var(--border-soft);'>🍽️ No foods logged yet. Add items above.</div>";
         return;
     }
 
     let html = `<table class="theory-table" style="width:100%; font-size:0.95rem; text-align:left;">
-        <thead>
-            <tr style="background:var(--bg-body);">
-                <th style="padding:10px;">Meal</th><th style="padding:10px;">Item</th><th style="padding:10px;">Cals</th><th style="padding:10px;">Protein</th><th style="padding:10px; text-align:center;">Del</th>
-            </tr>
-        </thead>
-        <tbody>`;
+        <thead><tr style="background:var(--bg-body);"><th style="padding:10px;">Meal</th><th style="padding:10px;">Item</th><th style="padding:10px;">Cals</th><th style="padding:10px;">Protein</th><th style="padding:10px; text-align:center;">Del</th></tr></thead><tbody>`;
     
     let tCals = 0, tPro = 0;
-    
     logs.forEach(log => {
-        // SAFE PARSING: Protects against corrupted data saving as null
-        let cals = parseFloat(log.calories) || 0;
-        let pro = parseFloat(log.protein) || 0;
-        
-        tCals += cals; 
-        tPro += pro;
-        
+        let cals = parseFloat(log.calories) || 0; let pro = parseFloat(log.protein) || 0;
+        tCals += cals; tPro += pro;
         html += `<tr>
             <td style="padding:10px; border-bottom:1px solid var(--border-soft);">${log.mealType || 'Meal'}</td>
             <td style="padding:10px; border-bottom:1px solid var(--border-soft);"><b>${log.foodName || 'Unknown'}</b> <span style="color:var(--text-muted); font-size:0.85rem;">(${log.qty || ''})</span></td>
             <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--primary);">${cals.toFixed(0)}</td>
             <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--success);">${pro.toFixed(1)}g</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border-soft); text-align:center;">
-                <button onclick="removeDietRecall('${log.id}')" style="background:rgba(239, 68, 68, 0.1); border:none; color:var(--danger); cursor:pointer; padding:5px 8px; border-radius:4px;">❌</button>
-            </td>
+            <td style="padding:10px; border-bottom:1px solid var(--border-soft); text-align:center;"><button onclick="removeDietRecall('${log.id}')" style="background:rgba(239, 68, 68, 0.1); border:none; color:var(--danger); cursor:pointer; padding:5px 8px; border-radius:4px;">❌</button></td>
         </tr>`;
     });
     
-    html += `<tr style="font-weight:bold; background:rgba(91, 97, 246, 0.05);">
-        <td colspan="2" style="text-align:right; padding:12px;">24H TOTAL INTAKE:</td>
-        <td style="color:var(--primary-dark); padding:12px; font-size:1.1rem;">${tCals.toFixed(0)} kcal</td>
-        <td style="color:var(--success); padding:12px; font-size:1.1rem;">${tPro.toFixed(1)} g</td>
-        <td></td>
-    </tr></tbody></table>`;
-    
+    html += `<tr style="font-weight:bold; background:rgba(91, 97, 246, 0.05);"><td colspan="2" style="text-align:right; padding:12px;">24H TOTAL INTAKE:</td><td style="color:var(--primary-dark); padding:12px; font-size:1.1rem;">${tCals.toFixed(0)} kcal</td><td style="color:var(--success); padding:12px; font-size:1.1rem;">${tPro.toFixed(1)} g</td><td></td></tr></tbody></table>`;
     out.innerHTML = html;
 };
 
 window.removeDietRecall = function(logId) {
     const pId = AppStore.getActivePatientId();
-    if (!pId) return;
-    const p = AppStore.getPatient(pId);
-    
-    p.dietLogs = p.dietLogs.filter(l => l.id !== logId);
-    AppStore.savePatient(p);
+    if (pId) {
+        const p = AppStore.getPatient(pId);
+        p.dietLogs = p.dietLogs.filter(l => l.id !== logId);
+        AppStore.savePatient(p);
+    } else {
+        window.sessionDietLogs = window.sessionDietLogs.filter(l => l.id !== logId);
+    }
     renderRecallLog();
 };
 

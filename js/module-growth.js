@@ -180,18 +180,28 @@ window.drawGrowthCharts = function(patientAgeMonths, currentWeight, currentHeigh
 };
 
 window.calcGrowth = function() {
+    // 1. Try HUD First (Zero-Click Cockpit)
+    let hudWt = document.getElementById('hudWeight') ? parseFloat(document.getElementById('hudWeight').value) : 0;
+    let hudHt = document.getElementById('hudHeight') ? parseFloat(document.getElementById('hudHeight').value) : 0;
+    let hudMos = document.getElementById('hudAge') ? parseInt(document.getElementById('hudAge').value) : 0;
+    let hudGen = document.getElementById('hudGender') ? document.getElementById('hudGender').value : 'male';
+
+    // 2. Fallback to Registry/Inline if HUD is empty
     const pWtElem = document.getElementById('pWeight');
     const inlineWtElem = document.getElementById('inlineCalcWeight'); 
-    const wt = parseFloat((inlineWtElem ? inlineWtElem.value : 0) || (pWtElem ? pWtElem.value : 0) || 10);
+    const wt = hudWt || parseFloat((inlineWtElem ? inlineWtElem.value : 0) || (pWtElem ? pWtElem.value : 0) || 0);
     
     let htObj = document.getElementById('htCm'); 
     let htOnTheGoObj = document.getElementById('htCmOnTheGo');
-    const ht = parseFloat( (htOnTheGoObj && htOnTheGoObj.value) ? htOnTheGoObj.value : (htObj ? htObj.value : 0) );
+    const ht = hudHt || parseFloat( (htOnTheGoObj && htOnTheGoObj.value) ? htOnTheGoObj.value : (htObj ? htObj.value : 0) );
     
-    let totalM = typeof activePatientId !== 'undefined' && activePatientId ? globalPatientsStore[activePatientId].totalMonths : 0;
-    let pGender = document.getElementById('gender') ? document.getElementById('gender').value : 'male';
+    let totalM = hudMos || (typeof activePatientId !== 'undefined' && activePatientId ? globalPatientsStore[activePatientId].totalMonths : 0);
+    let pGender = hudGen || (document.getElementById('gender') ? document.getElementById('gender').value : 'male');
     
-    if(!ht || isNaN(ht) || !wt || isNaN(wt)) return; 
+    if(!ht || isNaN(ht) || !wt || isNaN(wt)) {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Enter Weight and Height in Cockpit to plot charts.");
+        return; 
+    }
     drawGrowthCharts(totalM, wt, ht, pGender);
 };
 

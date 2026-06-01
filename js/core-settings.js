@@ -235,6 +235,7 @@ window.saveCustomDrug = function() {
     // Refresh active dropdowns if the math engine is loaded
     if(typeof populateDrugs === 'function') populateDrugs();
     if(typeof populateInlineDrugs === 'function') populateInlineDrugs();
+    if(typeof window.populateHudDrugs === 'function') window.populateHudDrugs(); // Sync to Magic HUD
 };
 
 window.renderCustomDrugsList = function() {
@@ -278,5 +279,6 @@ window.deleteCustomDrug = function(cat, id) {
         
         if(typeof populateDrugs === 'function') populateDrugs();
         if(typeof populateInlineDrugs === 'function') populateInlineDrugs();
+        if(typeof window.populateHudDrugs === 'function') window.populateHudDrugs(); // Sync to Magic HUD
     }
 };
