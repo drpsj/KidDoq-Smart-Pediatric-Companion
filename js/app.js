@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
 // ==========================================
 // 🚀 MAGIC HUD ENGINE (Cockpit Dashboard)
 // ==========================================
+
 window.syncHudAge = function() {
     const yrs = parseInt(document.getElementById('hudAgeYrs').value) || 0;
     const mos = parseInt(document.getElementById('hudAgeMos').value) || 0;
@@ -65,7 +66,7 @@ window.broadcastGlobalParameters = function() {
     const ht = parseFloat(document.getElementById('hudHeight').value) || 0;
     const gender = document.getElementById('hudGender').value || 'male';
 
-    // 1. Context Shifting
+    // Context Shifting
     const neoView = document.getElementById('hudNeonatalContext');
     const pedView = document.getElementById('hudPediatricContext');
     if (neoView && pedView) {
@@ -78,14 +79,13 @@ window.broadcastGlobalParameters = function() {
 
     if(typeof renderHudGrowth === 'function') renderHudGrowth(wt, ht, ageMos, gender);
     if(typeof renderHudVitals === 'function') renderHudVitals(ageMos);
-    if(typeof renderHudFluids === 'function') renderHudFluids(wt);
+    if(typeof renderHudFluids === 'function') renderHudFluids(wt, ageMos);
     if(typeof renderHudRedFlags === 'function') renderHudRedFlags(ageMos);
     if(typeof renderHudVax === 'function') renderHudVax(ageMos);
     if(typeof renderHudMilestones === 'function') renderHudMilestones(ageMos);
-    if(typeof renderHudCrash === 'function') renderHudCrash(wt);
+    if(typeof renderHudCrash === 'function') renderHudCrash(wt, ageMos);
     if(typeof renderHudSmartCards === 'function') renderHudSmartCards(wt);
     
-    // Trigger quick dose update if a drug is selected
     if(typeof runHudQuickDose === 'function') runHudQuickDose();
 };
 
@@ -94,7 +94,6 @@ function renderHudGrowth(wt, ht, ageMos, gender) {
     if(!out) return;
     if(!wt || !ht || !ageMos) { out.innerHTML = 'Enter Wt, Ht & Age to view triage.'; out.className = 'hud-empty-state'; return; }
     
-    // Approximate Expected Weight (Weech's Formula)
     let expectedWt = 0; let ageYrs = ageMos/12;
     if(ageYrs < 1) expectedWt = (ageMos + 9) / 2;
     else if (ageYrs <= 6) expectedWt = (ageYrs * 2) + 8;
@@ -130,45 +129,6 @@ function renderHudGrowth(wt, ht, ageMos, gender) {
         </div>
     `;
 }
-    const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
-    const ht = parseFloat(document.getElementById('hudHeight').value) || 0;
-    const gender = document.getElementById('hudGender').value || 'male';
-
-    renderHudGrowth(wt, ht, ageMos, gender);
-    renderHudVitals(ageMos);
-    renderHudFluids(wt);
-    renderHudRedFlags(ageMos);
-    renderHudVax(ageMos);
-    renderHudMilestones(ageMos);
-    renderHudCrash(wt);
-    renderHudFever(wt);
-};
-
-function renderHudGrowth(wt, ht, ageMos, gender) {
-    const out = document.getElementById('hudGrowthOutput');
-    if(!out) return;
-    if(!wt || !ht || !ageMos) { out.innerHTML = 'Enter Wt, Ht & Age to view triage.'; out.className = 'hud-empty-state'; return; }
-    
-    // Simplistic fallback logic for HUD (integrates seamlessly into visual grid)
-    const htM = ht / 100;
-    const bmi = wt / (htM * htM);
-    let status = "Normal"; let bg = "#dcfce3"; let col = "#166534";
-    
-    if (bmi < 14) { status = "Severe Wasting (SAM)"; bg = "#fee2e2"; col = "#991b1b"; }
-    else if (bmi < 15.5) { status = "Moderate Wasting (MAM)"; bg = "#fef3c7"; col = "#92400e"; }
-    else if (bmi > 25) { status = "Overweight"; bg = "#fef3c7"; col = "#92400e"; }
-
-    out.className = '';
-    out.innerHTML = `
-        <div style="background:${bg}; color:${col}; padding:12px; border-radius:8px; font-weight:800; text-align:center; margin-bottom:8px; border:1px solid ${col}40;">
-            ${status}
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-main);">
-            <span><b>BMI:</b> ${bmi.toFixed(1)}</span>
-            <span><b>Wt/Age:</b> Evaluated</span>
-        </div>
-    `;
-}
 
 function renderHudVitals(ageMos) {
     const out = document.getElementById('hudVitalsOutput');
@@ -183,7 +143,6 @@ function renderHudVitals(ageMos) {
     else if(ageYrs <= 12) { hr = "70 - 120"; rr = "18 - 30"; sbp = "90 - 110"; }
     else { hr = "60 - 100"; rr = "12 - 20"; sbp = "100 - 120"; }
 
-    // AAP Simplified BP 95th Percentile Shortcut
     let bp95 = "";
     if (ageYrs >= 1 && ageYrs <= 17) {
         let sys95 = 90 + (2 * Math.floor(ageYrs));
@@ -202,27 +161,24 @@ function renderHudVitals(ageMos) {
     `;
 }
 
-function renderHudFluids(wt) {
+function renderHudFluids(wt, ageMos) {
     const out = document.getElementById('hudFluidsOutput');
-    const ageMos = parseInt(document.getElementById('hudAge').value) || 0;
     if(!out) return;
     if(!wt) { out.innerHTML = 'Enter Wt & Age for targets.'; out.className = 'hud-empty-state'; return; }
     
-    // 1. Fluids (Holliday-Segar)
     let fluid = 0;
     if(wt <= 10) fluid = wt * 100;
     else if(wt <= 20) fluid = 1000 + ((wt-10)*50);
     else fluid = 1500 + ((wt-20)*20);
     let hrRate = fluid / 24;
 
-    // 2. ICMR Energy & Protein Mapping
     let cals = 0; let pro = 0;
     if (ageMos < 6) { cals = wt * 92; pro = wt * 1.16; }
     else if (ageMos < 12) { cals = wt * 80; pro = wt * 1.69; }
     else if (ageMos < 48) { cals = 1060; pro = 16.7; }
     else if (ageMos < 84) { cals = 1350; pro = 20.1; }
     else if (ageMos < 120) { cals = 1690; pro = 29.5; }
-    else { cals = wt * 60; pro = wt * 1.0; } // Fallback
+    else { cals = wt * 60; pro = wt * 1.0; }
 
     out.className = '';
     out.innerHTML = `
@@ -295,9 +251,8 @@ function renderHudMilestones(ageMos) {
     out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--brand-pink); font-size:0.9rem; line-height:1.6; font-weight:600;">${ms.map(m=>`<li style="margin-bottom:4px;">${m}</li>`).join('')}</ul>`;
 }
 
-function renderHudCrash(wt) {
+function renderHudCrash(wt, ageMos) {
     const out = document.getElementById('hudCrashOutput');
-    const ageMos = parseInt(document.getElementById('hudAge').value) || 0;
     if(!out) return;
     if(!wt) { out.innerHTML = 'Enter Wt for emergency dosing.'; out.className = 'hud-empty-state'; return; }
     
@@ -306,7 +261,6 @@ function renderHudCrash(wt) {
     let midaz = (wt * 0.1).toFixed(2);
     let diazepam = (wt * 0.3).toFixed(1);
     
-    // Dextrose formulation adaptation (D10W for infants vs D25W for older)
     let dextrose = "";
     if (ageMos < 12) dextrose = `<span style="color:#d97706; font-weight:900;">${(wt * 5).toFixed(0)} mL (D10W)</span>`;
     else dextrose = `<span style="color:#d97706; font-weight:900;">${(wt * 2).toFixed(0)} mL (D25W)</span>`;
@@ -331,8 +285,8 @@ function renderHudSmartCards(wt) {
     let pcm120 = (wt * 15) / (120/5);
     let pcm250 = (wt * 15) / (250/5);
     let ibu = (wt * 10) / (100/5);
-    let amox228 = (wt * 40) / (200/5); // Amox/Clav 228 (200mg/5ml base) standard BID
-    let amox457 = (wt * 40) / (400/5); // Amox/Clav 457 (400mg/5ml base)
+    let amox228 = (wt * 40) / (200/5);
+    let amox457 = (wt * 40) / (400/5);
 
     const cardStyle = `scroll-snap-align: start; flex: 0 0 140px; background: rgba(91,97,246,0.05); border: 1px solid var(--primary-light); padding: 12px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center;`;
     
@@ -369,22 +323,6 @@ function renderHudSmartCards(wt) {
         </div>
     `;
 }
-
-window.populateHudDrugs = function() {
-    const cat = document.getElementById('hudQuickCat').value;
-    const formSelect = document.getElementById('hudQuickForm');
-    formSelect.innerHTML = '<option value="">-- Select Drug --</option>';
-    if(!cat) return;
-    
-    let db = typeof getUnifiedDB === 'function' ? getUnifiedDB() : window.drugsDb;
-    if(!db) return;
-    const filtered = db.filter(d => d.category === cat);
-    filtered.forEach(d => { 
-        const icon = d.isCustom ? "👤 " : "";
-        formSelect.innerHTML += `<option value="${d.id}">${icon}${d.name}</option>`; 
-    });
-    runHudQuickDose();
-};
 
 window.populateHudDrugs = function() {
     const cat = document.getElementById('hudQuickCat').value;
@@ -458,11 +396,9 @@ window.printGhostFile = function() {
 
     const engine = document.getElementById('printEngine'); 
     
-    // Grab HTML directly from the HUD
-    let growthHtml = document.getElementById('hudGrowthOutput').innerHTML;
     let vitalsHtml = document.getElementById('hudVitalsOutput').innerHTML;
-    let pcm = (wt * 15) / 24; // 120/5
-    let ibu = (wt * 10) / 20; // 100/5
+    let pcm = (wt * 15) / 24; 
+    let ibu = (wt * 10) / 20; 
 
     let html = `
         <div style="font-family: sans-serif; padding: 20px;">
