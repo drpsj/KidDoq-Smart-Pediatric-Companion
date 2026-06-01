@@ -54,16 +54,108 @@ document.addEventListener("DOMContentLoaded", function() {
 // 🚀 MAGIC HUD ENGINE (Cockpit Dashboard)
 // ==========================================
 
+// ==========================================
+// 📈 PEDIATRIC PREDICTIVE VITALS ENGINE
+// ==========================================
+window.predictExpectedVitals = function(yrs, mos) {
+    let totalMos = (yrs * 12) + mos;
+    let expected = { wt: "", ht: "", hc: "", mac: "" };
+
+    if (totalMos > 0) {
+        // Weight (Weech's Formula)
+        if (totalMos < 12) expected.wt = ((totalMos + 9) / 2).toFixed(1);
+        else if (yrs <= 6) expected.wt = ((yrs * 2) + 8).toFixed(1);
+        else if (yrs <= 12) expected.wt = (((yrs * 7) - 5) / 2).toFixed(1);
+
+        // Height
+        if (totalMos < 3) expected.ht = 60;
+        else if (totalMos < 6) expected.ht = 65;
+        else if (totalMos < 9) expected.ht = 70;
+        else if (totalMos < 12) expected.ht = 75;
+        else if (yrs <= 12) expected.ht = (yrs * 6) + 77;
+
+        // Head Circumference
+        if (totalMos <= 1) expected.hc = 35;
+        else if (totalMos <= 3) expected.hc = 40;
+        else if (totalMos <= 6) expected.hc = 43;
+        else if (totalMos <= 12) expected.hc = 46;
+        else if (yrs === 2) expected.hc = 48;
+        else if (yrs === 3) expected.hc = 49;
+        else if (yrs === 4) expected.hc = 50;
+        else if (yrs >= 5 && yrs <= 12) expected.hc = 51;
+
+        // MAC / MUAC
+        if (totalMos >= 6 && yrs <= 5) expected.mac = 15.5;
+        else if (yrs > 5 && yrs <= 10) expected.mac = 17.0;
+        else if (yrs > 10) expected.mac = 20.0;
+    }
+    return expected;
+};
+
+// 1. Intercept Registry Modal Inputs
+window.estimateWeightFromAge = function() {
+    let yrs = parseInt(document.getElementById('ageYrs').value) || 0;
+    let mos = parseInt(document.getElementById('ageMos').value) || 0;
+    let expected = predictExpectedVitals(yrs, mos);
+
+    let wtInput = document.getElementById('pWeight');
+    let htInput = document.getElementById('htCm');
+    let hcInput = document.getElementById('hcCm');
+    
+    // Auto-fill only if the field is empty, allowing manual overrides
+    if (wtInput && wtInput.value === "" && expected.wt) wtInput.value = expected.wt;
+    if (htInput && htInput.value === "" && expected.ht) htInput.value = expected.ht;
+    if (hcInput && hcInput.value === "" && expected.hc) hcInput.value = expected.hc;
+    
+    if(typeof saveAndRegisterPatient === 'function') saveAndRegisterPatient(true);
+};
+
+// 2. Intercept Dashboard HUD Inputs
 window.syncHudAge = function() {
     const yrs = parseInt(document.getElementById('hudAgeYrs').value) || 0;
     const mos = parseInt(document.getElementById('hudAgeMos').value) || 0;
     document.getElementById('hudAge').value = (yrs * 12) + mos;
+
+    let expected = predictExpectedVitals(yrs, mos);
+    let wtInput = document.getElementById('hudWeight');
+    let htInput = document.getElementById('hudHeight');
+    let hcInput = document.getElementById('hudHc');
+    let macInput = document.getElementById('hudMac');
+
+    if (wtInput && wtInput.value === "" && expected.wt) wtInput.value = expected.wt;
+    if (htInput && htInput.value === "" && expected.ht) htInput.value = expected.ht;
+    if (hcInput && hcInput.value === "" && expected.hc) hcInput.value = expected.hc;
+    if (macInput && macInput.value === "" && expected.mac) macInput.value = expected.mac;
+};
+
+// --- NEW: DIRECT REGISTRY SHORTCUT ---
+window.openPrefilledRegistry = function() {
+    // Copy data from HUD to Modal
+    document.getElementById('ageYrs').value = document.getElementById('hudAgeYrs').value || "";
+    document.getElementById('ageMos').value = document.getElementById('hudAgeMos').value || "";
+    document.getElementById('pWeight').value = document.getElementById('hudWeight').value || "";
+    document.getElementById('htCm').value = document.getElementById('hudHeight').value || "";
+    
+    let hcInput = document.getElementById('hcCm');
+    if(hcInput) hcInput.value = document.getElementById('hudHc') ? document.getElementById('hudHc').value : "";
+    
+    document.getElementById('gender').value = document.getElementById('hudGender').value || "male";
+    
+    // Open Modal
+    document.getElementById('registryModal').classList.add('active');
+    if(typeof showSystemToast === 'function') showSystemToast("✨ Vitals Copied. Enter Name to save to database.");
 };
 
 window.broadcastGlobalParameters = function() {
     const ageMos = parseInt(document.getElementById('hudAge').value) || 0;
     const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
     const ht = parseFloat(document.getElementById('hudHeight').value) || 0;
+    
+    let hcInput = document.getElementById('hudHc');
+    let macInput = document.getElementById('hudMac');
+    const hc = hcInput ? parseFloat(hcInput.value) || 0 : 0;
+    const mac = macInput ? parseFloat(macInput.value) || 0 : 0;
+    
     const gender = document.getElementById('hudGender').value || 'male';
 
     // Context Shifting
@@ -78,6 +170,7 @@ window.broadcastGlobalParameters = function() {
     }
 
     if(typeof renderHudGrowth === 'function') renderHudGrowth(wt, ht, ageMos, gender);
+    if(typeof renderHudAnthro === 'function') renderHudAnthro(hc, mac, ageMos);
     if(typeof renderHudVitals === 'function') renderHudVitals(ageMos);
     if(typeof renderHudFluids === 'function') renderHudFluids(wt, ageMos);
     if(typeof renderHudRedFlags === 'function') renderHudRedFlags(ageMos);
@@ -129,6 +222,43 @@ function renderHudGrowth(wt, ht, ageMos, gender) {
         </div>
     `;
 }
+
+window.renderHudAnthro = function(hc, mac, ageMos) {
+    const out = document.getElementById('hudAnthroOutput');
+    if(!out) return;
+    if(!hc && !mac) { out.innerHTML = 'Enter HC & MAC for alerts.'; out.className = 'hud-empty-state'; return; }
+    
+    let expected = typeof predictExpectedVitals === 'function' ? predictExpectedVitals(Math.floor(ageMos/12), ageMos % 12) : {};
+    
+    let hcHtml = "";
+    if (hc) {
+        let hcStat = "Normal"; let hcCol = "var(--success)";
+        if (expected.hc) {
+            let diff = hc - expected.hc;
+            if (diff <= -2.5) { hcStat = "Microcephaly Risk"; hcCol = "var(--danger)"; }
+            else if (diff >= 2.5) { hcStat = "Macrocephaly Risk"; hcCol = "var(--warning)"; }
+        }
+        hcHtml = `<div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;"><span>HC (${hc} cm):</span> <b style="color:${hcCol};">${hcStat}</b></div>`;
+    }
+
+    let macHtml = "";
+    if (mac) {
+        let macStat = "Normal (>12.5)"; let macCol = "var(--success)";
+        if (ageMos >= 6 && ageMos <= 60) {
+            if (mac < 11.5) { macStat = "SAM (< 11.5)"; macCol = "var(--danger)"; }
+            else if (mac >= 11.5 && mac <= 12.5) { macStat = "MAM (11.5 - 12.5)"; macCol = "var(--warning)"; }
+        } else {
+            macStat = "Evaluated"; macCol = "var(--text-main)";
+        }
+        macHtml = `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>MAC (${mac} cm):</span> <b style="color:${macCol};">${macStat}</b></div>`;
+    }
+
+    out.className = '';
+    out.innerHTML = `
+        ${hcHtml}
+        ${macHtml}
+    `;
+};
 
 function renderHudVitals(ageMos) {
     const out = document.getElementById('hudVitalsOutput');
