@@ -1618,15 +1618,27 @@ function attachDirectScrub(zoneId, type) {
             
             if (type === 'weight') {
                 let steps = Math.floor(deltaX / 8); 
-                let newWt = startVal + (steps * 0.5); // 0.5kg increments
+                let newWt = startVal + (steps * 0.5); 
                 if (newWt < 0) newWt = 0;
                 
                 document.getElementById('hudWeight').value = newWt.toFixed(1);
                 document.getElementById('anchorWtDisplay').innerText = newWt.toFixed(1);
                 
+                renderInstantDoses(newWt);
+                
+                // Trigger Growth Card on Weight change
+                const currentAgeTotal = (parseInt(document.getElementById('hudAgeYrs').value) || 0) * 12 + (parseInt(document.getElementById('hudAgeMos').value) || 0);
+                renderGrowthSnapshot(currentAgeTotal, newWt);
+                
+                // Trigger Vitals & Fluids on Age change
+                renderVitalsAndFluids(newTotal, currentWt);
+                
+                // NEW: Trigger Anthropometry on Age change (to verify 6-59 month standard)
+                renderAnthropometry();
+                
             } else if (type === 'age') {
                 let steps = Math.floor(deltaX / 10); 
-                let newTotal = startTotalMonths + steps; // 1 month increments
+                let newTotal = startTotalMonths + steps; 
                 if (newTotal < 0) newTotal = 0;
                 
                 const newYrs = Math.floor(newTotal / 12);
@@ -1638,6 +1650,18 @@ function attachDirectScrub(zoneId, type) {
                 if (newYrs > 0) ageStr += newYrs + 'Y ';
                 if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
                 document.getElementById('anchorAgeDisplay').innerText = ageStr;
+                
+                // Trigger Growth Card on Age change
+                const currentWt = document.getElementById('hudWeight').value;
+                renderGrowthSnapshot(newTotal, currentWt);
+                
+                // NEW: Trigger Vitals & Fluids on Age change
+                renderVitalsAndFluids(newTotal, currentWt);
+                // Trigger Anthropometry on Age change (to verify 6-59 month standard)
+                renderAnthropometry();
+                
+                // NEW: Trigger Milestones and Red Flags on Age change
+                renderMilestonesAndRedFlags(newTotal);
             }
             
             // Instantly fire clinical math & telemetry
@@ -1657,6 +1681,10 @@ function attachDirectScrub(zoneId, type) {
 
 // 3. INTELLIGENT TELEMETRY (Reordering Grid)
 function runCortexTelemetry(totalMonths) {
+    // NEW: Instantly calculate vaccines based on age
+    renderVaccinesDue(totalMonths);
+
+    const growth = document.getElementById('bentoGrowth');
     const growth = document.getElementById('bentoGrowth');
     const nutrition = document.getElementById('bentoNutrition');
     const vitals = document.getElementById('bentoVitals');
@@ -1683,10 +1711,573 @@ function runCortexTelemetry(totalMonths) {
     }
 }
 
+// 4. HERO DOSE ENGINE (Layer 1 Auto-Calculator)
+function renderInstantDoses(weight) {
+    const container = document.getElementById('hudSmartDoseCards');
+    const wt = parseFloat(weight);
+
+    if (!wt || wt <= 0) {
+        container.innerHTML = `<div class="hud-empty-state" style="width: 100%; border: 1px dashed var(--border-soft); text-align: left; padding: 15px;">Enter Weight to unlock Instant Doses...</div>`;
+        return;
+    }
+
+    // Standard Indian OPD Concentrations (Adjustable in your clinical-math.js later)
+    const doses = [
+        { name: "Paracetamol", dose: "15 mg/kg", form: "250mg/5mL", calc: ((15 * wt * 5) / 250).toFixed(1), unit: "mL", freq: "Q6H PRN", color: "var(--brand-blue)" },
+        { name: "Ibuprofen", dose: "10 mg/kg", form: "100mg/5mL", calc: ((10 * wt * 5) / 100).toFixed(1), unit: "mL", freq: "Q8H PRN", color: "var(--warning)" },
+        { name: "Amoxicillin", dose: "40 mg/kg/day", form: "200mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" },
+        { name: "Cetirizine", dose: "0.25 mg/kg", form: "5mg/5mL", calc: ((0.25 * wt * 5) / 5).toFixed(1), unit: "mL", freq: "OD HS", color: "var(--brand-pink)" },
+        { name: "Ondansetron", dose: "0.15 mg/kg", form: "2mg/5mL", calc: ((0.15 * wt * 5) / 2).toFixed(1), unit: "mL", freq: "SOS", color: "var(--brand-cyan)" }
+    ];
+
+    let html = '';
+    doses.forEach(d => {
+        html += `
+        <div style="min-width: 140px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px; border-left: 3px solid ${d.color}; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.9rem; font-weight: 800; color: var(--text-main);">${d.name}</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;">${d.dose} • ${d.form}</div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <span style="font-size: 1.3rem; font-weight: 800; color: ${d.color};">${d.calc}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-main); font-weight: 600;">${d.unit}</span>
+                </div>
+                <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); background: var(--bg-body); padding: 2px 6px; border-radius: 6px;">${d.freq}</div>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+// 5. NIS VACCINE TELEMETRY
+function renderVaccinesDue(totalMonths) {
+    const vaxContainer = document.getElementById('hudVaxOutput');
+    if (!vaxContainer) return;
+
+    let due = [];
+    let status = "Due Now";
+    let color = "var(--brand-pink)";
+
+    // Indian National Immunization Schedule (NIS) Logic
+    if (totalMonths === 0) {
+        due = ["BCG", "OPV 0", "Hepatitis B (Birth Dose)"];
+    } else if (totalMonths === 1 || totalMonths === 2) { // 6-10 Weeks
+        due = ["Pentavalent 1/2", "OPV 1/2", "Rotavirus 1/2", "fIPV 1", "PCV 1"];
+    } else if (totalMonths === 3 || totalMonths === 4) { // 14 Weeks
+        due = ["Pentavalent 3", "OPV 3", "Rotavirus 3", "fIPV 2", "PCV 2"];
+    } else if (totalMonths >= 9 && totalMonths <= 12) {
+        due = ["MR 1 (Measles/Rubella)", "JE 1", "PCV Booster", "Vitamin A (1st Dose)"];
+    } else if (totalMonths >= 16 && totalMonths <= 24) {
+        due = ["MR 2", "JE 2", "DPT Booster 1", "OPV Booster"];
+    } else if (totalMonths >= 60 && totalMonths <= 72) { // 5-6 Years
+        due = ["DPT Booster 2"];
+    } else if (totalMonths >= 120 && totalMonths <= 132) { // 10 Years
+        due = ["Td (Tetanus & adult Diphtheria)"];
+    } else if (totalMonths >= 192) { // 16 Years
+        due = ["Td (16 Yr Dose)"];
+    } else {
+        status = "Up to Date / Catch-up Phase";
+        color = "var(--success)";
+        due = ["Review historical ledger for missed doses."];
+    }
+
+    let html = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+    
+    html += `<div style="font-size: 0.75rem; font-weight: 800; color: ${color}; text-transform: uppercase; margin-bottom: 4px;">${status}</div>`;
+    
+    due.forEach(vax => {
+        html += `
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${vax}</span>
+            <span style="color: ${color}; font-size: 1.2rem;">💉</span>
+        </div>`;
+    });
+    
+    html += `</div>`;
+    vaxContainer.innerHTML = html;
+}
+
+// 6. GROWTH SNAPSHOT TELEMETRY (WFA Z-Score UI)
+function renderGrowthSnapshot(totalMonths, weightInKg) {
+    const container = document.getElementById('hudGrowthOutput');
+    if (!container) return;
+
+    const wt = parseFloat(weightInKg) || 0;
+    
+    // Empty state if no weight is entered
+    if (wt <= 0) {
+        container.innerHTML = `<div class="hud-empty-state" style="border:none;">Enter Wt & Age to view triage.</div>`;
+        return;
+    }
+
+    // --- STRUCTURAL PLACEHOLDER FOR WHO Z-SCORES ---
+    // (Replace this math with your actual WHO datasets from clinical-math.js later)
+    // For now, we simulate a Z-Score based on a rough 50th percentile estimate.
+    const estimated50th = (totalMonths < 12) ? (totalMonths * 0.5 + 3.3) : (totalMonths * 0.2 + 8);
+    let simulatedZScore = ((wt - estimated50th) / (estimated50th * 0.1)); 
+    
+    // Cap it for the UI display
+    if (simulatedZScore > 4) simulatedZScore = 4.0;
+    if (simulatedZScore < -4) simulatedZScore = -4.0;
+
+    let zStr = (simulatedZScore > 0 ? "+" : "") + simulatedZScore.toFixed(2);
+    
+    let status = "Normal";
+    let color = "var(--success)";
+    let bgTint = "rgba(0, 250, 154, 0.1)";
+
+    if (simulatedZScore <= -2 && simulatedZScore > -3) {
+        status = "Moderate (MAM)";
+        color = "var(--warning)";
+        bgTint = "rgba(255, 176, 32, 0.1)";
+    } else if (simulatedZScore <= -3) {
+        status = "Severe (SAM)";
+        color = "var(--danger)";
+        bgTint = "rgba(255, 59, 59, 0.1)";
+    } else if (simulatedZScore >= 2) {
+        status = "Overweight";
+        color = "var(--brand-blue)";
+        bgTint = "rgba(106, 112, 255, 0.1)";
+    }
+
+    // The UI Render matching your Mockup
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-bottom: 2px;">WFA (Weight for Age)</div>
+                <div style="font-size: 2.2rem; font-weight: 800; color: ${color}; line-height: 1; letter-spacing: -1px;">
+                    ${zStr} <span style="font-size: 1rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0;">SD</span>
+                </div>
+            </div>
+            <div style="background: ${bgTint}; color: ${color}; padding: 6px 12px; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 800; box-shadow: 0 0 10px ${bgTint};">
+                ${status}
+            </div>
+        </div>
+        
+        <!-- Animated Mock Trendline -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 35px; margin-top: 10px; border-bottom: 1px dashed var(--border-soft); padding-bottom: 4px;">
+            <div style="width: 15%; height: 30%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
+            <div style="width: 15%; height: 50%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
+            <div style="width: 15%; height: 60%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
+            <div style="width: 15%; height: 75%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
+            <div style="width: 15%; height: ${Math.max(20, 100 + (simulatedZScore * 15))}%; background: ${color}; border-radius: 4px 4px 0 0; box-shadow: 0 -2px 10px ${bgTint}; transition: height 0.3s ease, background 0.3s ease;"></div>
+        </div>
+        <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; margin-top: 6px; display: flex; justify-content: space-between;">
+            <span>Trend ↗</span>
+            <span style="color: ${color};">Current</span>
+        </div>
+    `;
+}
+
+// 7. VITALS & FLUIDS TELEMETRY
+function renderVitalsAndFluids(totalMonths, weightInKg) {
+    const vitalsContainer = document.getElementById('hudVitalsOutput');
+    const fluidsContainer = document.getElementById('hudFluidsOutput');
+    
+    if (!vitalsContainer || !fluidsContainer) return;
+
+    const wt = parseFloat(weightInKg) || 0;
+
+    // --- VITALS LOGIC (Age-based PALS Guidelines) ---
+    let hr = "--", rr = "--", sysBp = "--";
+    if (totalMonths <= 1) { hr = "100-205"; rr = "30-60"; sysBp = "60-90"; }
+    else if (totalMonths <= 12) { hr = "100-190"; rr = "30-53"; sysBp = "70-105"; }
+    else if (totalMonths <= 36) { hr = "98-140"; rr = "22-37"; sysBp = "85-105"; }
+    else if (totalMonths <= 60) { hr = "80-120"; rr = "20-28"; sysBp = "89-112"; }
+    else if (totalMonths <= 144) { hr = "75-118"; rr = "18-25"; sysBp = "97-120"; }
+    else { hr = "60-100"; rr = "12-20"; sysBp = "110-130"; }
+
+    vitalsContainer.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
+            <div style="background: rgba(0, 229, 255, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.1);">
+                <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">HR (bpm)</div>
+                <div style="font-size: 0.95rem; color: var(--brand-cyan); font-weight: 800; margin-top: 4px;">${hr}</div>
+            </div>
+            <div style="background: rgba(0, 250, 154, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(0, 250, 154, 0.1);">
+                <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">RR (/min)</div>
+                <div style="font-size: 0.95rem; color: var(--success); font-weight: 800; margin-top: 4px;">${rr}</div>
+            </div>
+            <div style="background: rgba(255, 176, 32, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(255, 176, 32, 0.1);">
+                <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Sys BP</div>
+                <div style="font-size: 0.95rem; color: var(--warning); font-weight: 800; margin-top: 4px;">${sysBp}</div>
+            </div>
+        </div>
+    `;
+
+    // --- FLUIDS LOGIC (Weight-based Holliday-Segar) ---
+    if (wt <= 0) {
+        fluidsContainer.innerHTML = `<div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding-top: 5px;">Enter Wt for Maintenance Fluids</div>`;
+        return;
+    }
+
+    let mlPerDay = 0;
+    if (wt <= 10) mlPerDay = wt * 100;
+    else if (wt <= 20) mlPerDay = 1000 + ((wt - 10) * 50);
+    else mlPerDay = 1500 + ((wt - 20) * 20);
+
+    let mlPerHour = (mlPerDay / 24).toFixed(1);
+
+    fluidsContainer.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 5px;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Daily Maint.</div>
+            <div style="font-size: 1.05rem; color: var(--brand-blue); font-weight: 800;">${mlPerDay.toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">mL/24h</span></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Hourly Rate</div>
+            <div style="font-size: 1.05rem; color: var(--brand-cyan); font-weight: 800;">${mlPerHour} <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">mL/hr</span></div>
+        </div>
+    `;
+}
+
+// 8. ANTHROPOMETRY & NUTRITION TELEMETRY
+function renderAnthropometry() {
+    const container = document.getElementById('hudAnthroOutput');
+    if (!container) return;
+
+    // Pull values directly from the DOM
+    const totalMonths = (parseInt(document.getElementById('hudAgeYrs').value) || 0) * 12 + (parseInt(document.getElementById('hudAgeMos').value) || 0);
+    const hc = parseFloat(document.getElementById('hudHc').value) || 0;
+    const mac = parseFloat(document.getElementById('hudMac').value) || 0;
+
+    // Empty state if nothing is entered
+    if (hc <= 0 && mac <= 0) {
+        container.innerHTML = `<div class="hud-empty-state" style="border:none;">Open top drawer (⌄) to enter HC & MAC.</div>`;
+        return;
+    }
+
+    // --- MUAC LOGIC (Standard WHO Triage for 6-59 months) ---
+    let macStatus = "Normal";
+    let macColor = "var(--success)";
+    let macBg = "rgba(0, 250, 154, 0.1)";
+
+    if (mac > 0) {
+        if (mac < 11.5) {
+            macStatus = "SAM (Severe)";
+            macColor = "var(--danger)";
+            macBg = "rgba(255, 59, 59, 0.1)";
+        } else if (mac >= 11.5 && mac <= 12.5) {
+            macStatus = "MAM (Moderate)";
+            macColor = "var(--warning)";
+            macBg = "rgba(255, 176, 32, 0.1)";
+        }
+    }
+
+    let html = `<div style="display: flex; flex-direction: column; gap: 10px;">`;
+
+    // Render MAC/MUAC Block
+    if (mac > 0) {
+        const isStandardAge = (totalMonths >= 6 && totalMonths <= 59);
+        const ageWarning = !isStandardAge ? `<div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">(Age outside 6-59mo WHO standard)</div>` : '';
+        
+        html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: ${macBg}; padding: 10px 12px; border-radius: 12px; border-left: 4px solid ${macColor}; transition: all 0.3s ease;">
+            <div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">MUAC</div>
+                <div style="font-size: 1.2rem; font-weight: 800; color: ${macColor};">${mac} <span style="font-size: 0.75rem;">cm</span></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.85rem; font-weight: 800; color: ${macColor};">${macStatus}</div>
+                ${ageWarning}
+            </div>
+        </div>`;
+    }
+
+    // Render HC (Head Circumference) Block
+    if (hc > 0) {
+        html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-soft);">
+            <div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Head Circ.</div>
+                <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">${hc} <span style="font-size: 0.75rem;">cm</span></div>
+            </div>
+            <div style="font-size: 0.7rem; font-weight: 600; color: var(--brand-cyan); text-align: right; background: rgba(0, 229, 255, 0.1); padding: 4px 8px; border-radius: 6px;">
+                Recorded
+            </div>
+        </div>`;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// 9. MILESTONES & RED FLAGS TELEMETRY
+function renderMilestonesAndRedFlags(totalMonths) {
+    const msContainer = document.getElementById('hudMilestonesOutput');
+    const rfContainer = document.getElementById('hudRedFlagsOutput');
+    
+    if (!msContainer || !rfContainer) return;
+
+    let milestones = [];
+    let redFlags = [];
+
+    // --- DEVELOPMENTAL LOGIC ENGINE ---
+    if (totalMonths < 2) {
+        milestones = ["Fixes & follows moving face", "Alert to sound", "Startles to loud noise", "Flexed posture"];
+        redFlags = ["Fever >38°C is a medical emergency", "Strict Back-to-Sleep (SIDS prevention)", "Evaluate poor suck/feeding"];
+    } else if (totalMonths >= 2 && totalMonths < 4) {
+        milestones = ["Social smile", "Coos / Gurgles", "Lifts head 45° prone", "Opens hands partially"];
+        redFlags = ["No visual tracking", "No response to loud noise", "Extreme floppiness or stiffness"];
+    } else if (totalMonths >= 4 && totalMonths < 6) {
+        milestones = ["Laughs out loud", "Reaches for objects", "Rolls front to back", "Holds head steady"];
+        redFlags = ["Not tracking crossing midline", "Head lag when pulled to sit", "Introduce safe solid foods (choking risks)"];
+    } else if (totalMonths >= 6 && totalMonths < 9) {
+        milestones = ["Babbles (da-da, ba-ba)", "Sits without support", "Transfers objects hand-to-hand"];
+        redFlags = ["Not reaching for objects", "Does not roll over in either direction", "Baby-proof home (stairs, outlets)"];
+    } else if (totalMonths >= 9 && totalMonths < 12) {
+        milestones = ["Pincer grasp", "Crawls or cruises", "Understands 'No'", "Responds to name"];
+        redFlags = ["Unable to sit independently", "No babbling", "Avoid honey (Botulism risk)"];
+    } else if (totalMonths >= 12 && totalMonths < 18) {
+        milestones = ["Says 1-2 words", "Stands alone", "Takes first steps", "Points to objects"];
+        redFlags = ["No single words", "Does not crawl or stand", "Transition to whole cow's milk"];
+    } else if (totalMonths >= 18 && totalMonths < 24) {
+        milestones = ["Walks well / Runs", "Uses cup / spoon", "Says 10+ words", "Points to body parts"];
+        redFlags = ["Not walking independently", "No pointing or gestures", "Limit screen time to zero"];
+    } else if (totalMonths >= 24 && totalMonths < 36) {
+        milestones = ["2-3 word sentences", "Jumps with both feet", "Copies a circle", "Follows 2-step commands"];
+        redFlags = ["Avoid OTC cough/cold syrups", "Monitor for febrile seizures", "Assess for Autism risk (M-CHAT)"];
+    } else if (totalMonths >= 36 && totalMonths < 48) {
+        milestones = ["Tells stories", "Rides tricycle", "Uses toilet", "Speech 75% intelligible"];
+        redFlags = ["Unintelligible speech", "No pretend play", "Cannot throw a ball overhand"];
+    } else if (totalMonths >= 48 && totalMonths < 60) {
+        milestones = ["Hops on one foot", "Copies a cross", "Plays with other children"];
+        redFlags = ["Cannot jump in place", "Ignores other children", "Review booster seat safety"];
+    } else {
+        milestones = ["School-aged performance", "Rides bicycle", "Reads/Writes basic words"];
+        redFlags = ["Monitor BMI & Screen Time", "Assess vision/hearing", "Review bullying & school performance"];
+    }
+
+    // Render Milestones (Pink Styling matching your Mockup)
+    let msHtml = `<ul style="list-style-type: disc; padding-left: 20px; margin: 0; color: #EC4899; font-size: 0.9rem; font-weight: 700; line-height: 1.6;">`;
+    milestones.forEach(m => msHtml += `<li style="margin-bottom: 6px;">${m}</li>`);
+    msHtml += `</ul>`;
+    msContainer.innerHTML = msHtml;
+
+    // Render Red Flags (Red Styling matching your Mockup)
+    let rfHtml = `<ul style="list-style-type: disc; padding-left: 20px; margin: 0; color: #EF4444; font-size: 0.9rem; font-weight: 700; line-height: 1.6;">`;
+    redFlags.forEach(r => rfHtml += `<li style="margin-bottom: 6px;">${r}</li>`);
+    rfHtml += `</ul>`;
+    rfContainer.innerHTML = rfHtml;
+}
+
+// 10. LAYER 2: FULL FORMULARY ENGINE
+const pediatricDrugDB = {
+    antibiotics: [
+        { id: "amox_200", name: "Amoxicillin", form: "200mg/5mL", doseCalc: (wt) => `${((40 * wt * 5 / 200) / 2).toFixed(1)} mL`, freq: "BD", notes: "Standard 40mg/kg/day" },
+        { id: "amox_clav_228", name: "Amox-Clav", form: "228.5mg/5mL", doseCalc: (wt) => `${((40 * wt * 5 / 200) / 2).toFixed(1)} mL`, freq: "BD", notes: "Dosed on Amox component" },
+        { id: "azithro_200", name: "Azithromycin", form: "200mg/5mL", doseCalc: (wt) => `${((10 * wt * 5) / 200).toFixed(1)} mL`, freq: "OD", notes: "10mg/kg/day for 3 days" },
+        { id: "cefpodo_50", name: "Cefpodoxime", form: "50mg/5mL", doseCalc: (wt) => `${((10 * wt * 5 / 50) / 2).toFixed(1)} mL`, freq: "BD", notes: "10mg/kg/day divided BD" }
+    ],
+    antipyretics: [
+        { id: "pcm_250", name: "Paracetamol", form: "250mg/5mL", doseCalc: (wt) => `${((15 * wt * 5) / 250).toFixed(1)} mL`, freq: "Q6H PRN", notes: "15mg/kg/dose" },
+        { id: "ibu_100", name: "Ibuprofen", form: "100mg/5mL", doseCalc: (wt) => `${((10 * wt * 5) / 100).toFixed(1)} mL`, freq: "Q8H PRN", notes: "10mg/kg/dose. Avoid if <6mo" },
+        { id: "mefenamic_50", name: "Mefenamic Acid", form: "50mg/5mL", doseCalc: (wt) => `${((8 * wt * 5) / 50).toFixed(1)} mL`, freq: "Q8H PRN", notes: "8mg/kg/dose" }
+    ],
+    antihistamines: [
+        { id: "cetirizine_5", name: "Cetirizine", form: "5mg/5mL", doseCalc: (wt) => `${((0.25 * wt * 5) / 5).toFixed(1)} mL`, freq: "OD HS", notes: "0.25mg/kg/day" },
+        { id: "levocetirizine_2.5", name: "Levocetirizine", form: "2.5mg/5mL", doseCalc: (wt) => `${((0.125 * wt * 5) / 2.5).toFixed(1)} mL`, freq: "OD HS", notes: "0.125mg/kg/day" }
+    ],
+    respiratory: [
+        { id: "salbutamol_2", name: "Salbutamol Syrup", form: "2mg/5mL", doseCalc: (wt) => `${((0.15 * wt * 5) / 2).toFixed(1)} mL`, freq: "TDS", notes: "0.15mg/kg/dose" },
+        { id: "levo_salbutamol_1", name: "Levosalbutamol", form: "1mg/5mL", doseCalc: (wt) => `${((0.05 * wt * 5) / 1).toFixed(1)} mL`, freq: "TDS", notes: "0.05mg/kg/dose" }
+    ],
+    git: [
+        { id: "ondansetron_2", name: "Ondansetron", form: "2mg/5mL", doseCalc: (wt) => `${((0.15 * wt * 5) / 2).toFixed(1)} mL`, freq: "SOS", notes: "0.15mg/kg/dose" },
+        { id: "domperidone_1", name: "Domperidone", form: "1mg/1mL Drop", doseCalc: (wt) => `${(0.2 * wt).toFixed(1)} mL`, freq: "TDS", notes: "0.2mg/kg/dose" },
+        { id: "zinc_20", name: "Zinc Syrup", form: "20mg/5mL", doseCalc: (wt) => (wt < 10 ? "2.5 mL" : "5.0 mL"), freq: "OD x 14 Days", notes: "10mg if <6mo, 20mg if >6mo" }
+    ],
+    emergency: [
+        { id: "adren_1_1000", name: "Adrenaline IM", form: "1:1000", doseCalc: (wt) => `${(0.01 * wt).toFixed(2)} mL`, freq: "STAT IM", notes: "Max 0.3 mL (Anaphylaxis)" },
+        { id: "loraz_2", name: "Lorazepam IV", form: "2mg/mL", doseCalc: (wt) => `${((0.1 * wt) / 2).toFixed(2)} mL`, freq: "STAT IV", notes: "0.1mg/kg (Status Epilepticus)" }
+    ]
+};
+
+function populateHudDrugs() {
+    const cat = document.getElementById('hudQuickCat').value;
+    const formSelect = document.getElementById('hudQuickForm');
+    
+    // Reset formulation dropdown
+    formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
+    document.getElementById('hudQuickDoseRes').innerHTML = '';
+
+    if (cat && pediatricDrugDB[cat]) {
+        pediatricDrugDB[cat].forEach(drug => {
+            let opt = document.createElement('option');
+            opt.value = drug.id;
+            opt.innerText = `${drug.name} (${drug.form})`;
+            formSelect.appendChild(opt);
+        });
+    }
+}
+
+function runHudQuickDose() {
+    const cat = document.getElementById('hudQuickCat').value;
+    const drugId = document.getElementById('hudQuickForm').value;
+    const resDiv = document.getElementById('hudQuickDoseRes');
+    const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
+
+    if (!cat || !drugId) {
+        resDiv.innerHTML = '';
+        return;
+    }
+
+    if (wt <= 0) {
+        resDiv.innerHTML = `<div style="padding: 10px; background: rgba(255, 176, 32, 0.1); color: var(--warning); border-radius: 8px; font-size: 0.85rem; font-weight: bold; margin-top: 10px;">⚠️ Please scrub the Weight at the top of the screen first.</div>`;
+        return;
+    }
+
+    const drug = pediatricDrugDB[cat].find(d => d.id === drugId);
+    if (!drug) return;
+
+    // Output formatted to match Neon-Fusion aesthetic
+    resDiv.innerHTML = `
+        <div style="margin-top: 15px; padding: 15px; background: rgba(106, 112, 255, 0.05); border: 1px solid rgba(106, 112, 255, 0.2); border-radius: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <div>
+                    <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main);">${drug.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${drug.form}</div>
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-cyan); background: rgba(0, 229, 255, 0.1); padding: 4px 8px; border-radius: 8px;">
+                    ${drug.freq}
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px;">
+                <span style="font-size: 2.2rem; font-weight: 900; color: var(--brand-blue); line-height: 1;">${drug.doseCalc(wt)}</span>
+            </div>
+            
+            <div style="font-size: 0.75rem; color: var(--warning); font-weight: 600; border-top: 1px dashed var(--border-soft); padding-top: 8px; margin-top: 8px;">
+                ℹ️ ${drug.notes}
+            </div>
+        </div>
+    `;
+}
+
+// ==========================================
+// 11. CORE NAVIGATION & DYNAMIC TOOLS ENGINE
+// ==========================================
+
+// RESTORE: Sidebar / Bottom Nav Functionality
+window.switchNavTab = function(tabId) {
+    // Hide all views
+    document.querySelectorAll('.view-content').forEach(view => {
+        view.classList.remove('active-view');
+    });
+    
+    // Show target view
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active-view');
+    
+    window.scrollTo(0, 0);
+};
+
+// RESTORE: Jump to specific tool from Dashboard
+window.openClinicalTool = function(toolId) {
+    // Jump to the main Tools tab
+    switchNavTab('toolsTab'); 
+    
+    // Hide all individual tool panels
+    document.querySelectorAll('.sub-tab-content, .tool-panel').forEach(panel => {
+        panel.style.display = 'none';
+        panel.classList.remove('active');
+    });
+    
+    // Open the requested tool
+    const targetTool = document.getElementById(toolId);
+    if (targetTool) {
+        targetTool.style.display = 'block';
+        targetTool.classList.add('active');
+    }
+};
+
+// --- DYNAMIC TOOL CUSTOMIZER ---
+const availableTools = [
+    { id: 'erFeatureView', icon: '💧', name: 'Fluids Calc' },
+    { id: 'prescriptionFeatureView', icon: '📝', name: 'Case File' },
+    { id: 'malnutritionFeatureView', icon: '⚖️', name: 'Triage' },
+    { id: 'asthmaFeatureView', icon: '🫁', name: 'PRAM Score' },
+    { id: 'jaundiceFeatureView', icon: '👶', name: 'Jaundice' },
+    { id: 'nicuFeatureView', icon: '🍼', name: 'NICU GIR' },
+    { id: 'growthFeatureView', icon: '📈', name: 'Z-Scores' }
+];
+
+// Load saved tools from local storage (or default to these 3)
+let savedTools = JSON.parse(localStorage.getItem('kiddoq_fav_tools')) || ['erFeatureView', 'prescriptionFeatureView', 'asthmaFeatureView'];
+
+window.renderFavoriteTools = function() {
+    const grid = document.querySelector('.tools-mini-grid');
+    if (!grid) return;
+    
+    let html = '';
+    savedTools.forEach(toolId => {
+        const tool = availableTools.find(t => t.id === toolId);
+        if (tool) {
+            html += `<button class="secondary" onclick="openClinicalTool('${tool.id}')" style="margin:0; font-size:0.75rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow: var(--shadow-sm);"><span>${tool.icon}</span> ${tool.name}</button>`;
+        }
+    });
+    
+    // Add the "Edit" button at the end
+    html += `<button class="secondary" onclick="openToolCustomizer()" style="margin:0; font-size:0.75rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:4px; background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary-light); box-shadow: none;">⚙️ Edit</button>`;
+    
+    grid.innerHTML = html;
+};
+
+window.openToolCustomizer = function() {
+    let modal = document.getElementById('toolSettingsModal');
+    if (!modal) {
+        // Generate the modal dynamically so we don't mess up your HTML structure
+        modal = document.createElement('div');
+        modal.id = 'toolSettingsModal';
+        modal.className = 'modal-overlay active';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 350px; margin: auto; padding: 20px;">
+                <h3 style="margin-top: 0; margin-bottom: 5px; color: var(--text-main); font-size: 1.2rem;">Pin Clinical Tools</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">Select up to 3 quick-access tools for your dashboard.</p>
+                <div id="toolChecklist" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;"></div>
+                <button class="action" onclick="saveToolSettings()" style="margin:0;">Save & Update Dashboard</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    } else {
+        modal.classList.add('active');
+    }
+    
+    // Populate the checkboxes
+    const checklist = document.getElementById('toolChecklist');
+    checklist.innerHTML = '';
+    availableTools.forEach(tool => {
+        const isChecked = savedTools.includes(tool.id) ? 'checked' : '';
+        checklist.innerHTML += `
+            <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; color:var(--text-main); font-weight:600; padding:10px 12px; background:var(--bg-body); border-radius:12px; border:1px solid var(--border-soft);">
+                <input type="checkbox" value="${tool.id}" class="tool-checkbox" ${isChecked} style="width:18px; height:18px;">
+                <span style="font-size:1.2rem;">${tool.icon}</span> ${tool.name}
+            </label>
+        `;
+    });
+};
+
+window.saveToolSettings = function() {
+    const checkboxes = document.querySelectorAll('.tool-checkbox:checked');
+    savedTools = Array.from(checkboxes).map(cb => cb.value).slice(0, 3); // Restrict to top 3
+    
+    localStorage.setItem('kiddoq_fav_tools', JSON.stringify(savedTools));
+    document.getElementById('toolSettingsModal').classList.remove('active');
+    
+    renderFavoriteTools(); // Instantly update the dashboard
+};
+
 // Initialize the Vortex
 document.addEventListener('DOMContentLoaded', () => {
     attachDirectScrub('scrubAgeZone', 'age');
     attachDirectScrub('scrubWtZone', 'weight');
+    
+    // NEW: Listen for Anthropometry input in the top drawer
+    document.getElementById('hudHc').addEventListener('input', renderAnthropometry);
+    document.getElementById('hudMac').addEventListener('input', renderAnthropometry);
+    renderInstantDoses(document.getElementById('hudWeight').value);
+    renderFavoriteTools();
+    renderVaccinesDue(0);
+    renderVitalsAndFluids(0, 0);
+    renderMilestonesAndRedFlags(0);
 });
 </script>
 </body>
