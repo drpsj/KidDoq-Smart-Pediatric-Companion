@@ -1670,5 +1670,146 @@
         });
     }
 </script>
+<script>
+// 1. CORTEX UI CONTROLLERS
+function activateCortexInput() {
+    document.getElementById('cortexOverlay').classList.remove('cortex-hidden');
+    document.getElementById('cortexInputPod').classList.remove('cortex-hidden');
+    document.getElementById('cortexActionBtn').style.transform = 'translate(-50%, 150px)'; // Dive out
+}
+
+function dismissCortexInput() {
+    document.getElementById('cortexOverlay').classList.add('cortex-hidden');
+    document.getElementById('cortexInputPod').classList.add('cortex-hidden');
+    document.getElementById('cortexActionBtn').style.transform = 'translate(-50%, 0)'; // Return
+}
+
+function toggleCortexDrawer() {
+    const drawer = document.getElementById('cortexDrawer');
+    const chevron = document.querySelector('.anchor-chevron');
+    if(drawer.classList.contains('cortex-collapsed')) {
+        drawer.classList.remove('cortex-collapsed');
+        chevron.style.transform = 'rotate(180deg)';
+    } else {
+        drawer.classList.add('cortex-collapsed');
+        chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+function checkCortexReadiness() {
+    const wt = parseFloat(document.getElementById('hudWeight').value);
+    const btn = document.querySelector('.action-btn-mini');
+    if (wt > 0) {
+        btn.disabled = false;
+        btn.style.boxShadow = "0 0 15px rgba(0, 250, 154, 0.4)";
+    } else {
+        btn.disabled = true;
+        btn.style.boxShadow = "none";
+    }
+}
+
+// 2. THE MAGNETIC SNAP (Data routing)
+function executeCortexSnap() {
+    dismissCortexInput();
+    
+    const ageYrs = parseInt(document.getElementById('hudAgeYrs').value) || 0;
+    const ageMos = parseInt(document.getElementById('hudAgeMos').value) || 0;
+    const wt = document.getElementById('hudWeight').value;
+    const gender = document.getElementById('hudGender').value;
+
+    let ageText = '';
+    if(ageYrs > 0) ageText += `${ageYrs}Y `;
+    if(ageMos > 0 || ageYrs === 0) ageText += `${ageMos}M`;
+    
+    document.getElementById('anchorAge').innerText = ageText;
+    document.getElementById('anchorWt').innerText = wt;
+    document.getElementById('anchorGender').innerText = gender === 'male' ? 'Male' : 'Female';
+
+    // Calculate total months for the Telemetry Engine
+    const totalMonths = (ageYrs * 12) + ageMos;
+    runCortexTelemetry(totalMonths);
+}
+
+// 3. PHASE 4: INTELLIGENT TELEMETRY (The Reordering Engine)
+function runCortexTelemetry(totalMonths) {
+    const doses = document.getElementById('bentoDoses');
+    const growth = document.getElementById('bentoGrowth');
+    const nutrition = document.getElementById('bentoNutrition');
+    const vitals = document.getElementById('bentoVitals');
+    const vaccines = document.getElementById('bentoVaccines');
+    
+    // Smooth transition trigger
+    const allCards = [doses, growth, nutrition, vitals, vaccines];
+    allCards.forEach(card => card.style.opacity = '0.5');
+
+    setTimeout(() => {
+        if (totalMonths <= 1) {
+            // NEWBORN STATE (NICU/Jaundice prioritized)
+            vitals.style.order = 1;      // Jaundice/Fluids focus
+            growth.style.order = 2;      // Daily weight gain
+            nutrition.style.order = 3;   // Feeding
+            doses.style.order = 4;
+            vaccines.style.order = 5;
+        } else if (totalMonths > 1 && totalMonths <= 60) {
+            // INFANT / TODDLER STATE (Doses & Vaccines prioritized)
+            doses.style.order = 1;       // Fever/Antibiotics
+            vaccines.style.order = 2;    // Heavy NIS schedule
+            growth.style.order = 3;
+            nutrition.style.order = 4;
+            vitals.style.order = 5;
+        } else {
+            // SCHOOL-AGE / ADOLESCENT (Doses & Asthma/BP prioritized)
+            doses.style.order = 1;
+            vitals.style.order = 2;      // Asthma PRAM / BP Percentiles
+            growth.style.order = 3;
+            nutrition.style.order = 4;
+            vaccines.style.order = 5;
+        }
+        
+        // Restore opacity
+        allCards.forEach(card => card.style.opacity = '1');
+    }, 150); // slight delay for visual shuffle effect
+}
+
+// 4. THE SCRUB VORTEX (Haptic Mobile Engine)
+function attachScrubVortex(inputId, stepVal) {
+    const el = document.getElementById(inputId);
+    let startX = 0;
+    let startVal = 0;
+
+    el.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startVal = parseFloat(el.value) || 0;
+    }, { passive: true }); 
+
+    el.addEventListener('touchmove', (e) => {
+        const currentX = e.touches[0].clientX;
+        const deltaX = currentX - startX;
+        
+        if (Math.abs(deltaX) > 10) {
+            e.preventDefault(); // Lock screen from scrolling
+            if (document.activeElement === el) el.blur(); // Kill keyboard
+            
+            let steps = Math.floor(deltaX / 10);
+            let newVal = startVal + (steps * stepVal);
+            if(newVal < 0) newVal = 0;
+            
+            el.value = Number.isInteger(newVal) ? newVal : newVal.toFixed(1);
+            
+            // Fire math engine in real-time
+            if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
+            checkCortexReadiness();
+        }
+    }, { passive: false }); 
+}
+
+// Initialize on Load
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.action-btn-mini').disabled = true;
+    attachScrubVortex('hudAgeMos', 1);   
+    attachScrubVortex('hudAgeYrs', 1);   
+    attachScrubVortex('hudWeight', 0.5); 
+});
+</script>
 </body>
 </html>
