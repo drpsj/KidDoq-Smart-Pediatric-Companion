@@ -208,6 +208,7 @@ const drugsDb = [
     ];
 
     // Explicitly map these to the global window so the rest of the app can always find them
+    window.drugsDb = drugsDb;
     window.foodsDb = foodsDb;
 
     // --- VACCINE SCHEMA ---

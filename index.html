@@ -119,7 +119,7 @@
 
 <div class="app-shell home-active">
     <nav class="main-nav">
-        <button class="nav-item" style="width: 20%;" onclick="switchMainFeature('databaseFeatureView', this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('databaseFeatureView')">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             Patients
         </button>
@@ -127,11 +127,11 @@
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             Tools
         </button>
-        <button class="nav-item" style="width: 20%;" onclick="openHistoricalEncounters(this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('historicalEncountersView')">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Ledger
         </button>
-        <button class="nav-item" style="width: 20%;" onclick="openActiveSummary(this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('encounterSummaryGlobalView')">
             <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             Summary
         </button>
@@ -619,7 +619,7 @@
             <!-- ER & FLUIDS TOOL -->
     <div id="erFeatureView" class="view-content">
         <!-- Tool Header -->
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 229, 255, 0.2); position: sticky; top: 0; z-index: 100;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-surface); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 229, 255, 0.2); position: sticky; top: 0; z-index: 100;">
             <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--brand-cyan); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
             <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">ER Fluids & Resuscitation</h2>
             <div style="width: 24px;"></div> <!-- Spacer for alignment -->
@@ -627,15 +627,15 @@
 
         <div style="padding: 20px;">
             <!-- Inputs -->
-            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+            <div style="background: var(--bg-body); border: 1px solid var(--border-soft); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
                 <div class="row-inputs">
                     <div>
                         <label style="color: var(--brand-cyan); font-weight: 700; font-size: 0.85rem;">Weight (kg)</label>
-                        <input type="number" id="erWt" oninput="calculateERFluids()" placeholder="0.0" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-size: 1.2rem; font-weight: bold; margin-top: 5px;">
+                        <input type="number" id="erWt" oninput="calculateERFluids()" placeholder="0.0" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-size: 1.2rem; font-weight: bold; margin-top: 5px;">
                     </div>
                     <div>
                         <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Dehydration %</label>
-                        <select id="erDehyd" onchange="calculateERFluids()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-size: 1.1rem; font-weight: bold; margin-top: 5px;">
+                        <select id="erDehyd" onchange="calculateERFluids()" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-size: 1.1rem; font-weight: bold; margin-top: 5px;">
                             <option value="0">None (0%)</option>
                             <option value="5">Mild (5%)</option>
                             <option value="10">Moderate (10%)</option>
@@ -951,14 +951,14 @@
 
             <!-- CASE FILE & PRESCRIPTION TOOL -->
     <div id="prescriptionFeatureView" class="view-content">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(106, 112, 255, 0.2); position: sticky; top: 0; z-index: 100;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-surface); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(106, 112, 255, 0.2); position: sticky; top: 0; z-index: 100;">
             <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--brand-blue); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
-            <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(106, 112, 255, 0.3);">Case File & Rx</h2>
+            <h2 style="margin: 0; font-size: 1.2rem; color: var(--text-main); text-shadow: 0 0 10px rgba(106, 112, 255, 0.3);">Case File & Rx</h2>
             <div style="width: 24px;"></div>
         </div>
 
         <div style="padding: 20px;">
-            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+            <div style="background: var(--bg-body); border: 1px solid var(--border-soft); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
                 
                 <button onclick="pullVitalsToRx()" style="width: 100%; background: rgba(106, 112, 255, 0.15); color: var(--brand-cyan); border: 1px solid rgba(106, 112, 255, 0.4); padding: 12px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.1);">
                     <span>⚡</span> Sync Vitals from Dashboard
@@ -966,19 +966,19 @@
 
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Chief Complaint (C/O)</label>
-                    <input type="text" id="rxCc" oninput="generateRxPreview()" placeholder="e.g., Fever x 3 days, Cough" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <input type="text" id="rxCc" oninput="generateRxPreview()" placeholder="e.g., Fever x 3 days, Cough" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Diagnosis (Dx)</label>
-                    <input type="text" id="rxDx" oninput="generateRxPreview()" placeholder="e.g., Viral URI" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <input type="text" id="rxDx" oninput="generateRxPreview()" placeholder="e.g., Viral URI" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--brand-cyan); font-weight: 700; font-size: 0.85rem;">Rx (Medications)</label>
-                    <textarea id="rxMeds" oninput="generateRxPreview()" placeholder="1. Syp Paracetamol (250/5) - 4 mL Q6H..." rows="4" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px; resize: none;"></textarea>
+                    <textarea id="rxMeds" oninput="generateRxPreview()" placeholder="1. Syp Paracetamol (250/5) - 4 mL Q6H..." rows="4" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px; resize: none;"></textarea>
                 </div>
                 <div>
                     <label style="color: var(--success); font-weight: 700; font-size: 0.85rem;">Advice / Follow-up</label>
-                    <input type="text" id="rxAdvice" oninput="generateRxPreview()" placeholder="Review SOS / After 3 days" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <input type="text" id="rxAdvice" oninput="generateRxPreview()" placeholder="Review SOS / After 3 days" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                 </div>
             </div>
 
@@ -1505,18 +1505,18 @@
 
             <!-- ASTHMA PRAM SCORE TOOL -->
     <div id="asthmaFeatureView" class="view-content">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 42, 133, 0.2); position: sticky; top: 0; z-index: 100;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-surface); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 42, 133, 0.2); position: sticky; top: 0; z-index: 100;">
             <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--brand-pink); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
             <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(255, 42, 133, 0.3);">Asthma PRAM Score</h2>
             <div style="width: 24px;"></div>
         </div>
 
         <div style="padding: 20px;">
-            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+            <div style="background: var(--bg-body); border: 1px solid var(--border-soft); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
                 
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">O2 Saturation (Room Air)</label>
-                    <select id="pramO2" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <select id="pramO2" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                         <option value="0">&ge; 95% (0)</option>
                         <option value="1">92% - 94% (1)</option>
                         <option value="2">&lt; 92% (2)</option>
@@ -1525,7 +1525,7 @@
 
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Suprasternal Retractions</label>
-                    <select id="pramRetractions" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <select id="pramRetractions" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                         <option value="0">Absent (0)</option>
                         <option value="2">Present (2)</option>
                     </select>
@@ -1533,7 +1533,7 @@
 
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Scalene Muscle Contraction</label>
-                    <select id="pramScalene" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <select id="pramScalene" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                         <option value="0">Absent (0)</option>
                         <option value="2">Present (2)</option>
                     </select>
@@ -1541,7 +1541,7 @@
 
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Air Entry</label>
-                    <select id="pramAirEntry" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <select id="pramAirEntry" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                         <option value="0">Normal (0)</option>
                         <option value="1">Decreased at bases (1)</option>
                         <option value="2">Widespread decrease (2)</option>
@@ -1551,7 +1551,7 @@
 
                 <div>
                     <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Wheezing</label>
-                    <select id="pramWheeze" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    <select id="pramWheeze" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                         <option value="0">Absent (0)</option>
                         <option value="1">Expiratory only (1)</option>
                         <option value="2">Inspiratory & Expiratory (2)</option>
@@ -1568,22 +1568,22 @@
 
     <!-- MALNUTRITION TRIAGE TOOL -->
     <div id="malnutritionFeatureView" class="view-content">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 176, 32, 0.2); position: sticky; top: 0; z-index: 100;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-surface); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 176, 32, 0.2); position: sticky; top: 0; z-index: 100;">
             <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--warning); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
             <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(255, 176, 32, 0.3);">SAM / MAM Triage</h2>
             <div style="width: 24px;"></div>
         </div>
 
         <div style="padding: 20px;">
-            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+            <div style="background: var(--bg-body); border: 1px solid var(--border-soft); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
                 <div class="row-inputs">
                     <div>
                         <label style="color: var(--warning); font-weight: 700; font-size: 0.85rem;">MUAC (cm)</label>
-                        <input type="number" id="triageMuac" oninput="calculateTriage()" placeholder="0.0" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                        <input type="number" id="triageMuac" oninput="calculateTriage()" placeholder="0.0" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                     </div>
                     <div>
                         <label style="color: var(--warning); font-weight: 700; font-size: 0.85rem;">Bilateral Edema</label>
-                        <select id="triageEdema" onchange="calculateTriage()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                        <select id="triageEdema" onchange="calculateTriage()" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
                             <option value="no">Absent</option>
                             <option value="yes">Present (+ to +++)</option>
                         </select>
@@ -1748,8 +1748,8 @@ function attachDirectScrub(zoneId, type) {
                 const currentAgeTotal = (parseInt(document.getElementById('hudAgeYrs').value) || 0) * 12 + (parseInt(document.getElementById('hudAgeMos').value) || 0);
                 renderGrowthSnapshot(currentAgeTotal, newWt);
                 
-                // Trigger Vitals & Fluids on Age change
-                renderVitalsAndFluids(newTotal, currentWt);
+                // Trigger Vitals & Fluids on Weight change
+                renderVitalsAndFluids(currentAgeTotal, newWt);
                 
                 // NEW: Trigger Anthropometry on Age change (to verify 6-59 month standard)
                 renderAnthropometry();
@@ -2317,21 +2317,7 @@ window.switchNavTab = function(tabId) {
 
 // RESTORE: Jump to specific tool from Dashboard
 window.openClinicalTool = function(toolId) {
-    // Jump to the main Tools tab
-    switchNavTab('toolsTab'); 
-    
-    // Hide all individual tool panels
-    document.querySelectorAll('.sub-tab-content, .tool-panel').forEach(panel => {
-        panel.style.display = 'none';
-        panel.classList.remove('active');
-    });
-    
-    // Open the requested tool
-    const targetTool = document.getElementById(toolId);
-    if (targetTool) {
-        targetTool.style.display = 'block';
-        targetTool.classList.add('active');
-    }
+    window.switchNavTab(toolId);
 };
 
 // --- DYNAMIC TOOL CUSTOMIZER ---
