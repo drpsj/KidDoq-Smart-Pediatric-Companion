@@ -31,12 +31,12 @@
 }
 
 .nav-item { 
-    width: 100%; 
-    flex-direction: row; 
-    justify-content: flex-start; 
-    padding: 14px 20px; 
-    border-radius: var(--radius-md); 
-    font-size: 1rem; 
+    width: 100% !important; 
+    flex-direction: row !important; 
+    justify-content: flex-start !important; 
+    padding: 14px 20px !important; 
+    border-radius: var(--radius-md) !important; 
+    font-size: 1rem !important; 
 }
 
 .nav-item:hover { background: var(--bg-body); }

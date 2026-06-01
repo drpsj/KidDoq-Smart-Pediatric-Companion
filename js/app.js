@@ -1305,8 +1305,9 @@ function attachScrubVortex(inputId, stepVal) {
 
 // Initialize the Vortex on load
 document.addEventListener('DOMContentLoaded', () => {
-    // Setup initial button state
-    document.querySelector('.action-btn-mini').disabled = true;
+    // Setup initial button state safely
+    const actionBtn = document.querySelector('.action-btn-mini');
+    if (actionBtn) actionBtn.disabled = true;
     
     // Attach swipe-to-scrub to inputs
     attachScrubVortex('hudAgeMos', 1);   // Swipe changes months by 1
