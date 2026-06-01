@@ -616,29 +616,41 @@
                 </div>
             </div>
 
-            <!-- ER & RESUSCITATION HUB -->
-        <div id="erFeatureView" class="view-content" style="display:none;">
-            <h2 class="section-title" style="color:var(--danger)">🚨 ER & Resuscitation Hub</h2>
-            
-            <div class="tools-grid">
-                <div class="tool-btn" onclick="openErView('erCrashView')">
-                    <div class="tool-icon-wrapper" style="font-size: 2rem;">⚡</div>
-                    <span>Code Blue & Airway</span>
-                </div>
-                <div class="tool-btn" onclick="openErView('erSeizureView')">
-                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🧠</div>
-                    <span>Seizures (Status)</span>
-                </div>
-                <div class="tool-btn" onclick="openErView('erFluidsView')">
-                    <div class="tool-icon-wrapper" style="font-size: 2rem;">💧</div>
-                    <span>IV Fluids</span>
-                </div>
-                <div class="tool-btn" onclick="openErView('erNicuView')">
-                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🍼</div>
-                    <span>NICU (GIR & APGAR)</span>
+            <!-- ER & FLUIDS TOOL -->
+    <div id="erFeatureView" class="view-content">
+        <!-- Tool Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 229, 255, 0.2); position: sticky; top: 0; z-index: 100;">
+            <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--brand-cyan); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
+            <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">ER Fluids & Resuscitation</h2>
+            <div style="width: 24px;"></div> <!-- Spacer for alignment -->
+        </div>
+
+        <div style="padding: 20px;">
+            <!-- Inputs -->
+            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+                <div class="row-inputs">
+                    <div>
+                        <label style="color: var(--brand-cyan); font-weight: 700; font-size: 0.85rem;">Weight (kg)</label>
+                        <input type="number" id="erWt" oninput="calculateERFluids()" placeholder="0.0" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-size: 1.2rem; font-weight: bold; margin-top: 5px;">
+                    </div>
+                    <div>
+                        <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Dehydration %</label>
+                        <select id="erDehyd" onchange="calculateERFluids()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-size: 1.1rem; font-weight: bold; margin-top: 5px;">
+                            <option value="0">None (0%)</option>
+                            <option value="5">Mild (5%)</option>
+                            <option value="10">Moderate (10%)</option>
+                            <option value="15">Severe (15%)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
+
+            <!-- Outputs -->
+            <div id="erFluidsOutput" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="hud-empty-state" style="border: 1px dashed rgba(0, 229, 255, 0.2); color: rgba(255,255,255,0.5);">Enter Weight to calculate fluids...</div>
+            </div>
         </div>
+    </div>
 
         <!-- NEONATAL JAUNDICE PANE -->
         <div id="jaundiceFeatureView" class="view-content" style="display:none;">
@@ -937,12 +949,45 @@
             </div>
         </div>
 
-            <!-- RENAMED Case File VIEW -->
-            <div id="prescriptionFeatureView" class="view-content">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; gap:15px;">
-                    <h2 class="section-title" style="margin:0; border:none; flex-grow:1;">📝 Case Sheet</h2>
-                    <button onclick="executePrint('prescription')" class="secondary" style="margin:0; padding:8px 12px; width:auto; border-color:var(--primary); color:var(--primary);">🖨️ Print</button>
+            <!-- CASE FILE & PRESCRIPTION TOOL -->
+    <div id="prescriptionFeatureView" class="view-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(106, 112, 255, 0.2); position: sticky; top: 0; z-index: 100;">
+            <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--brand-blue); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
+            <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(106, 112, 255, 0.3);">Case File & Rx</h2>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div style="padding: 20px;">
+            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+                
+                <button onclick="pullVitalsToRx()" style="width: 100%; background: rgba(106, 112, 255, 0.15); color: var(--brand-cyan); border: 1px solid rgba(106, 112, 255, 0.4); padding: 12px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.1);">
+                    <span>⚡</span> Sync Vitals from Dashboard
+                </button>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Chief Complaint (C/O)</label>
+                    <input type="text" id="rxCc" oninput="generateRxPreview()" placeholder="e.g., Fever x 3 days, Cough" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
                 </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Diagnosis (Dx)</label>
+                    <input type="text" id="rxDx" oninput="generateRxPreview()" placeholder="e.g., Viral URI" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--brand-cyan); font-weight: 700; font-size: 0.85rem;">Rx (Medications)</label>
+                    <textarea id="rxMeds" oninput="generateRxPreview()" placeholder="1. Syp Paracetamol (250/5) - 4 mL Q6H..." rows="4" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px; resize: none;"></textarea>
+                </div>
+                <div>
+                    <label style="color: var(--success); font-weight: 700; font-size: 0.85rem;">Advice / Follow-up</label>
+                    <input type="text" id="rxAdvice" oninput="generateRxPreview()" placeholder="Review SOS / After 3 days" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                </div>
+            </div>
+
+            <!-- The Output Prescription Card -->
+            <div id="rxOutputContainer" data-wt="--" data-age="--">
+                <div class="hud-empty-state" style="border: 1px dashed rgba(106, 112, 255, 0.3); color: rgba(255,255,255,0.5);">Sync vitals or start typing to generate Rx...</div>
+            </div>
+        </div>
+    </div>
                 
                 <div id="rxNotesTab" class="sub-tab-content active" style="display: block;">
                     <div class="timeline-section">
@@ -1267,17 +1312,6 @@
                     </div>
                 </div>
             </div> 
-
-           <div id="malnutritionFeatureView" class="view-content" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                    <h2 class="section-title" style="margin:0; border:none;">🩺 Vitals & Anthropometry</h2>
-                </div>
-                <div class="sub-tabs-nav">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('malnCalcTab', this)">🧮 Anthropometry</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('malnBPTab', this)">🩸 BP Percentiles</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('malnMathTab', this)">📐 Advanced Math</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('malnSensoryTab', this)">👀 Sensory</button>
-                </div>
                 
                 <!-- TAB 1: ANTHROPOMETRY -->
                 <div id="malnCalcTab" class="sub-tab-content active">
@@ -1469,19 +1503,99 @@
                 </div>
             </div>
 
-            <div id="asthmaFeatureView" class="view-content">
-                <h2 class="section-title">🫁 PRAM Score (Pediatric Respiratory Assessment Measure)</h2>
-                <div class="timeline-section tool-grid">
-                    <div>
-                        <label>Airway O2 Saturations</label><select id="pramO2" onchange="calcPRAM()"><option value="0">&ge;95%</option><option value="1">92% - 94%</option><option value="2">&lt;92%</option></select>
-                        <label>Suprasternal Retractions</label><select id="pramSupra" onchange="calcPRAM()"><option value="0">Absent</option><option value="2">Present</option></select>
-                        <label>Scalene Muscle Access</label><select id="pramScalene" onchange="calcPRAM()"><option value="0">Absent</option><option value="2">Present</option></select>
-                        <label>Air Entry Index</label><select id="pramAir" onchange="calcPRAM()"><option value="0">Symmetric Normal</option><option value="1">Decreased Bases</option><option value="2">Widespread Loss</option><option value="3">Silent Chest</option></select>
-                        <label>Wheeze Auscultation</label><select id="pramWheeze" onchange="calcPRAM()"><option value="0">Absent</option><option value="1">Expiratory Only</option><option value="2">Pan-Inspiratory Cycle</option><option value="3">Silent / Audible Without Scope</option></select>
-                    </div>
-                    <div id="pramResultArea" class="tool-result neutral">Staging clinical entry score.</div>
+            <!-- ASTHMA PRAM SCORE TOOL -->
+    <div id="asthmaFeatureView" class="view-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 42, 133, 0.2); position: sticky; top: 0; z-index: 100;">
+            <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--brand-pink); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
+            <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(255, 42, 133, 0.3);">Asthma PRAM Score</h2>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div style="padding: 20px;">
+            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">O2 Saturation (Room Air)</label>
+                    <select id="pramO2" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                        <option value="0">&ge; 95% (0)</option>
+                        <option value="1">92% - 94% (1)</option>
+                        <option value="2">&lt; 92% (2)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Suprasternal Retractions</label>
+                    <select id="pramRetractions" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                        <option value="0">Absent (0)</option>
+                        <option value="2">Present (2)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Scalene Muscle Contraction</label>
+                    <select id="pramScalene" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                        <option value="0">Absent (0)</option>
+                        <option value="2">Present (2)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Air Entry</label>
+                    <select id="pramAirEntry" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                        <option value="0">Normal (0)</option>
+                        <option value="1">Decreased at bases (1)</option>
+                        <option value="2">Widespread decrease (2)</option>
+                        <option value="3">Absent / Minimal (3)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="color: var(--brand-pink); font-weight: 700; font-size: 0.85rem;">Wheezing</label>
+                    <select id="pramWheeze" onchange="calculatePRAM()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                        <option value="0">Absent (0)</option>
+                        <option value="1">Expiratory only (1)</option>
+                        <option value="2">Inspiratory & Expiratory (2)</option>
+                        <option value="3">Audible without stethoscope / Silent (3)</option>
+                    </select>
                 </div>
             </div>
+
+            <div id="pramOutput" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="hud-empty-state" style="border: 1px dashed rgba(255, 42, 133, 0.2); color: rgba(255,255,255,0.5);">Select parameters to calculate PRAM...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MALNUTRITION TRIAGE TOOL -->
+    <div id="malnutritionFeatureView" class="view-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(13, 17, 28, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 176, 32, 0.2); position: sticky; top: 0; z-index: 100;">
+            <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--warning); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
+            <h2 style="margin: 0; font-size: 1.2rem; color: #FFFFFF; text-shadow: 0 0 10px rgba(255, 176, 32, 0.3);">SAM / MAM Triage</h2>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div style="padding: 20px;">
+            <div style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
+                <div class="row-inputs">
+                    <div>
+                        <label style="color: var(--warning); font-weight: 700; font-size: 0.85rem;">MUAC (cm)</label>
+                        <input type="number" id="triageMuac" oninput="calculateTriage()" placeholder="0.0" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                    </div>
+                    <div>
+                        <label style="color: var(--warning); font-weight: 700; font-size: 0.85rem;">Bilateral Edema</label>
+                        <select id="triageEdema" onchange="calculateTriage()" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; font-weight: bold; margin-top: 5px;">
+                            <option value="no">Absent</option>
+                            <option value="yes">Present (+ to +++)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="triageOutput" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="hud-empty-state" style="border: 1px dashed rgba(255, 176, 32, 0.2); color: rgba(255,255,255,0.5);">Enter MUAC or Edema to triage...</div>
+            </div>
+        </div>
+    </div>
 
             <div id="jaundiceFeatureView" class="view-content">
                 <h2 class="section-title">🍼 Bhutani Nomogram Standards</h2>
@@ -1687,8 +1801,7 @@ function attachDirectScrub(zoneId, type) {
 function runCortexTelemetry(totalMonths) {
     // NEW: Instantly calculate vaccines based on age
     renderVaccinesDue(totalMonths);
-
-    const growth = document.getElementById('bentoGrowth');
+    
     const growth = document.getElementById('bentoGrowth');
     const nutrition = document.getElementById('bentoNutrition');
     const vitals = document.getElementById('bentoVitals');
@@ -2301,6 +2414,250 @@ function incrementEncounter() {
     encounters += 1;
     localStorage.setItem('kiddoq_encounter_count', encounters);
     document.getElementById('encounterCount').innerText = encounters;
+}
+
+// 13. ER FLUIDS CALCULATOR
+function calculateERFluids() {
+    const wt = parseFloat(document.getElementById('erWt').value) || 0;
+    const dehyd = parseFloat(document.getElementById('erDehyd').value) || 0;
+    const output = document.getElementById('erFluidsOutput');
+
+    if (wt <= 0) {
+        output.innerHTML = `<div class="hud-empty-state" style="border: 1px dashed rgba(0, 229, 255, 0.2); color: rgba(255,255,255,0.5);">Enter Weight to calculate fluids...</div>`;
+        return;
+    }
+
+    // 1. Bolus (20 mL/kg)
+    const bolus = (wt * 20).toFixed(0);
+
+    // 2. Deficit (Dehydration % * Weight * 10)
+    const deficit = (dehyd * wt * 10).toFixed(0);
+
+    // 3. Maintenance (Holliday-Segar)
+    let maint = 0;
+    if (wt <= 10) maint = wt * 100;
+    else if (wt <= 20) maint = 1000 + ((wt - 10) * 50);
+    else maint = 1500 + ((wt - 20) * 20);
+    
+    const maintPerHour = (maint / 24).toFixed(1);
+
+    output.innerHTML = `
+        <!-- Resuscitation Bolus -->
+        <div style="background: rgba(255, 59, 59, 0.1); border-left: 4px solid var(--danger); padding: 15px; border-radius: 12px; box-shadow: inset 0 0 15px rgba(255, 59, 59, 0.05);">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">1. STAT Bolus (20 mL/kg)</div>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 5px;">
+                <span style="font-size: 2.2rem; font-weight: 900; color: var(--danger);">${bolus}</span>
+                <span style="font-size: 1rem; color: #FFF; font-weight: 600;">mL (NS or RL)</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--warning); margin-top: 4px;">Push over 20-30 mins. Repeat if shock persists.</div>
+        </div>
+
+        <!-- Deficit -->
+        <div style="background: rgba(255, 176, 32, 0.1); border-left: 4px solid var(--warning); padding: 15px; border-radius: 12px;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">2. Fluid Deficit</div>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 5px;">
+                <span style="font-size: 1.8rem; font-weight: 900; color: var(--warning);">${deficit}</span>
+                <span style="font-size: 1rem; color: #FFF; font-weight: 600;">mL</span>
+            </div>
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 4px;">Replace 1/2 over first 8 hrs, 1/2 over next 16 hrs.</div>
+        </div>
+
+        <!-- Daily Maintenance -->
+        <div style="background: rgba(0, 229, 255, 0.1); border-left: 4px solid var(--brand-cyan); padding: 15px; border-radius: 12px;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">3. Maintenance</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 900; color: var(--brand-cyan);">${maint.toFixed(0)} <span style="font-size: 0.85rem; color: #FFF;">mL/24h</span></div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.5rem; font-weight: 900; color: var(--brand-blue);">${maintPerHour} <span style="font-size: 0.85rem; color: #FFF;">mL/hr</span></div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 14. ASTHMA PRAM SCORE ENGINE
+function calculatePRAM() {
+    const o2 = parseInt(document.getElementById('pramO2').value);
+    const retr = parseInt(document.getElementById('pramRetractions').value);
+    const scale = parseInt(document.getElementById('pramScalene').value);
+    const air = parseInt(document.getElementById('pramAirEntry').value);
+    const wheeze = parseInt(document.getElementById('pramWheeze').value);
+    
+    const score = o2 + retr + scale + air + wheeze;
+    const output = document.getElementById('pramOutput');
+
+    let severity = "Mild";
+    let color = "var(--success)";
+    let bg = "rgba(0, 250, 154, 0.1)";
+    let plan = "Salbutamol MDI/Neb. Discharge if stable.";
+
+    if (score >= 4 && score <= 7) {
+        severity = "Moderate";
+        color = "var(--warning)";
+        bg = "rgba(255, 176, 32, 0.1)";
+        plan = "Salbutamol + Ipratropium. Systemic Steroids. Observe 1-2 hrs.";
+    } else if (score >= 8) {
+        severity = "Severe / Impending Failure";
+        color = "var(--danger)";
+        bg = "rgba(255, 59, 59, 0.1)";
+        plan = "Continuous Salbutamol. IV MgSO4/Steroids. Consider ICU admission.";
+    }
+
+    // Only show output if score > 0 (prevents it showing Mild instantly on blank screen)
+    if (score === 0) {
+        output.innerHTML = `
+        <div style="background: ${bg}; border-left: 4px solid ${color}; padding: 15px; border-radius: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">PRAM Score</div>
+                <div style="font-size: 2.2rem; font-weight: 900; color: ${color};">${score}</div>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: ${color}; margin-top: -10px;">${severity}</div>
+        </div>`;
+    } else {
+        output.innerHTML = `
+        <div style="background: ${bg}; border-left: 4px solid ${color}; padding: 15px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">PRAM Score</div>
+                <div style="font-size: 2.5rem; font-weight: 900; color: ${color};">${score}/12</div>
+            </div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: ${color}; margin-top: -10px;">${severity} Asthma</div>
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 0.85rem; color: #FFF; font-weight: 600;">
+                ⚡ Action: ${plan}
+            </div>
+        </div>`;
+    }
+}
+
+// 15. MALNUTRITION TRIAGE ENGINE
+function calculateTriage() {
+    const muac = parseFloat(document.getElementById('triageMuac').value) || 0;
+    const edema = document.getElementById('triageEdema').value;
+    const output = document.getElementById('triageOutput');
+
+    if (muac <= 0 && edema === 'no') {
+        output.innerHTML = `<div class="hud-empty-state" style="border: 1px dashed rgba(255, 176, 32, 0.2); color: rgba(255,255,255,0.5);">Enter MUAC or Edema to triage...</div>`;
+        return;
+    }
+
+    let status = "Normal / No Acute Malnutrition";
+    let color = "var(--success)";
+    let bg = "rgba(0, 250, 154, 0.1)";
+    let plan = "Routine growth monitoring & counseling.";
+
+    if (edema === 'yes' || (muac > 0 && muac < 11.5)) {
+        status = "Severe Acute Malnutrition (SAM)";
+        color = "var(--danger)";
+        bg = "rgba(255, 59, 59, 0.1)";
+        plan = "Perform appetite test. If fail or medical complications -> Admit to NRC. If pass -> CTC with RUTF.";
+    } else if (muac >= 11.5 && muac < 12.5) {
+        status = "Moderate Acute Malnutrition (MAM)";
+        color = "var(--warning)";
+        bg = "rgba(255, 176, 32, 0.1)";
+        plan = "Enroll in SFP. Provide supplementary rations and monitor every 2 weeks.";
+    }
+
+    output.innerHTML = `
+        <div style="background: ${bg}; border-left: 4px solid ${color}; padding: 15px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Diagnostic Triage</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: ${color}; margin-top: 5px;">${status}</div>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 0.85rem; color: #FFF; font-weight: 600;">
+                ⚡ Plan: ${plan}
+            </div>
+        </div>`;
+}
+
+// 16. CASE FILE & PRESCRIPTION ENGINE
+function pullVitalsToRx() {
+    // Pull telemetry from the dashboard's hidden input states
+    const wt = document.getElementById('hudWeight').value || '--';
+    const y = document.getElementById('hudAgeYrs').value || '0';
+    const m = document.getElementById('hudAgeMos').value || '0';
+    
+    let ageStr = '';
+    if (y > 0) ageStr += y + 'Y ';
+    if (m > 0 || y == 0) ageStr += m + 'M';
+    
+    // Inject them into the prescription container's dataset
+    const container = document.getElementById('rxOutputContainer');
+    container.dataset.wt = wt;
+    container.dataset.age = ageStr;
+    
+    // Animate the button to show success
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<span>✅</span> Vitals Synced!`;
+    btn.style.background = 'rgba(0, 250, 154, 0.2)';
+    btn.style.borderColor = 'var(--success)';
+    btn.style.color = 'var(--success)';
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = 'rgba(106, 112, 255, 0.15)';
+        btn.style.borderColor = 'rgba(106, 112, 255, 0.4)';
+        btn.style.color = 'var(--brand-cyan)';
+    }, 1500);
+
+    generateRxPreview();
+}
+
+function generateRxPreview() {
+    const cc = document.getElementById('rxCc').value || '';
+    const dx = document.getElementById('rxDx').value || '';
+    const meds = document.getElementById('rxMeds').value || '';
+    const advice = document.getElementById('rxAdvice').value || '';
+    
+    const container = document.getElementById('rxOutputContainer');
+    const wt = container.dataset.wt || '--';
+    const age = container.dataset.age || '--';
+    const docName = localStorage.getItem('kiddoq_doctor_name') || "Peter";
+    
+    const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    if (!cc && !dx && !meds && !advice && wt === '--') {
+        container.innerHTML = `<div class="hud-empty-state" style="border: 1px dashed rgba(106, 112, 255, 0.3); color: rgba(255,255,255,0.5);">Sync vitals or start typing to generate Rx...</div>`;
+        return;
+    }
+
+    // High-Contrast White "Paper" rendering for the Prescription
+    container.innerHTML = `
+        <div style="background: #FFFFFF; color: #1A202C; padding: 20px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); position: relative; overflow: hidden; border: 4px solid #E2E8F0;">
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #2B6CB0; padding-bottom: 12px; margin-bottom: 15px;">
+                <div>
+                    <h3 style="margin: 0; color: #2B6CB0; font-size: 1.3rem; font-weight: 900; font-family: sans-serif;">Dr. ${docName}</h3>
+                    <div style="font-size: 0.8rem; color: #4A5568; font-weight: 700;">Pediatrician</div>
+                </div>
+                <div style="text-align: right; font-size: 0.85rem; color: #4A5568; font-weight: 700; line-height: 1.4;">
+                    <div>${dateStr}</div>
+                    <div style="background: #EDF2F7; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block;">Wt: ${wt} kg | Age: ${age}</div>
+                </div>
+            </div>
+            
+            <!-- Body -->
+            ${cc ? `<div style="margin-bottom: 8px;"><strong style="color: #2B6CB0; font-size: 0.9rem;">C/O:</strong> <span style="font-weight: 600; font-size: 0.95rem;">${cc}</span></div>` : ''}
+            ${dx ? `<div style="margin-bottom: 15px;"><strong style="color: #2B6CB0; font-size: 0.9rem;">Dx:</strong> <span style="font-weight: 600; font-size: 0.95rem;">${dx}</span></div>` : ''}
+            
+            ${meds ? `
+            <div style="margin-bottom: 15px; margin-top: 15px;">
+                <div style="font-size: 1.8rem; color: #2B6CB0; font-weight: bold; font-family: serif; line-height: 1;">℞</div>
+                <div style="white-space: pre-wrap; font-weight: 700; font-size: 0.95rem; margin-top: 8px; padding-left: 10px; color: #2D3748; line-height: 1.5;">${meds}</div>
+            </div>
+            ` : ''}
+            
+            ${advice ? `
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #CBD5E0;">
+                <strong style="color: #38A169; font-size: 0.9rem;">Advice:</strong> <span style="font-weight: 700; color: #2D3748;">${advice}</span>
+            </div>
+            ` : ''}
+        </div>
+        
+        <button style="width: 100%; margin-top: 20px; background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 1.05rem; cursor: pointer; box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); text-transform: uppercase; letter-spacing: 1px;">
+            🖨️ Print / Share Rx
+        </button>
+    `;
 }
 
 // Initialize the Vortex
