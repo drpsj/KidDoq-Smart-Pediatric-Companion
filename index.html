@@ -1498,20 +1498,15 @@
 <script src="js/print-engine.js?v=32"></script>
 <script src="js/view-controller.js?v=32"></script>
 <script>
-    // EMERGENCY MOBILE CACHE WIPE
+    // PERMANENT DEVELOPMENT FIX: Kill all Service Workers and DO NOT restart them.
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
-                    registration.unregister(); // Kill the old trapped workers
+                    registration.unregister().then(boolean => {
+                        console.log('🛑 Offline Engine Killed. Caching is now disabled for development.');
+                    });
                 }
-            }).then(() => {
-                // Register the brand new one
-                navigator.serviceWorker.register('./sw.js?v=25').then(reg => {
-                    console.log('✅ Offline Engine Force Updated', reg.scope);
-                }).catch(err => {
-                    console.log('⚠️ Offline Engine Failed', err);
-                });
             });
         });
     }
