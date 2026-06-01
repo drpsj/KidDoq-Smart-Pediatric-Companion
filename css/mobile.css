@@ -163,7 +163,31 @@ input, select, textarea {
    STRICT MOBILE LAYOUT ENFORCEMENT
    ========================================= */
 
-/* 1. Force the Case File to stack neatly on mobile */
+/* 1. Force the HUD Dashboard to stack neatly on mobile */
+.hud-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    width: 100% !important;
+}
+
+/* 2. Fix the top Global Parameter Bar inputs on mobile */
+.hud-global-inputs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* 2 columns on mobile */
+    gap: 10px !important;
+}
+.hud-global-inputs > div:last-child {
+    grid-column: 1 / -1; /* Gender spans full width */
+}
+
+/* 3. Ensure horizontal swipe works smoothly on mobile for Smart Cards */
+#hudSmartDoseCards {
+    padding: 10px 5px !important;
+    gap: 10px !important;
+}
+
+/* 4. Force the Case File to stack neatly on mobile */
 .rx-desktop-grid { 
     display: flex !important; 
     flex-direction: column !important; 

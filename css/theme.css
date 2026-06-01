@@ -64,30 +64,20 @@
            ========================================= */
         .greeting-box { margin-bottom: 24px; padding-top: 10px; }
 
-        /* MAGIC HUD GRID CSS */
+        /* MAGIC HUD GRID CSS (DESKTOP) */
         .hud-grid {
             display: grid;
-            /* Prioritize the center column for content, restrict the side columns */
-            grid-template-columns: minmax(250px, 1fr) minmax(300px, 1.8fr) minmax(280px, 1.2fr);
+            /* Prioritizes the center column, restricts the side columns */
+            grid-template-columns: minmax(250px, 1fr) minmax(320px, 1.8fr) minmax(300px, 1.2fr);
             gap: 20px;
             align-items: start;
         }
-        
-        @media screen and (max-width: 1024px) {
-            .hud-grid { 
-                grid-template-columns: 1fr; 
-                gap: 15px;
-            }
-        }
-
         .hud-col { 
             display: flex; 
             flex-direction: column; 
             gap: 15px; 
-            /* CRITICAL: Prevents Grid Blowout from scrolling children */
-            min-width: 0; 
+            min-width: 0; /* CRITICAL FIX: Stops the Smart Doses from blowing out the grid width */
         }
-
         .hud-widget {
             background: var(--bg-surface);
             border-radius: var(--radius-md);
@@ -95,7 +85,6 @@
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-soft);
         }
-
         .hud-widget-title {
             margin: 0 0 10px 0;
             font-size: 0.95rem;
@@ -106,7 +95,6 @@
             align-items: center;
             gap: 6px;
         }
-
         .hud-empty-state {
             font-size: 0.85rem;
             color: var(--text-muted);
