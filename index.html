@@ -142,112 +142,65 @@
 
     <div class="main-content">
         <div id="homeDashboardView" class="view-content active-view">
-            <div class="greeting-box">
-                <h1 id="homeGreetingText">Good morning, Doctor 👋</h1>
-                <p>What would you like to calculate today?</p>
-            </div>
-
-            <div class="tool-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                <!-- 1. QUICK DOSE CARD -->
-                <div class="usp-dose-card" style="margin-bottom: 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; position:relative; z-index:2;">
-                        <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.47 5.08a6.1 6.1 0 0 0-8.6 8.61l6.1 6.1a6.1 6.1 0 0 0 8.61-8.61l-6.1-6.1Z"></path><line x1="6.81" y1="13.19" x2="16.3" y2="3.7"></line></svg> Quick Dose Calc
-                        </h3>
-                    </div>
-                    
-                    <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2; align-items: flex-end;">
-                        <div>
-                            <label>Patient Weight (kg)</label>
-                            <input type="number" id="homeWeight" placeholder="e.g. 12.5" oninput="runHomeDoseCalc()" style="font-size: 1.1rem;">
-                        </div>
-                        <div style="display:flex; gap:8px;">
-                            <div style="flex: 1;">
-                                <label>Age</label>
-                                <input type="number" id="homeAgeVal" placeholder="Age" style="font-size: 1.1rem;">
-                            </div>
-                            <div style="flex: 1;">
-                                <label>Unit</label>
-                                <select id="homeAgeUnit">
-                                    <option value="months">Mos</option>
-                                    <option value="years">Yrs</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2;">
-                        <div>
-                            <label>Drug Category</label>
-                            <select id="homeCategory" onchange="populateHomeDrugs(); runHomeDoseCalc();">
-                                <option value="">-- Select --</option>
-                                <option value="antibiotics">Antibiotics</option>
-                                <option value="antipyretics">Antipyretics / Pain</option>
-                                <option value="antihistamines">Allergy / Cold</option>
-                                <option value="respiratory">Respiratory</option>
-                                <option value="git">Gastrointestinal</option>
-                                <option value="vitamins">Vitamins & Minerals</option>
-                                <option value="musclerelaxants">Muscle Relaxants</option>
-                                <option value="emergency">ER & Resuscitation</option>
-                                <option value="neurology">Neurology & Seizures</option>
-                                <option value="topical">Topical (Skin/Eye/ENT)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Formulation</label>
-                            <select id="homeFormulation" onchange="runHomeDoseCalc()">
-                                <option value="">-- Choose Category First --</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="homeDoseResult" style="position:relative; z-index:2;"></div>
-                </div>
-
-                <!-- 2. BMI WIDGET CARD -->
-                <div class="usp-dose-card" style="margin-bottom: 0; background: linear-gradient(135deg, var(--brand-pink), #e11d48);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; position:relative; z-index:2;">
-                        <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:1.4rem;">📏</span> Smart BMI Calculator
-                        </h3>
-                    </div>
-                    
-                    <div class="row-inputs" style="margin-bottom: 16px; position:relative; z-index:2;">
-                        <div>
-                            <label>Weight (kg)</label>
-                            <input type="number" id="homeBmiWt" placeholder="e.g. 15.5" oninput="runHomeBmiCalc()" style="font-size: 1.1rem;">
-                        </div>
-                        <div>
-                            <label>Height (cm)</label>
-                            <input type="number" id="homeBmiHt" placeholder="e.g. 105" oninput="runHomeBmiCalc()" style="font-size: 1.1rem;">
-                        </div>
-                    </div>
-
-                    <div id="homeBmiResult" style="position:relative; z-index:2;">
-                        <div style="text-align:center; padding:15px; color:rgba(255,255,255,0.8); font-size:0.9rem; border:1px dashed rgba(255,255,255,0.3); border-radius:8px;">
-                            Enter weight and height to classify BMI based on WHO & Asian criteria.
-                        </div>
-                    </div>
+            <div class="global-parameter-bar" style="background: linear-gradient(135deg, var(--primary), var(--brand-cyan)); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px; color: white; box-shadow: var(--shadow-float); position: sticky; top: -10px; z-index: 100;">
+                <h2 style="margin: 0 0 15px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">🚀 Pediatric Cockpit</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                    <div><label style="color: rgba(255,255,255,0.9); font-size:0.85rem; display:block; margin-bottom:4px;">Age (Months)</label><input type="number" id="hudAge" oninput="broadcastGlobalParameters()" placeholder="e.g. 24" style="width:100%; padding:8px; border-radius:6px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; font-weight: bold; font-size:1.1rem;"></div>
+                    <div><label style="color: rgba(255,255,255,0.9); font-size:0.85rem; display:block; margin-bottom:4px;">Weight (kg)</label><input type="number" id="hudWeight" step="0.1" oninput="broadcastGlobalParameters()" placeholder="e.g. 12.5" style="width:100%; padding:8px; border-radius:6px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; font-weight: bold; font-size:1.1rem;"></div>
+                    <div><label style="color: rgba(255,255,255,0.9); font-size:0.85rem; display:block; margin-bottom:4px;">Height (cm)</label><input type="number" id="hudHeight" step="0.1" oninput="broadcastGlobalParameters()" placeholder="e.g. 85" style="width:100%; padding:8px; border-radius:6px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; font-weight: bold; font-size:1.1rem;"></div>
+                    <div><label style="color: rgba(255,255,255,0.9); font-size:0.85rem; display:block; margin-bottom:4px;">Gender</label><select id="hudGender" onchange="broadcastGlobalParameters()" style="width:100%; padding:8px; border-radius:6px; background: rgba(255,255,255,0.9); border: none; color: var(--primary-dark); font-weight: bold; font-size:1.05rem;"><option value="male">Male</option><option value="female">Female</option></select></div>
                 </div>
             </div>
 
-            <div style="margin-bottom: 25px; position:relative; z-index: 10;">
+            <div class="hud-grid">
                 
-                <div style="position: relative; margin-bottom: 20px;">
-                    <input type="text" id="omniSearchInput" placeholder="🔍 Search tools, protocols, or keywords (e.g. 'Fever', 'Burns')..." onkeyup="runOmniSearch(this.value)" autocomplete="off" style="width: 100%; padding: 18px 20px; font-size: 1.05rem; border-radius: var(--radius-pill); border: 2px solid var(--border-soft); box-shadow: var(--shadow-sm); background: var(--bg-surface);">
-                    <div id="omniSearchResults" style="display:none; position:absolute; top:calc(100% + 5px); left:0; width:100%; background:var(--bg-surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); box-shadow:var(--shadow-float); z-index:1000; max-height:350px; overflow-y:auto; padding:8px;"></div>
+                <div class="hud-col">
+                    <div class="hud-widget">
+                        <h4 class="hud-widget-title">📈 Growth & Nutrition</h4>
+                        <div id="hudGrowthOutput" class="hud-empty-state">Enter Wt/Ht & Age to view triage.</div>
+                    </div>
+                    <div class="hud-widget">
+                        <h4 class="hud-widget-title">🩺 Vitals & BP Limits</h4>
+                        <div id="hudVitalsOutput" class="hud-empty-state">Enter Age for normal ranges.</div>
+                    </div>
+                    <div class="hud-widget">
+                        <h4 class="hud-widget-title">💧 Fluids & Energy Targets</h4>
+                        <div id="hudFluidsOutput" class="hud-empty-state">Enter Wt for maintenance goals.</div>
+                    </div>
                 </div>
 
-                <button class="action" onclick="window.openClinicalTool('prescriptionFeatureView')" style="width: 100%; padding: 24px; font-size: 1.3rem; border-radius: var(--radius-xl); background: linear-gradient(135deg, var(--success), #059669); margin: 0 0 20px 0; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
-                    <span style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">🩺</span> Start Routine Visit
-                </button>
-            </div>
+                <div class="hud-col">
+                    <div class="hud-widget" style="border-left: 4px solid var(--danger); background: rgba(239,68,68,0.03);">
+                        <h4 class="hud-widget-title" style="color: var(--danger);">🚨 Anticipatory Red Flags</h4>
+                        <div id="hudRedFlagsOutput" class="hud-empty-state">Enter Age for clinical warnings.</div>
+                    </div>
+                    <div class="hud-widget" style="border-left: 4px solid var(--success); background: rgba(16,185,129,0.03);">
+                        <h4 class="hud-widget-title" style="color: var(--success);">💉 NIS Vaccines Due</h4>
+                        <div id="hudVaxOutput" class="hud-empty-state">Enter Age to see due vaccines.</div>
+                    </div>
+                    <div class="hud-widget" style="border-left: 4px solid var(--brand-pink); background: rgba(255,92,171,0.03);">
+                        <h4 class="hud-widget-title" style="color: var(--brand-pink);">🧠 Milestone Checklist</h4>
+                        <div id="hudMilestonesOutput" class="hud-empty-state">Enter Age for expected milestones.</div>
+                    </div>
+                </div>
 
-            <div class="section-header" style="margin-bottom: 15px; border-top: 1px solid var(--border-soft); padding-top: 20px;">
-                <h3 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">📌 Pinned Favorites</h3>
+                <div class="hud-col">
+                    <div class="hud-widget" style="border: 2px solid var(--danger);">
+                        <h4 class="hud-widget-title" style="color: var(--danger); border-bottom: 1px solid rgba(239,68,68,0.2); padding-bottom:5px;">⚡ Crash Cart (Broselow)</h4>
+                        <div id="hudCrashOutput" class="hud-empty-state">Enter Wt for emergency dosing.</div>
+                    </div>
+                    <div class="hud-widget">
+                        <h4 class="hud-widget-title">💊 Quick Fever / Pain</h4>
+                        <div id="hudFeverOutput" class="hud-empty-state">Enter Wt for rapid dosing.</div>
+                    </div>
+                    
+                    <button class="action" onclick="window.openClinicalTool('prescriptionFeatureView')" style="width: 100%; padding: 15px; font-size: 1.1rem; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--success), #059669); margin-top: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                        📝 Start Case File
+                    </button>
+                </div>
+                
             </div>
-            <div id="homeQuickToolsGrid" class="tools-grid"></div>
-        </div> 
+        </div>
 
         <div id="toolsTab" class="view-content">
             <div class="section-header" style="margin-bottom:20px;">

@@ -472,18 +472,20 @@ window.calcInlineDose = function() {
 };
 
 window.addInlineDrugToCart = function() {
-    if(!activePatientId) { showSystemToast("⚠️ Open a patient file first!"); return; }
+    if(!activePatientId) { if(typeof showSystemToast === 'function') showSystemToast("⚠️ Open a patient file first!"); return; }
     const drugId = document.getElementById('inlineDrugSelect').value;
     const res = document.getElementById('inlineDoseResult');
     const freqInput = document.getElementById('inlineFreq');
     const durVal = document.getElementById('inlineDurVal').value;
     const durUnit = document.getElementById('inlineDurUnit').value;
     
-    if(!drugId || !res.dataset.vol) { showSystemToast("⚠️ Please select a drug and valid weight first."); return; }
+    if(!drugId || !res.dataset.vol) { if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please select a drug and valid weight first."); return; }
 
     let db = typeof getUnifiedDB === 'function' ? getUnifiedDB() : window.drugsDb;
     const drug = db.find(d => d.id === drugId);
-    const p = AppStore.getPatient(activePatientId);
+    
+    // Force fresh fetch from store to guarantee sync before push
+    let p = AppStore.getPatient(activePatientId);
     if(!p.rxList) p.rxList = [];
     
     p.rxList.push({
@@ -494,10 +496,11 @@ window.addInlineDrugToCart = function() {
     });
     
     AppStore.savePatient(p);
+    if(typeof saveAndRegisterPatient === 'function') saveAndRegisterPatient(true); // Force persist
     renderRxCartList();
     
     document.getElementById('inlineDrugSelect').value = ""; res.innerHTML = ""; freqInput.value = ""; document.getElementById('inlineDurVal').value = "";
-    showSystemToast(`✅ ${drug.name} added to Case File`);
+    if(typeof showSystemToast === 'function') showSystemToast(`✅ ${drug.name} added to Case File`);
 };
 
 // --- LIVE PREVIEW BUILDER ---

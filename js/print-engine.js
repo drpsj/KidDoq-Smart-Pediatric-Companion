@@ -35,10 +35,13 @@ function getPrintHeaderHTML(title, patientObj) {
     `;
 }
 
-function getPrintFooterHTML() {
+function getPrintFooterHTML(p) {
     const sigSettings = typeof AppStore !== 'undefined' ? AppStore.getSettings() : {};
     let sigData = sigSettings.signature || localStorage.getItem('doctor_sig');
     let sigImg = sigData ? `<img src="${sigData}" style="max-height:60px; display:block; margin: 0 auto 5px auto;">` : `<div style="height:40px;"></div>`;
+    
+    let clinicPhone = sigSettings.phone || 'Clinic';
+    let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('Follow-up / Contact Clinic: ' + clinicPhone)}`;
 
     return `
         <div style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 15px; display: flex; justify-content: space-between; align-items:flex-end; font-family:sans-serif;">
@@ -46,10 +49,16 @@ function getPrintFooterHTML() {
                 Reference: IAP Guidelines 2024 | WHO MGRS<br>
                 <em>Clinical reference only. Verify doses against standard protocols.</em>
             </div>
-            <div style="text-align: center; width: 200px;">
-                ${sigImg}
-                <div style="border-top: 1px dashed #333; padding-top: 5px; font-weight: bold; font-size: 0.9rem; color:#000;">
-                    ${sigSettings.docName || localStorage.getItem('doc_name') || 'Doctor'}
+            <div style="text-align: center; width: 220px; display: flex; gap: 15px; align-items: flex-end;">
+                <div>
+                    <img src="${qrUrl}" style="width: 50px; height: 50px; display: block; margin: 0 auto 5px auto;">
+                    <div style="font-size: 8px; color: #777;">Scan for Follow-up</div>
+                </div>
+                <div style="flex:1;">
+                    ${sigImg}
+                    <div style="border-top: 1px dashed #333; padding-top: 5px; font-weight: bold; font-size: 0.9rem; color:#000;">
+                        ${sigSettings.docName || localStorage.getItem('doc_name') || 'Doctor'}
+                    </div>
                 </div>
             </div>
         </div>
@@ -213,30 +222,36 @@ window.generateMilestonesReport = function(pId) {
     if (!p) return "<p>No patient data found.</p>";
     const achieved = p.achievedMilestones || {};
     
-    let html = `<style>
-        .ms-tbl { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 11px; margin-top: 10px; }
-        .ms-tbl th, .ms-tbl td { border: 1px solid #ccc; padding: 6px; text-align: left; }
-        .ms-tbl th { background-color: #f3f4f6; color: #1e3a8a; }
-    </style>
-    <h3 style="color:#1e3a8a; font-family:sans-serif; border-bottom:2px solid #e5e7eb; padding-bottom:5px;">Developmental Milestones Progress</h3>
-    <table class="ms-tbl">
-        <thead><tr><th style="width:15%">Age (Mos)</th><th style="width:15%">Domain</th><th>Milestone Marker</th><th style="width:15%">Status</th></tr></thead>
-        <tbody>`;
+    let achievedHtml = "";
+    let missedHtml = "";
 
     if(window.milestonesDb) {
+        let ageMos = (parseInt(p.ageYrs) || 0) * 12 + (parseInt(p.ageMos) || 0);
+        if(ageMos === 0) ageMos = 999; // Fallback if age not set
+        
         Object.keys(window.milestonesDb).sort((a,b) => parseInt(a)-parseInt(b)).forEach(age => {
-            window.milestonesDb[age].forEach((m, idx) => {
-                let status = achieved[m.id] ? '<span style="color:#188038; font-weight:bold;">✔ Achieved</span>' : '<span style="color:#64748b;">Pending</span>';
-                html += `<tr>
-                    <td><b>${idx === 0 ? age + ' Mos' : ''}</b></td>
-                    <td>${m.domain}</td>
-                    <td>${m.text}</td>
-                    <td>${status}</td>
-                </tr>`;
+            window.milestonesDb[age].forEach(m => {
+                if(achieved[m.id]) {
+                    achievedHtml += `<li style="margin-bottom:4px;"><b>[${age}m] ${m.domain}:</b> ${m.text}</li>`;
+                } else if (parseInt(age) <= ageMos) {
+                    missedHtml += `<li style="margin-bottom:4px; color:#d93025;"><b>[${age}m] ${m.domain}:</b> ${m.text} <i>(Red Flag: ${m.sig})</i></li>`;
+                }
             });
         });
     }
-    html += `</tbody></table>`;
+
+    let html = `
+    <h3 style="color:#1e3a8a; font-family:sans-serif; border-bottom:2px solid #e5e7eb; padding-bottom:5px;">Developmental Milestones Evaluation</h3>
+    <div style="display:flex; gap:20px; font-family:sans-serif; font-size:12px;">
+        <div style="flex:1; background:#f0fdf4; padding:15px; border-radius:8px; border:1px solid #bbf7d0;">
+            <h4 style="margin:0 0 10px 0; color:#166534;">✔ Achieved Milestones</h4>
+            <ul style="margin:0; padding-left:15px; color:#14532d;">${achievedHtml || '<li style="color:#666;">No milestones recorded yet.</li>'}</ul>
+        </div>
+        <div style="flex:1; background:#fef2f2; padding:15px; border-radius:8px; border:1px solid #fecaca;">
+            <h4 style="margin:0 0 10px 0; color:#b91c1c;">🚨 Missed / Pending (Red Flags)</h4>
+            <ul style="margin:0; padding-left:15px; color:#7f1d1d;">${missedHtml || '<li style="color:#666;">No significant delays noted.</li>'}</ul>
+        </div>
+    </div>`;
     return html;
 };
 
@@ -318,7 +333,7 @@ window.executePrint = function(mode) {
         if (printTests) html += `<div style="margin-top: 25px; font-family: sans-serif; color: #333;"><b style="color: #1e3a8a;">Required Investigations:</b><br>${printTests.replace(/\n/g, '<br>')}</div>`;
         if (printAdvice) html += `<div style="margin-top: 20px; font-family: sans-serif; color: #333;"><b style="color: #1e3a8a;">General Advice:</b><br>${printAdvice.replace(/\n/g, '<br>')}</div>`;
         
-        html += getPrintFooterHTML();
+        html += getPrintFooterHTML(p);
     }
     
     if (mode === 'certificate') {
@@ -360,32 +375,29 @@ window.executePrint = function(mode) {
             html += generateMilestonesReport(currentPId);
         }
         
-        html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">Longitudinal Medical History</h3>`;
+        html += `<h3 style="font-family:sans-serif; color:#1e3a8a; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:30px;">Active Encounter Summary</h3>`;
         
-        if (p.visits && p.visits.length > 0) {
-            [...p.visits].reverse().forEach((visit) => {
-                const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-                html += `
-                <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 8px; font-family:sans-serif;">
-                    <div style="font-weight:bold; font-size:16px; margin-bottom:10px; color:#334155;">Encounter Date: ${dateStr}</div>
-                    ${visit.diagnosis ? `<div style="font-size:14px; margin-bottom:8px;"><b>Diagnosis:</b> ${visit.diagnosis}</div>` : ''}
-                    
-                    ${(visit.examRS || visit.examCVS || visit.examPA || visit.examCNS) ? 
-                      `<div style="font-size:14px; margin-bottom:8px; color:#475569;"><b>O/E:</b> 
-                         ${visit.examRS ? `RS: ${visit.examRS} | ` : ''}
-                         ${visit.examCVS ? `CVS: ${visit.examCVS} | ` : ''}
-                         ${visit.examPA ? `P/A: ${visit.examPA} | ` : ''}
-                         ${visit.examCNS ? `CNS: ${visit.examCNS}` : ''}
-                       </div>`.replace(/ \|\s*<\//, '</') : ''}
-                       
-                    ${visit.rxList && visit.rxList.length > 0 ? `<div style="font-size:14px; margin-bottom:8px;"><b>Medications Prescribed:</b><ul style="margin:5px 0; padding-left:20px;">${visit.rxList.map(rx => `<li>${rx.name} - ${translateFreqToLocal(rx.freq)} (${rx.vol} ${rx.unit})</li>`).join('')}</ul></div>` : ''}
-                    ${visit.tests ? `<div style="font-size:14px; margin-bottom:8px;"><b>Investigations:</b> ${visit.tests}</div>` : ''}
-                    ${visit.advice ? `<div style="font-size:14px; margin-bottom:8px;"><b>Advice/Care Plan:</b> ${visit.advice}</div>` : ''}
-                </div>`;
-            });
-        } else {
-            html += `<p style="font-family:sans-serif; color:#64748b;">No historical encounters recorded.</p>`;
-        }
+        let printDx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
+        let printAdvice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
+        let printTests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
+        
+        let examHTML = "";
+        ['RS', 'CVS', 'PA', 'CNS'].forEach(sys => {
+            let val = document.getElementById('exam' + sys) ? document.getElementById('exam' + sys).value.trim() : "";
+            if(val) examHTML += `<b>${sys}:</b> ${val} | `;
+        });
+
+        html += `
+        <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #1e3a8a; background: #f8fafc; border-radius: 8px; font-family:sans-serif;">
+            <div style="font-weight:bold; font-size:16px; margin-bottom:10px; color:#1e3a8a;">Current Visit: ${new Date().toLocaleDateString('en-IN')}</div>
+            ${printDx ? `<div style="font-size:14px; margin-bottom:8px;"><b>Diagnosis:</b> ${printDx}</div>` : ''}
+            ${examHTML ? `<div style="font-size:14px; margin-bottom:8px; color:#475569;"><b>O/E:</b> ${examHTML.replace(/ \|\s*$/, '')}</div>` : ''}
+            ${p.rxList && p.rxList.length > 0 ? `<div style="font-size:14px; margin-bottom:8px;"><b>Medications Prescribed:</b><ul style="margin:5px 0; padding-left:20px;">${p.rxList.map(rx => `<li>${rx.name} - ${translateFreqToLocal(rx.freq)} (${rx.vol} ${rx.unit})</li>`).join('')}</ul></div>` : ''}
+            ${printTests ? `<div style="font-size:14px; margin-bottom:8px;"><b>Investigations:</b> ${printTests}</div>` : ''}
+            ${printAdvice ? `<div style="font-size:14px; margin-bottom:8px;"><b>Advice/Care Plan:</b> ${printAdvice.replace(/\n/g, '<br>')}</div>` : ''}
+        </div>`;
+        
+        html += getPrintFooterHTML(p);
     }
     
     engine.innerHTML = html; 
