@@ -555,7 +555,14 @@
                     <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
                     <div style="display:flex; gap:10px;">
                         <button class="secondary" onclick="editDraft()" style="margin:0; font-weight:bold; background:#fff;">✏️ Edit Draft</button>
-                        <button class="action" onclick="lockVisit()" style="margin:0; background:var(--danger); box-shadow:var(--shadow-md);">🔒 Sign & Lock</button>
+                        <div style="display: flex; gap: 10px; width: 100%;">
+    <button class="action" onclick="printFormalRx()" style="flex: 1; margin: 0; padding: 12px; font-size: 1rem; border-radius: var(--radius-md); background: white; color: var(--primary-dark); border: 2px solid var(--primary-dark); font-weight: bold; box-shadow: var(--shadow-sm);">
+        🖨️ Print Formal Rx
+    </button>
+    <button class="action" onclick="lockVisit()" style="flex: 1; margin: 0; padding: 12px; font-size: 1rem; border-radius: var(--radius-md); background: var(--danger); color: white; border: none; font-weight: bold; box-shadow: var(--shadow-md);">
+        🔒 Sign & Lock
+    </button>
+</div>
                     </div>
                 </div>
                 
@@ -597,6 +604,48 @@
                     <span>NICU (GIR & APGAR)</span>
                 </div>
             </div>
+        </div>
+
+        <!-- NEONATAL JAUNDICE PANE -->
+        <div id="jaundiceFeatureView" class="view-content" style="display:none;">
+            <div class="view-header" style="background: linear-gradient(135deg, #eab308, #ca8a04); color: white; padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px; box-shadow: var(--shadow-sm);">
+                <h2 style="margin:0; font-size:1.4rem; display:flex; align-items:center; gap:8px;">🟡 Hyperbilirubinemia Triage</h2>
+                <p style="margin:5px 0 0 0; opacity:0.9; font-size:0.85rem;">AAP 2004 Phototherapy Threshold Solver</p>
+            </div>
+
+            <div class="card-body" style="background:var(--bg-surface); padding:20px; border-radius:var(--radius-lg); border:1px solid var(--border-soft); box-shadow:var(--shadow-sm);">
+                <div class="row-inputs" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:15px;">
+                    <div>
+                        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main); display:block; margin-bottom:4px;">Age (Hours of Life)</label>
+                        <input type="number" id="jaunHours" oninput="calcJaundice()" placeholder="e.g. 48" style="width:100%; padding:10px; border:1px solid var(--border-soft); border-radius:6px; font-weight:bold;">
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main); display:block; margin-bottom:4px;">Total Bilirubin (mg/dL)</label>
+                        <input type="number" id="jaunTSB" step="0.1" oninput="calcJaundice()" placeholder="e.g. 14.2" style="width:100%; padding:10px; border:1px solid var(--border-soft); border-radius:6px; font-weight:bold;">
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main); display:block; margin-bottom:4px;">Risk Stratification Category</label>
+                        <select id="jaunRisk" onchange="calcJaundice()" style="width:100%; padding:10px; border:1px solid var(--border-soft); border-radius:6px; font-weight:bold; background:white;">
+                            <option value="low">Low Risk (≥ 38 wk + Well)</option>
+                            <option value="med" selected>Medium Risk (35-37 wk Well / ≥ 38 wk + Risk)</option>
+                            <option value="high">High Risk (35-37 wk + Isoimmune Hemolysis / Sepsis)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="jaunResultArea" class="tool-result neutral" style="padding:15px; border-radius:8px; text-align:center; min-height:60px;">
+                    Awaiting parameters. Enter age in hours and total serum bilirubin.
+                </div>
+            </div>
+
+            <button class="secondary" onclick="window.ViewController ? ViewController.switchNavTab('homeTab') : (document.getElementById('jaundiceFeatureView').style.display='none', document.getElementById('homeDashboardView').style.display='block')" style="margin-top:15px; width:100%; padding:12px; font-weight:bold; background:var(--bg-surface); border:1px solid var(--border-soft); border-radius:var(--radius-md);">
+                ⬅️ Return to Cockpit
+            </button>
+        </div>
+
+            <button class="secondary" onclick="window.ViewController ? ViewController.switchNavTab('homeTab') : (document.getElementById('jaundiceFeatureView').style.display='none', document.getElementById('homeDashboardView').style.display='block')" style="margin-top:15px; width:100%; padding:12px; font-weight:bold; background:var(--bg-surface); border:1px solid var(--border-soft); border-radius:var(--radius-md);">
+                ⬅️ Return to Cockpit
+            </button>
         </div>
 
         <!-- 1. ADVANCED CRASH CART & AIRWAY (Harriet Lane) -->

@@ -361,8 +361,29 @@ function renderHudVax(ageMos) {
     else if(ageMos >= 186 && ageMos <= 198) { due = "16 Yrs: Td (Tetanus & Diphtheria)"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
     
     out.className = '';
-    out.innerHTML = `<div style="font-weight:700; color:${color}; font-size:0.95rem; padding:12px; background:${bg}; border-radius:6px; border:1px solid ${color}40; text-align:center; line-height:1.4;">${due}</div>`;
+    // Turned into a clickable trigger to launch the deep tool
+    out.innerHTML = `
+        <div onclick="launchVaxToolFromHud()" style="cursor:pointer; font-weight:700; color:${color}; font-size:0.95rem; padding:12px; background:${bg}; border-radius:6px; border:1px solid ${color}40; text-align:center; line-height:1.4; transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+            ${due}
+            <div style="font-size:0.75rem; margin-top:4px; opacity:0.8;">Tap to open full tracker ➔</div>
+        </div>`;
 }
+
+// --- NEW: Teleport function from HUD to Tracker ---
+window.launchVaxToolFromHud = function() {
+    const pId = AppStore.getActivePatientId();
+    if (!pId) {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please Save Patient in the Cockpit first.");
+        return;
+    }
+    // Launch the tool
+    if(typeof openClinicalTool === 'function') openClinicalTool('vaxFeatureView');
+    
+    // Auto-calculate the timeline using the exact engine you provided
+    setTimeout(() => {
+        if(typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
+    }, 100);
+};
 
 function renderHudMilestones(ageMos) {
     const out = document.getElementById('hudMilestonesOutput');

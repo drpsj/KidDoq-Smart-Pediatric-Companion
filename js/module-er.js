@@ -326,10 +326,40 @@ window.calcUmbilicalLines = function() {
 
 // --- 4. NICU METRICS ---
 window.calcGIR = function() {
-    const wt = parseFloat(document.getElementById('girWt').value), rate = parseFloat(document.getElementById('girRate').value), dex = parseFloat(document.getElementById('girDex').value);
+    const wt = parseFloat(document.getElementById('girWt').value);
+    const rate = parseFloat(document.getElementById('girRate').value);
+    const dex = parseFloat(document.getElementById('girDex').value);
     const out = document.getElementById('girOutput');
-    if(!wt || !rate || !dex || isNaN(wt)) { out.innerHTML = ""; out.className="tool-result neutral"; return; }
-    out.innerHTML = `GIR: <b>${((rate * dex) / (wt * 6)).toFixed(2)}</b> mg/kg/min`;
+    if(!out) return;
+
+    if(!wt || !rate || !dex || isNaN(wt)) { 
+        out.innerHTML = "Enter weight, fluid rate, and dextrose percentage to compute GIR."; 
+        out.className="tool-result neutral"; 
+        return; 
+    }
+
+    const gir = (rate * dex) / (wt * 6);
+    
+    let d50Vol = 0;
+    let d5wVol = 100;
+    if (dex > 5 && dex <= 50) {
+        d50Vol = (100 * (dex - 5)) / 45;
+        d5wVol = 100 - d50Vol;
+    }
+
+    out.innerHTML = `
+        <div style="text-align:center; width:100%;">
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Calculated Delivery</div>
+            <h2 style="font-size:2.4rem; color:var(--success); margin:10px 0; font-weight:900;">${gir.toFixed(2)} <span style="font-size:1.1rem; color:var(--text-main);">mg/kg/min</span></h2>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Normal Range: 4.0 - 8.0 mg/kg/min</div>
+            
+            <div style="background:var(--bg-surface); padding:10px; border-radius:6px; border:1px solid var(--border-soft); font-size:0.85rem; text-align:left; line-height:1.5;">
+                <b style="color:var(--primary-dark); display:block; margin-bottom:4px;">🍼 Compounding Guide (Per 100 mL Bag):</b>
+                • <b>Dextrose 50% Water (D50W):</b> ${d50Vol.toFixed(1)} mL<br>
+                • <b>Dextrose 5% Water (D5W):</b> ${d5wVol.toFixed(1)} mL
+            </div>
+        </div>
+    `;
     out.className = "tool-result success";
 };
 
@@ -352,14 +382,64 @@ window.calcPRAM = function() {
 };
 
 window.calcJaundice = function() {
-    const hrs = parseFloat(document.getElementById('jaunHours').value), tsb = parseFloat(document.getElementById('jaunTSB').value), risk = document.getElementById('jaunRisk').value;
+    const hrs = parseFloat(document.getElementById('jaunHours').value);
+    const tsb = parseFloat(document.getElementById('jaunTSB').value);
+    const risk = document.getElementById('jaunRisk').value;
     const out = document.getElementById('jaunResultArea');
-    if(!hrs || !tsb || isNaN(hrs)) { out.innerHTML = "Awaiting data entry to map standard Bhutani bands."; out.className="tool-result neutral"; return; }
-    
-    let threshold = risk === 'high' ? (hrs/24) * 2.5 + 5.5 : (risk === 'med' ? (hrs/24) * 3 + 7 : (hrs/24) * 3 + 9);
-    let colorClass = tsb >= threshold ? "danger" : "success";
-    
-    out.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase;">Risk Analysis Assessment</div><h2 style="margin:5px 0;">${tsb >= threshold ? "⚠️ Phototherapy Indicated" : "✅ Below Phototherapy Threshold"}</h2><div style="font-size:0.9rem;">Estimated Threshold for this age/risk: ~${threshold.toFixed(1)} mg/dL</div>`;
+    if(!out) return;
+
+    if(!hrs || !tsb || isNaN(hrs)) { 
+        out.innerHTML = "Awaiting data entry to map clinical risk limits."; 
+        out.className="tool-result neutral"; 
+        return; 
+    }
+
+    const curves = {
+        low:  [12.0, 15.0, 18.0, 20.0],
+        med:  [10.0, 13.0, 15.0, 18.0],
+        high: [8.0,  11.0, 13.0, 15.0]
+    };
+
+    let targetCurve = curves[risk] || curves.med;
+    let threshold = 0;
+
+    if (hrs <= 24) {
+        let fraction = hrs / 24;
+        threshold = 4.0 + fraction * (targetCurve[0] - 4.0);
+    } else if (hrs <= 48) {
+        threshold = targetCurve[0] + ((hrs - 24) / 24) * (targetCurve[1] - targetCurve[0]);
+    } else if (hrs <= 72) {
+        threshold = targetCurve[1] + ((hrs - 48) / 24) * (targetCurve[2] - targetCurve[1]);
+    } else if (hrs <= 96) {
+        threshold = targetCurve[2] + ((hrs - 72) / 24) * (targetCurve[3] - targetCurve[2]);
+    } else {
+        threshold = targetCurve[3];
+    }
+
+    let isIndicated = tsb >= threshold;
+    let colorClass = isIndicated ? "danger" : "success";
+    let alertTitle = isIndicated ? "🚨 Phototherapy Indicated" : "✅ Below Intervention Level";
+
+    let exchangeThreshold = threshold + 5.0;
+    if (tsb >= exchangeThreshold) {
+        alertTitle = "🚨 CRITICAL: Exchange Transfusion Range";
+        colorClass = "danger";
+    }
+
+    out.innerHTML = `
+        <div style="text-align:left; width:100%; line-height:1.5;">
+            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Risk Stratification Output</div>
+            <h3 style="margin:5px 0; color:${isIndicated ? 'var(--danger)' : 'var(--success)'}; font-size:1.25rem;">${alertTitle}</h3>
+            <div style="margin-top:8px; border-top:1px dashed var(--border-soft); padding-top:8px; font-size:0.9rem;">
+                • <b>Patient TSB Level:</b> ${tsb.toFixed(1)} mg/dL<br>
+                • <b>Phototherapy Cutoff:</b> ${threshold.toFixed(1)} mg/dL<br>
+                • <b>Exchange Transfusion Limit:</b> ${exchangeThreshold.toFixed(1)} mg/dL
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px; font-style:italic;">
+                *Based on AAP 2004 Clinical Guidelines for hyperbilirubinemia in neonates infants &ge; 35 weeks.
+            </div>
+        </div>
+    `;
     out.className = "tool-result " + colorClass;
 };
 

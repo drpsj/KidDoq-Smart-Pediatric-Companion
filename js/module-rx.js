@@ -735,3 +735,147 @@ window.toggleAdvancedClinicalFields = function() {
         btn.style.borderStyle = 'dashed';
     }
 };
+
+// ==========================================
+// 🖨️ FORMAL PRESCRIPTION GENERATOR
+// ==========================================
+window.printFormalRx = function() {
+    if (!activePatientId) {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Please Save/Open a patient file first.");
+        return;
+    }
+
+    const p = AppStore.getPatient(activePatientId);
+    
+    // 1. Pull Identity from Personalisation Hub Settings
+    let settings = JSON.parse(localStorage.getItem('clinic_settings')) || {};
+    
+    let logoHtml = settings.logo ? `<img src="${settings.logo}" style="max-height:80px; max-width:150px; object-fit:contain;">` : ``;
+    let docName = settings.docName || "Doctor Name";
+    let docQual = settings.qual || "Qualifications";
+    let regNo = settings.regNo ? `Reg No: ${settings.regNo}` : "";
+    let clinicName = settings.clinicName || "Clinic Name";
+    let clinicAddress = settings.address || "";
+    let clinicPhone = settings.phone ? `Ph: ${settings.phone}` : "";
+
+    // 2. Extract Patient Demographics
+    let pName = p.name || "Unknown Patient";
+    let pAge = p.ageYrs ? `${p.ageYrs}y ${p.ageMos}m` : (p.ageMos ? `${p.ageMos}m` : "-");
+    let pGender = p.gender || "-";
+    let pWt = p.weight ? `${p.weight} kg` : "-";
+    let pHt = p.htCm ? `${p.htCm} cm` : "-";
+    let dateStr = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+
+    // 3. Extract Clinical Draft Info
+    let ddx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : "";
+    let tests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
+    let advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value.replace(/\n/g, '<br>') : "";
+    
+    let sympHtml = "";
+    const tags = document.querySelectorAll('#symptomTagsArea .symptom-tag');
+    if(tags.length > 0) {
+        let sList = [];
+        tags.forEach(t => sList.push(t.innerText.replace('✖', '').trim()));
+        sympHtml = sList.join(", ");
+    }
+
+    // 4. Build Rx List
+    let rxListHtml = "";
+    if (!p.rxList || p.rxList.length === 0) {
+        rxListHtml = `<div style="color:#666; font-style:italic;">No medications prescribed.</div>`;
+    } else {
+        p.rxList.forEach((rx, idx) => {
+            let freq = window.translateFreqToLocal ? translateFreqToLocal(rx.freq) : rx.freq;
+            let dur = rx.dur ? ` for ${rx.dur}` : "";
+            rxListHtml += `
+                <div style="margin-bottom:18px;">
+                    <div style="font-weight:bold; font-size:1.1rem; color:#0f172a;">${idx+1}. ${rx.name}</div>
+                    <div style="font-size:1rem; color:#334155; margin-top:3px;">
+                        Give <b style="color:#000;">${rx.vol} ${rx.unit}</b>, <span style="font-weight:bold;">${freq}</span>${dur}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    let sigHtml = settings.signature ? `<img src="${settings.signature}" style="max-height:60px;">` : `<div style="height:60px;"></div>`;
+
+    // 5. Assemble the Master Layout
+    let printHtml = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #000; line-height:1.4;">
+            
+            <!-- HEADER -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid var(--primary-dark); padding-bottom:15px; margin-bottom:15px;">
+                <div style="flex:0 0 auto; margin-right:20px;">
+                    ${logoHtml}
+                </div>
+                <div style="flex:1; text-align:left;">
+                    <h1 style="margin:0; font-size:1.8rem; color:var(--primary-dark);">${clinicName}</h1>
+                    <div style="font-size:0.9rem; color:#444;">${clinicAddress} ${clinicAddress && clinicPhone ? '|' : ''} ${clinicPhone}</div>
+                </div>
+                <div style="flex:1; text-align:right;">
+                    <h2 style="margin:0; font-size:1.4rem; color:#000;">${docName}</h2>
+                    <div style="font-size:0.95rem; font-weight:bold; color:#333;">${docQual}</div>
+                    <div style="font-size:0.85rem; color:#555;">${regNo}</div>
+                </div>
+            </div>
+
+            <!-- PATIENT BAR -->
+            <div style="display:flex; justify-content:space-between; background:#f8fafc; border:1px solid #cbd5e1; padding:10px 15px; border-radius:6px; margin-bottom:20px; font-size:0.95rem;">
+                <div><b>Name:</b> ${pName}</div>
+                <div><b>Age/Sex:</b> ${pAge} / ${pGender}</div>
+                <div><b>Wt:</b> ${pWt} &nbsp;|&nbsp; <b>Ht:</b> ${pHt}</div>
+                <div><b>Date:</b> ${dateStr}</div>
+            </div>
+
+            <!-- CLINICAL INFO (2-Column Layout) -->
+            <div style="display:flex; gap:25px; min-height: 400px;">
+                <!-- LEFT COLUMN: Dx & Tests -->
+                <div style="flex: 0 0 32%; border-right:1px solid #e2e8f0; padding-right:15px;">
+                    ${sympHtml ? `<div style="margin-bottom:15px;"><b>Complaints:</b><br><span style="font-size:0.9rem;">${sympHtml}</span></div>` : ''}
+                    ${ddx ? `<div style="margin-bottom:15px;"><b>Diagnosis:</b><br><span style="font-size:1rem; font-weight:bold; color:var(--primary-dark);">${ddx}</span></div>` : ''}
+                    ${tests ? `<div style="margin-bottom:15px;"><b>Investigations:</b><br><span style="font-size:0.9rem;">${tests}</span></div>` : ''}
+                    ${advice ? `<div style="margin-bottom:15px;"><b>Advice:</b><br><span style="font-size:0.9rem;">${advice}</span></div>` : ''}
+                </div>
+
+                <!-- RIGHT COLUMN: Rx Data -->
+                <div style="flex: 1; padding-left:5px;">
+                    <div style="font-family:serif; font-size:2.8rem; font-weight:bold; color:var(--primary-dark); margin-bottom:15px; line-height:1;">Rx</div>
+                    ${rxListHtml}
+                </div>
+            </div>
+
+            <!-- FOOTER: Signature -->
+            <div style="margin-top:40px; border-top:1px solid #cbd5e1; padding-top:15px; display:flex; justify-content:flex-end;">
+                <div style="text-align:center;">
+                    ${sigHtml}
+                    <div style="border-top:1px solid #000; padding-top:4px; font-weight:bold; font-size:0.9rem;">${docName}</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 6. Execute Print
+    const engine = document.getElementById('printEngine'); 
+    if(!engine) {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Print Engine missing from DOM.");
+        return;
+    }
+
+    engine.innerHTML = printHtml;
+    
+    // Inject temporary print styles
+    const style = document.createElement('style');
+    style.innerHTML = `@media print { 
+        body > *:not(#printEngine) { display: none !important; } 
+        #printEngine { display: block !important; position: static !important; } 
+        @page { size: A4; margin: 1cm; }
+    }`;
+    document.head.appendChild(style);
+    
+    setTimeout(() => {
+        window.print();
+        // Cleanup after print dialog closes
+        setTimeout(() => { engine.innerHTML = ""; style.remove(); }, 500);
+    }, 250);
+};
