@@ -70,14 +70,19 @@
     <div id="systemToastContainer" style="position:fixed; bottom:100px; right:30px; z-index:99999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
   
     <header>
-        <div style="width: 33%; display: flex; align-items: center;">
+        <div style="width: 30%; display: flex; align-items: center;">
             <div id="headerAvatar" class="avatar-circle" onclick="showAuthScreen()" title="Switch User" style="display:none;"></div>
         </div>
-        <div class="brand-logo" onclick="switchNavTab('homeDashboardView')" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <div class="brand-logo" onclick="switchNavTab('homeDashboardView')" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 40%;">
             <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 32px; height: 32px; object-fit: contain;">
             <span class="brand-text" style="line-height: 1;">KidDoq</span>
         </div>
-        <div id="headerPatientText" onclick="if(typeof activePatientId !== 'undefined' && activePatientId) { window.openClinicalTool('patientProfileView'); populatePatientProfile(activePatientId); }" style="cursor:pointer; width: 33%; text-align: right; font-size: 0.9rem; font-weight: 600; color: var(--brand-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+        <div style="width: 30%; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+            <div id="headerPatientText" onclick="if(typeof activePatientId !== 'undefined' && activePatientId) { window.openClinicalTool('patientProfileView'); populatePatientProfile(activePatientId); }" style="cursor:pointer; font-size: 0.9rem; font-weight: 600; color: var(--brand-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+            
+            <!-- NEW: TOP RIGHT ADD PATIENT BUTTON -->
+            <button onclick="document.getElementById('registryModal').classList.add('active')" style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; box-shadow: var(--shadow-sm); cursor: pointer; white-space: nowrap;">➕ New</button>
+        </div>
     </header>
 
   <div class="modal-overlay" id="registryModal" onclick="if(event.target===this) this.classList.remove('active')">
@@ -193,84 +198,94 @@
                 </div>
             </div>
 
-            <div class="cortex-bento-grid">
+            <!-- NEW: HERO DOSE ENGINE (Sits above the Bento Grid) -->
+            <div class="cortex-hero-card" id="heroDoseEngine">
                 
-                <div class="bento-card card-doses" id="bentoDoses">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: rgba(106, 112, 255, 0.15); color: var(--brand-blue);">💊</div>
-                        <div class="card-title-group">
-                            <h3>Top Doses</h3>
-                            <span class="card-subtitle">Auto calculated</span>
+                <!-- LAYER 1: INSTANT DOSE DECK (Always visible) -->
+                <div id="layer1InstantDoses" class="hero-layer-1" onclick="toggleDoseLayer2()">
+                    <div class="hero-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="hero-icon">⚡</div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main);">Instant Doses</h3>
+                                <span style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Auto-calculated based on weight</span>
+                            </div>
                         </div>
+                        <div class="expand-hint">Full Formulary ⌄</div>
                     </div>
-                    <div class="card-body">
-                        <div id="hudQuickDoseRes" class="bento-list">
-                            <div class="hud-empty-state" style="border:none;">Enter Wt to unlock Smart Doses.</div>
+                    
+                    <!-- Top 5 Auto Doses will inject here -->
+                    <div id="hudSmartDoseCards" style="display: flex; overflow-x: auto; gap: 10px; padding: 12px 0 5px 0; scrollbar-width: none;">
+                        <div class="hud-empty-state" style="width: 100%; border: 1px dashed var(--border-soft); text-align: left; padding: 15px;">
+                            Enter Weight to unlock Instant Doses...
                         </div>
                     </div>
                 </div>
 
-                <div class="bento-card card-growth" id="bentoGrowth">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: rgba(0, 250, 154, 0.15); color: var(--success);">📈</div>
-                        <div class="card-title-group">
-                            <h3>Growth Snapshot</h3>
-                            <span class="card-subtitle">WHO Standards</span>
+                <!-- LAYER 2: FULL CALCULATOR (Hidden by default) -->
+                <div id="layer2FullCalc" class="hero-layer-2 cortex-collapsed">
+                    <div style="border-top: 1px solid var(--border-soft); margin: 15px 0; padding-top: 15px;">
+                        <div class="row-inputs" style="margin-bottom: 12px;">
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">Category</label>
+                                <select id="hudQuickCat" onchange="populateHudDrugs()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); font-weight:bold;">
+                                    <option value="">-- Select --</option>
+                                    <option value="antibiotics">Antibiotics</option>
+                                    <option value="antipyretics">Antipyretics / Pain</option>
+                                    <option value="antihistamines">Allergy / Cold</option>
+                                    <option value="respiratory">Respiratory</option>
+                                    <option value="git">Gastrointestinal</option>
+                                    <option value="vitamins">Vitamins & Minerals</option>
+                                    <option value="emergency">ER & Resuscitation</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">Formulation</label>
+                                <select id="hudQuickForm" onchange="runHudQuickDose()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); font-weight:bold;">
+                                    <option value="">-- Choose --</option>
+                                </select>
+                            </div>
                         </div>
+                        <div id="hudQuickDoseRes"></div>
                     </div>
-                    <div class="card-body">
-                        <div id="hudGrowthOutput" class="hud-empty-state" style="border:none;">Enter Wt/Ht & Age to view triage.</div>
-                    </div>
+                </div>
+            </div>
+
+            <!-- 2. BENTO COMMAND GRID -->
+            <div class="cortex-bento-grid">
+
+                <div class="bento-card card-growth" id="bentoGrowth">
+                    <div class="card-header"><div class="card-icon" style="background: rgba(0, 250, 154, 0.15); color: var(--success);">📈</div><div class="card-title-group"><h3>Growth Snapshot</h3><span class="card-subtitle">WHO Standards</span></div></div>
+                    <div class="card-body"><div id="hudGrowthOutput" class="hud-empty-state" style="border:none;">Enter Wt/Ht & Age to view triage.</div></div>
                 </div>
 
                 <div class="bento-card card-nutrition" id="bentoNutrition">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: rgba(255, 59, 59, 0.15); color: var(--danger);">🍎</div>
-                        <div class="card-title-group">
-                            <h3>Nutrition Status</h3>
-                            <span class="card-subtitle">Anthropometry</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Enter HC & MAC for alerts.</div>
-                    </div>
+                    <div class="card-header"><div class="card-icon" style="background: rgba(255, 59, 59, 0.15); color: var(--danger);">🍎</div><div class="card-title-group"><h3>Nutrition Status</h3><span class="card-subtitle">Anthropometry</span></div></div>
+                    <div class="card-body"><div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Enter HC & MAC for alerts.</div></div>
                 </div>
 
                 <div class="bento-card card-vitals" id="bentoVitals">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: rgba(0, 229, 255, 0.15); color: var(--brand-cyan);">💓</div>
-                        <div class="card-title-group">
-                            <h3>Vitals & Fluids</h3>
-                            <span class="card-subtitle">Limits & Maintenance</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div id="hudVitalsOutput" class="hud-empty-state" style="border:none;">Enter Age for normal ranges.</div>
-                        <div id="hudFluidsOutput" style="margin-top: 10px; border-top: 1px solid var(--border-soft); padding-top: 10px; font-size: 0.85rem;"></div>
-                    </div>
+                    <div class="card-header"><div class="card-icon" style="background: rgba(0, 229, 255, 0.15); color: var(--brand-cyan);">💓</div><div class="card-title-group"><h3>Vitals & Fluids</h3><span class="card-subtitle">Limits & Maintenance</span></div></div>
+                    <div class="card-body"><div id="hudVitalsOutput" class="hud-empty-state" style="border:none;">Enter Age for normal ranges.</div><div id="hudFluidsOutput" style="margin-top: 10px; border-top: 1px solid var(--border-soft); padding-top: 10px; font-size: 0.85rem;"></div></div>
                 </div>
 
                 <div class="bento-card card-vaccines" id="bentoVaccines">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: rgba(255, 77, 166, 0.15); color: var(--brand-pink);">💉</div>
-                        <div class="card-title-group">
-                            <h3>Vaccines Due</h3>
-                            <span class="card-subtitle">Based on age</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div id="hudVaxOutput" class="hud-empty-state" style="border:none;">Enter Age to see due vaccines.</div>
-                    </div>
+                    <div class="card-header"><div class="card-icon" style="background: rgba(255, 77, 166, 0.15); color: var(--brand-pink);">💉</div><div class="card-title-group"><h3>Vaccines Due</h3><span class="card-subtitle">Based on age</span></div></div>
+                    <div class="card-body"><div id="hudVaxOutput" class="hud-empty-state" style="border:none;">Enter Age to see due vaccines.</div></div>
+                </div>
+                
+                <div class="bento-card" style="box-shadow: inset 0 3px 0 #9333EA, var(--shadow-sm);">
+                    <div class="card-header"><div class="card-icon" style="background: rgba(147, 51, 234, 0.15); color: #9333EA;">🧠</div><div class="card-title-group"><h3>Milestones</h3><span class="card-subtitle">Developmental Progress</span></div></div>
+                    <div class="card-body"><div id="hudMilestonesOutput" class="hud-empty-state" style="border:none;">Enter Age</div></div>
                 </div>
 
+                <div class="bento-card" style="box-shadow: inset 0 3px 0 var(--danger), var(--shadow-sm);">
+                    <div class="card-header"><div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--danger);">🚨</div><div class="card-title-group"><h3>Red Flags</h3><span class="card-subtitle">Anticipatory Warnings</span></div></div>
+                    <div class="card-body"><div id="hudRedFlagsOutput" class="hud-empty-state" style="border:none;">Enter Age</div></div>
+                </div>
+                
                 <div class="bento-card card-tools">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: rgba(255, 176, 32, 0.15); color: var(--warning);">🧰</div>
-                        <div class="card-title-group">
-                            <h3>Clinical Tools</h3>
-                            <span class="card-subtitle">Quick access</span>
-                        </div>
-                    </div>
+                    <div class="card-header"><div class="card-icon" style="background: rgba(255, 176, 32, 0.15); color: var(--warning);">🧰</div><div class="card-title-group"><h3>Clinical Tools</h3><span class="card-subtitle">Quick access</span></div></div>
                     <div class="card-body tools-mini-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
                         <button class="secondary" onclick="window.openClinicalTool('erFeatureView')" style="margin:0; font-size:0.75rem; padding:8px;">💧 Fluids</button>
                         <button class="secondary" onclick="window.openClinicalTool('prescriptionFeatureView')" style="margin:0; font-size:0.75rem; padding:8px;">📝 Case File</button>
@@ -278,16 +293,16 @@
                         <button class="secondary" onclick="window.openClinicalTool('asthmaFeatureView')" style="margin:0; font-size:0.75rem; padding:8px;">🫁 PRAM</button>
                     </div>
                 </div>
+
             </div>
 
-            <div id="cortexActionContainer" class="cortex-action-container">
-                <button id="cortexActionBtn" onclick="activateCortexInput()">
-                    <div class="plus-icon">＋</div>
-                    <span class="action-text">Quick add vitals...</span>
-                    <div class="mic-icon">🎙️</div>
+            <!-- 3. FIXED FLOATING ACTION BAR (Hardcoded inline styles to override cache) -->
+            <div id="cortexActionContainer" style="position: fixed; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 9999;">
+                <button id="cortexActionBtn" onclick="activateCortexInput()" style="width: 100%; display: flex; align-items: center; justify-content: space-between; background: rgba(17, 20, 36, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 9999px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0, 229, 255, 0.15); color: var(--text-main); font-size: 0.95rem; font-weight: 700; cursor: pointer;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);">＋</div>
+                    <span style="flex-grow: 1; text-align: left; margin-left: 12px;">Quick add vitals...</span>
                 </button>
             </div>
-
             <div id="cortexInputPod" class="cortex-hidden">
                 <div class="pod-header">
                     <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main);">Core Vitals</h3>
@@ -1594,6 +1609,19 @@ function toggleCortexDrawer() {
     } else {
         drawer.classList.add('cortex-collapsed');
         chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+function toggleDoseLayer2() {
+    const layer2 = document.getElementById('layer2FullCalc');
+    const hint = document.querySelector('.expand-hint');
+    
+    if (layer2.classList.contains('cortex-collapsed')) {
+        layer2.classList.remove('cortex-collapsed');
+        hint.innerText = "Close Formulary ⌃";
+    } else {
+        layer2.classList.add('cortex-collapsed');
+        hint.innerText = "Full Formulary ⌄";
     }
 }
 
