@@ -43,9 +43,13 @@ const ViewController = (function() {
             _hideAllViews();
             _resetNavButtons();
             
-            // Log this move in the native mobile history
-            if (!skipHistory) {
-                history.pushState({ type: 'nav', id: tabId }, "", "#" + tabId);
+            // Prevent fatal SecurityError crashes when testing locally
+            try {
+                if (skipHistory !== true) {
+                    history.pushState({ type: 'nav', id: tabId }, "", "#" + tabId);
+                }
+            } catch (e) {
+                console.warn("History push blocked (Local testing mode)");
             }
 
             const target = document.getElementById(tabId);
@@ -63,8 +67,13 @@ const ViewController = (function() {
                 setTimeout(() => target.classList.add('active-view'), 10);
             }
 
-            const navBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
-            if (navBtn) navBtn.classList.add('active');
+            // Handle the active blue highlight reliably
+            if (typeof skipHistory === 'object' && skipHistory !== null) {
+                skipHistory.classList.add('active');
+            } else {
+                const navBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
+                if (navBtn) navBtn.classList.add('active');
+            }
 
             const mainContent = document.querySelector('.main-content');
             if (mainContent) mainContent.scrollTop = 0;
