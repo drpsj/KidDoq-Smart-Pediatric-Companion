@@ -491,3 +491,81 @@ body.dark-mode .case-file-header { background: rgba(20, 20, 43, 0.85); }
     background: var(--primary); color: white; border-color: var(--primary);
     box-shadow: 0 4px 12px rgba(91, 97, 246, 0.35);
 }
+
+/* ==========================================
+   PHASE 2: CORTEX COMMAND CENTER (NEON-FUSION)
+   ========================================== */
+
+/* 1. The Top Anchor & Greeting */
+.cortex-top-section {
+    position: sticky; top: 0; z-index: 4000;
+    margin: -20px -20px 15px -20px;
+    padding: 20px 20px 10px 20px;
+    background: linear-gradient(180deg, var(--bg-body) 60%, transparent 100%);
+}
+
+.anchor-pill-premium {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(17, 20, 36, 0.65); /* Deep glass */
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-pill);
+    padding: 8px 16px 8px 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    cursor: pointer; transition: transform 0.2s ease;
+}
+.anchor-pill-premium:active { transform: scale(0.98); }
+
+.anchor-avatar img {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid var(--brand-cyan);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    object-fit: cover;
+}
+
+.anchor-stat { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.stat-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1.2; }
+.anchor-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); }
+.anchor-chevron { color: var(--brand-blue); font-size: 1.2rem; font-weight: bold; transition: transform 0.3s; }
+
+.pull-down-hint { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 8px; font-weight: 600; }
+
+.cortex-greeting { margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
+.greeting-text h1 { font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
+.greeting-text p { font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0 0; }
+.opd-queue { background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px; }
+.queue-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+.queue-count { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
+
+/* 2. The Bento Command Grid */
+.cortex-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding-bottom: 20px;
+}
+
+.bento-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-xl);
+    padding: 16px;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-soft);
+    position: relative; overflow: hidden;
+    transition: transform 0.3s ease, order 0.4s ease; /* Prepped for JS reordering */
+}
+
+/* Semantic Edge Glows (Top inset border) */
+.card-doses    { box-shadow: inset 0 3px 0 var(--brand-blue), var(--shadow-sm); }
+.card-growth   { box-shadow: inset 0 3px 0 var(--success), var(--shadow-sm); }
+.card-nutrition{ box-shadow: inset 0 3px 0 var(--danger), var(--shadow-sm); }
+.card-vitals   { box-shadow: inset 0 3px 0 var(--brand-cyan), var(--shadow-sm); }
+.card-vaccines { box-shadow: inset 0 3px 0 var(--brand-pink), var(--shadow-sm); }
+
+.card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.card-icon { width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.card-title-group { display: flex; flex-direction: column; }
+.card-title-group h3 { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+.card-subtitle { font-size: 0.7rem
