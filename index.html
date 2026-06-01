@@ -157,15 +157,15 @@
                         <img src="kiddoq lite.png" alt="Patient">
                     </div>
                     
-                    <div class="anchor-stat scrub-zone" id="scrubAgeZone">
-                        <span class="stat-label" style="color:var(--brand-cyan);">AGE <span class="scrub-hint-mini">‹ drag ›</span></span>
+                    <div class="anchor-stat scrub-zone" id="scrubAgeZone" onclick="manualEditAge()" style="cursor: pointer;">
+                        <span class="stat-label" style="color:var(--brand-cyan);">AGE <span class="scrub-hint-mini" style="color: var(--text-muted);">‹ click or drag ›</span></span>
                         <span class="stat-value" id="anchorAgeDisplay">0Y 0M</span>
                     </div>
                     
                     <div class="anchor-divider"></div>
                     
-                    <div class="anchor-stat scrub-zone" id="scrubWtZone">
-                        <span class="stat-label" style="color:var(--brand-cyan);">WEIGHT <span class="scrub-hint-mini">‹ drag ›</span></span>
+                    <div class="anchor-stat scrub-zone" id="scrubWtZone" onclick="manualEditWeight()" style="cursor: pointer;">
+                        <span class="stat-label" style="color:var(--brand-cyan);">WEIGHT <span class="scrub-hint-mini" style="color: var(--text-muted);">‹ click or drag ›</span></span>
                         <span class="stat-value"><span id="anchorWtDisplay">0.0</span> <small style="font-size: 0.7rem;">kg</small></span>
                     </div>
                     
@@ -1709,6 +1709,61 @@ function toggleAnchorGender() {
         icon.style.color = 'var(--brand-blue)';
     }
     if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
+}
+
+// 1.5 MANUAL DESKTOP ENTRY ENGINE
+function manualEditWeight() {
+    let current = document.getElementById('hudWeight').value || 0;
+    let input = prompt("Enter Patient Weight in kg (e.g., 10.5):", current);
+    if (input !== null && input !== "" && !isNaN(input)) {
+        let newWt = parseFloat(input);
+        if (newWt < 0) newWt = 0;
+        
+        document.getElementById('hudWeight').value = newWt.toFixed(1);
+        document.getElementById('anchorWtDisplay').innerText = newWt.toFixed(1);
+        
+        const currentAgeTotal = (parseInt(document.getElementById('hudAgeYrs').value) || 0) * 12 + (parseInt(document.getElementById('hudAgeMos').value) || 0);
+        renderInstantDoses(newWt);
+        renderGrowthSnapshot(currentAgeTotal, newWt);
+        renderVitalsAndFluids(currentAgeTotal, newWt);
+        renderAnthropometry();
+        
+        if(typeof syncHudAge === 'function') syncHudAge();
+        if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
+        runCortexTelemetry(currentAgeTotal);
+    }
+}
+
+function manualEditAge() {
+    let currentY = parseInt(document.getElementById('hudAgeYrs').value) || 0;
+    let currentM = parseInt(document.getElementById('hudAgeMos').value) || 0;
+    let currentTotal = (currentY * 12) + currentM;
+    
+    let input = prompt("Enter Patient Age in TOTAL MONTHS (e.g., 18 for 1.5 yrs):", currentTotal);
+    if (input !== null && input !== "" && !isNaN(input)) {
+        let newTotal = parseInt(input);
+        if (newTotal < 0) newTotal = 0;
+        
+        const newYrs = Math.floor(newTotal / 12);
+        const newMos = newTotal % 12;
+        document.getElementById('hudAgeYrs').value = newYrs;
+        document.getElementById('hudAgeMos').value = newMos;
+        
+        let ageStr = '';
+        if (newYrs > 0) ageStr += newYrs + 'Y ';
+        if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
+        document.getElementById('anchorAgeDisplay').innerText = ageStr;
+        
+        const currentWt = document.getElementById('hudWeight').value;
+        renderGrowthSnapshot(newTotal, currentWt);
+        renderVitalsAndFluids(newTotal, currentWt);
+        renderAnthropometry();
+        renderMilestonesAndRedFlags(newTotal);
+        
+        if(typeof syncHudAge === 'function') syncHudAge();
+        if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
+        runCortexTelemetry(newTotal);
+    }
 }
 
 // 2. DIRECT SCRUB ENGINE
