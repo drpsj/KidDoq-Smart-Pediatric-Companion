@@ -76,14 +76,14 @@ window.broadcastGlobalParameters = function() {
         }
     }
 
-    renderHudGrowth(wt, ht, ageMos, gender);
-    renderHudVitals(ageMos);
-    renderHudFluids(wt);
-    renderHudRedFlags(ageMos);
-    renderHudVax(ageMos);
-    renderHudMilestones(ageMos);
-    renderHudCrash(wt);
-    renderHudSmartCards(wt);
+    if(typeof renderHudGrowth === 'function') renderHudGrowth(wt, ht, ageMos, gender);
+    if(typeof renderHudVitals === 'function') renderHudVitals(ageMos);
+    if(typeof renderHudFluids === 'function') renderHudFluids(wt);
+    if(typeof renderHudRedFlags === 'function') renderHudRedFlags(ageMos);
+    if(typeof renderHudVax === 'function') renderHudVax(ageMos);
+    if(typeof renderHudMilestones === 'function') renderHudMilestones(ageMos);
+    if(typeof renderHudCrash === 'function') renderHudCrash(wt);
+    if(typeof renderHudSmartCards === 'function') renderHudSmartCards(wt);
     
     // Trigger quick dose update if a drug is selected
     if(typeof runHudQuickDose === 'function') runHudQuickDose();
