@@ -386,26 +386,62 @@ window.populateHudDrugs = function() {
     runHudQuickDose();
 };
 
+window.populateHudDrugs = function() {
+    const cat = document.getElementById('hudQuickCat').value;
+    const formSelect = document.getElementById('hudQuickForm');
+    formSelect.innerHTML = '<option value="">-- Select Formulation --</option>';
+    if(!cat) {
+        document.getElementById('hudQuickDoseRes').innerHTML = '';
+        return;
+    }
+    
+    let db = typeof getUnifiedDB === 'function' ? getUnifiedDB() : window.drugsDb;
+    if(!db) return;
+    const filtered = db.filter(d => d.category === cat);
+    filtered.forEach(d => { 
+        const icon = d.isCustom ? "👤 " : "";
+        formSelect.innerHTML += `<option value="${d.id}">${icon}${d.name}</option>`; 
+    });
+    runHudQuickDose();
+};
+
 window.runHudQuickDose = function() {
     const wt = parseFloat(document.getElementById('hudWeight').value);
     const drugId = document.getElementById('hudQuickForm').value;
     const res = document.getElementById('hudQuickDoseRes');
     if(!res) return;
 
-    if(!wt || !drugId) { res.innerHTML = ''; return; }
+    if(!wt) { 
+        res.innerHTML = `<div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:8px; border:1px dashed rgba(255,255,255,0.4); text-align:center;">⚠️ Enter patient weight at the top to calculate dose.</div>`; 
+        return; 
+    }
+    if(!drugId) { res.innerHTML = ''; return; }
     
     let db = typeof getUnifiedDB === 'function' ? getUnifiedDB() : window.drugsDb;
+    if(!db) return;
     const drug = db.find(d => d.id === drugId);
     if(!drug) return;
 
-    // Use existing math engine
     let math = ClinicalMath.computeDose(drug, wt);
     let unit = ClinicalMath.getUnit(drug);
     
+    let warnHTML = math.isMax ? `<div style="color:#fca5a5; font-size:0.85rem; font-weight:bold; margin-top:8px;">⚠️ Adult Max Cap Enforced</div>` : "";
+    if (drug.warnings && drug.warnings.length > 0) {
+        warnHTML += `<div style="color:#fef08a; font-size:0.8rem; margin-top:8px; text-align:left; line-height:1.4;">${drug.warnings.join("<br>")}</div>`;
+    }
+    let indHTML = "";
+    if (drug.indications && drug.indications.length > 0) {
+        indHTML = `<div style="margin-top:10px; margin-bottom:5px;">` + drug.indications.map(i => `<span style="background:rgba(255,255,255,0.2); color:#fff; padding:2px 8px; border-radius:12px; font-size:0.7rem; margin-right:4px; display:inline-block; font-weight:bold; border:1px solid rgba(255,255,255,0.3);">${i}</span>`).join("") + `</div>`;
+    }
+
     res.innerHTML = `
-        <div style="background:var(--primary-light); padding:10px; border-radius:6px; text-align:center; border:1px solid var(--primary); margin-top:8px;">
-            <div style="font-size:1.8rem; color:var(--primary-dark); font-weight:900; line-height:1;">${math.reqVol.toFixed(1)} <span style="font-size:0.9rem;">${unit}</span></div>
-            <div style="font-size:0.85rem; color:var(--primary); font-weight:700; margin-top:4px;">${drug.defaultFreq}</div>
+        <div style="background:rgba(255,255,255,0.15); padding:15px; border-radius:12px; border:1px solid rgba(255,255,255,0.3); text-align:center; margin-top:15px; backdrop-filter: blur(5px);">
+            <div style="font-size:0.85rem; color:rgba(255,255,255,0.8); text-transform:uppercase; font-weight:bold;">Administer Quantity</div>
+            <div style="font-size:3rem; color:#fff; font-weight:900; margin:5px 0; line-height:1;">${math.reqVol.toFixed(1)} <span style="font-size:1.2rem; opacity:0.8;">${unit}</span></div>
+            <div style="font-size:1rem; color:var(--primary-dark); font-weight:800; background:#fff; padding:5px 12px; border-radius:20px; display:inline-block; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-bottom:5px;">${drug.defaultFreq}</div>
+            ${indHTML}
+            <div style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-top:10px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.3);">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
+            ${warnHTML}
         </div>
     `;
 };
