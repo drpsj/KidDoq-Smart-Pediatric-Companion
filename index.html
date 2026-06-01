@@ -930,7 +930,7 @@
                         </select>
                         <div class="formula-box" style="margin-top:15px; font-size:0.8rem;">
                             <b>Steroid Intervention:</b><br>
-                            Prednisone/Prednisolone at 2–3 mg/kg/day for lesions requiring intervention.
+                            Prednisone/Prednisolone at 2 - 3 mg/kg/day for lesions requiring intervention.
                         </div>
                     </div>
                     <div id="hemangiomaOutputArea" class="tool-result neutral" style="display:flex; align-items:center; justify-content:center; text-align:center;">
@@ -1828,41 +1828,37 @@ function runCortexTelemetry(totalMonths) {
     }
 }
 
-// 4. HERO DOSE ENGINE (Layer 1 Auto-Calculator)
+// 4. HERO DOSE ENGINE (Light Mode Version)
 function renderInstantDoses(weight) {
     const container = document.getElementById('hudSmartDoseCards');
     const wt = parseFloat(weight);
 
     if (!wt || wt <= 0) {
-        container.innerHTML = `<div class="hud-empty-state" style="width: 100%; border: 1px dashed var(--border-soft); text-align: left; padding: 15px;">Enter Weight to unlock Instant Doses...</div>`;
+        container.innerHTML = `<div class="hud-empty-state" style="width: 100%; border: 1px dashed var(--border-soft); text-align: left; padding: 15px; color: var(--text-muted);">Enter Weight to unlock Instant Doses...</div>`;
         return;
     }
 
-    // Standard Indian OPD Concentrations (Adjustable in your clinical-math.js later)
     const doses = [
         { name: "Paracetamol", dose: "15 mg/kg", form: "250mg/5mL", calc: ((15 * wt * 5) / 250).toFixed(1), unit: "mL", freq: "Q6H PRN", color: "var(--brand-blue)" },
-        { name: "Ibuprofen", dose: "10 mg/kg", form: "100mg/5mL", calc: ((10 * wt * 5) / 100).toFixed(1), unit: "mL", freq: "Q8H PRN", color: "var(--warning)" },
-        { name: "Amoxicillin", dose: "40 mg/kg/day", form: "200mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" },
-        { name: "Cetirizine", dose: "0.25 mg/kg", form: "5mg/5mL", calc: ((0.25 * wt * 5) / 5).toFixed(1), unit: "mL", freq: "OD HS", color: "var(--brand-pink)" },
-        { name: "Ondansetron", dose: "0.15 mg/kg", form: "2mg/5mL", calc: ((0.15 * wt * 5) / 2).toFixed(1), unit: "mL", freq: "SOS", color: "var(--brand-cyan)" }
+        { name: "Ibuprofen", dose: "10 mg/kg", form: "100mg/5mL", calc: ((10 * wt * 5) / 100).toFixed(1), unit: "mL", freq: "var(--warning)", color: "var(--warning)" },
+        { name: "Amoxicillin", dose: "40 mg/kg/day", form: "200mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" }
     ];
 
     let html = '';
     doses.forEach(d => {
         html += `
-        <div style="min-width: 145px; background: rgba(13, 17, 28, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; border-left: 3px solid ${d.color}; flex-shrink: 0; box-shadow: 0 8px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.02);">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #FFFFFF; letter-spacing: 0.5px;">${d.name}</div>
-            <div style="font-size: 0.7rem; color: #A0AEC0; font-weight: 600; margin-bottom: 10px;">${d.dose} • ${d.form}</div>
+        <div style="min-width: 145px; background: #FFFFFF; border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px; border-left: 4px solid ${d.color}; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">${d.name}</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;">${d.dose} • ${d.form}</div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
-                    <span style="font-size: 1.5rem; font-weight: 900; color: ${d.color}; text-shadow: 0 0 12px ${d.color};">${d.calc}</span>
-                    <span style="font-size: 0.75rem; color: #FFFFFF; font-weight: 600;">${d.unit}</span>
+                    <span style="font-size: 1.5rem; font-weight: 900; color: ${d.color};">${d.calc}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${d.unit}</span>
                 </div>
-                <div style="font-size: 0.65rem; font-weight: 800; color: #FFFFFF; background: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 8px;">${d.freq}</div>
+                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-main); background: var(--bg-body); padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-soft);">${d.freq}</div>
             </div>
         </div>`;
     });
-
     container.innerHTML = html;
 }
 
@@ -2212,27 +2208,27 @@ function populateHudDrugs() {
     const cat = document.getElementById('hudQuickCat').value;
     const formSelect = document.getElementById('hudQuickForm');
     
-    // Reset formulation dropdown
     formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
     document.getElementById('hudQuickDoseRes').innerHTML = '';
 
-    if (cat && pediatricDrugDB[cat]) {
-        pediatricDrugDB[cat].forEach(drug => {
+    // Check against your global drugsDb array
+    if (cat && window.drugsDb) {
+        const filteredDrugs = window.drugsDb.filter(d => d.category === cat);
+        filteredDrugs.forEach(drug => {
             let opt = document.createElement('option');
             opt.value = drug.id;
-            opt.innerText = `${drug.name} (${drug.form})`;
+            opt.innerText = drug.name; // Pulls directly from your array e.g., "Amoxicillin 125mg/5ml [Novamox]"
             formSelect.appendChild(opt);
         });
     }
 }
 
 function runHudQuickDose() {
-    const cat = document.getElementById('hudQuickCat').value;
     const drugId = document.getElementById('hudQuickForm').value;
     const resDiv = document.getElementById('hudQuickDoseRes');
     const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
 
-    if (!cat || !drugId) {
+    if (!drugId) {
         resDiv.innerHTML = '';
         return;
     }
@@ -2242,29 +2238,57 @@ function runHudQuickDose() {
         return;
     }
 
-    const drug = pediatricDrugDB[cat].find(d => d.id === drugId);
+    const drug = window.drugsDb.find(d => d.id === drugId);
     if (!drug) return;
 
-    // Output formatted to match Neon-Fusion aesthetic
+    // The Logic Engine based on your specific doseType schema
+    let singleDoseMg = 0;
+    
+    if (drug.doseType === "perDay") {
+        // e.g., 40mg/kg/day divided by 3 (TID)
+        let totalDailyMg = wt * drug.doseMg;
+        singleDoseMg = totalDailyMg / (drug.div || 1);
+    } else if (drug.doseType === "perDose") {
+        // e.g., 15mg/kg/dose
+        singleDoseMg = wt * drug.doseMg;
+    } else if (drug.doseType === "fixed") {
+        // e.g., Mebendazole 100mg stat
+        singleDoseMg = drug.doseMg;
+    }
+
+    // Convert mg to mL using your conc and vol keys
+    let singleDoseML = 0;
+    if (drug.conc && drug.conc > 0) {
+        singleDoseML = (singleDoseMg / drug.conc) * (drug.vol || 1);
+    }
+
+    // Generate any clinical warnings you logged
+    let warningsHtml = '';
+    if (drug.warnings && drug.warnings.length > 0) {
+        warningsHtml = `<div style="font-size: 0.75rem; color: var(--danger); font-weight: 600; border-top: 1px dashed var(--border-soft); padding-top: 8px; margin-top: 8px;">
+            ${drug.warnings.join('<br>')}
+        </div>`;
+    }
+
+    // Light-mode rendering
     resDiv.innerHTML = `
-        <div style="margin-top: 15px; padding: 15px; background: rgba(106, 112, 255, 0.05); border: 1px solid rgba(106, 112, 255, 0.2); border-radius: 12px;">
+        <div style="margin-top: 15px; padding: 15px; background: #F8FAFC; border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                <div>
-                    <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main);">${drug.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${drug.form}</div>
+                <div style="flex: 1;">
+                    <div style="font-size: 1.05rem; font-weight: 800; color: var(--text-main);">${drug.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Dose Target: ${drug.doseMg} ${drug.doseType === 'perDay' ? 'mg/kg/day' : 'mg/kg/dose'}</div>
                 </div>
-                <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-cyan); background: rgba(0, 229, 255, 0.1); padding: 4px 8px; border-radius: 8px;">
-                    ${drug.freq}
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--brand-blue); background: rgba(106, 112, 255, 0.1); padding: 4px 8px; border-radius: 8px; margin-left: 10px; text-align: center; white-space: nowrap;">
+                    ${drug.defaultFreq}
                 </div>
             </div>
             
             <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px;">
-                <span style="font-size: 2.2rem; font-weight: 900; color: var(--brand-blue); line-height: 1;">${drug.doseCalc(wt)}</span>
+                <span style="font-size: 2.2rem; font-weight: 900; color: var(--brand-cyan); line-height: 1;">${singleDoseML > 0 ? singleDoseML.toFixed(1) : singleDoseMg.toFixed(0)}</span>
+                <span style="font-size: 0.9rem; color: var(--text-main); font-weight: 700;">${singleDoseML > 0 ? 'mL' : 'mg'}</span>
             </div>
             
-            <div style="font-size: 0.75rem; color: var(--warning); font-weight: 600; border-top: 1px dashed var(--border-soft); padding-top: 8px; margin-top: 8px;">
-                ℹ️ ${drug.notes}
-            </div>
+            ${warningsHtml}
         </div>
     `;
 }
@@ -2273,17 +2297,21 @@ function runHudQuickDose() {
 // 11. CORE NAVIGATION & DYNAMIC TOOLS ENGINE
 // ==========================================
 
-// RESTORE: Sidebar / Bottom Nav Functionality
+// Bulletproof Navigation Engine
 window.switchNavTab = function(tabId) {
-    // Hide all views
-    document.querySelectorAll('.view-content').forEach(view => {
+    // Force hide ALL views to prevent overlaps
+    const allViews = document.querySelectorAll('.view-content');
+    allViews.forEach(view => {
         view.classList.remove('active-view');
+        view.style.display = 'none'; 
     });
     
-    // Show target view
+    // Force show the target view
     const target = document.getElementById(tabId);
-    if (target) target.classList.add('active-view');
-    
+    if (target) {
+        target.classList.add('active-view');
+        target.style.display = 'block'; 
+    }
     window.scrollTo(0, 0);
 };
 
