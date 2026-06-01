@@ -85,3 +85,79 @@
     height: 400px !important;
     width: 100%;
 }
+
+/* =========================================
+   DESKTOP DASHBOARD COMMAND CENTER
+   Transforms the stacked mobile UI into a widescreen layout
+   ========================================= */
+
+/* 1. Master Grid for the Dashboard */
+#homeDashboardView {
+    display: grid !important;
+    grid-template-columns: 320px 1fr !important; /* 320px Left Sidebar, rest for Bento */
+    grid-template-rows: auto 1fr !important;
+    gap: 30px !important;
+    align-items: start !important;
+}
+
+/* 2. Top Bar (Greeting & Anchor) Side-by-Side */
+.cortex-top-section {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    background: transparent !important; 
+    padding: 0 0 15px 0 !important;
+    margin: 0 0 15px 0 !important;
+    border-bottom: 2px solid var(--border-soft) !important;
+    position: relative !important;
+}
+
+.cortex-greeting {
+    margin-top: 0 !important;
+    order: -1 !important; /* Forces greeting to the far left */
+}
+
+#cortexAnchorPill {
+    margin-bottom: 0 !important;
+    min-width: 350px !important;
+}
+
+/* Float the Drawer so it doesn't push desktop content down */
+#cortexDrawer {
+    position: absolute !important;
+    top: 80px !important;
+    right: 0 !important;
+    background: var(--bg-surface) !important;
+    padding: 15px !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-md) !important;
+    border: 1px solid var(--border-soft) !important;
+    z-index: 5000 !important;
+    width: 400px !important;
+}
+
+/* 3. Dock the Dose Engine to the Left Column */
+#heroDoseEngine {
+    grid-column: 1 / 2 !important;
+    position: sticky !important;
+    top: 20px !important;
+    margin-bottom: 0 !important;
+    max-height: calc(100vh - 40px) !important;
+    overflow-y: auto !important;
+}
+
+/* Stack Instant Dose cards vertically in the left column */
+#hudSmartDoseCards {
+    flex-direction: column !important;
+    overflow-x: hidden !important;
+    padding-right: 5px !important;
+    gap: 12px !important;
+}
+
+/* 4. Expand Bento Grid into a spacious layout on the right */
+.cortex-bento-grid {
+    grid-column: 2 / 3 !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 cards across */
+    gap: 20px !important;
+}
