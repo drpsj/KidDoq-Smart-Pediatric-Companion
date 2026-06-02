@@ -2358,11 +2358,6 @@ function runHudQuickDose() {
 
 // Navigation is now securely handled by view-controller.js
 
-// RESTORE: Jump to specific tool from Dashboard
-window.openClinicalTool = function(toolId) {
-    window.switchNavTab(toolId);
-};
-
 // --- DYNAMIC TOOL CUSTOMIZER ---
 const availableTools = [
     { id: 'erFeatureView', icon: '💧', name: 'Fluids Calc' },

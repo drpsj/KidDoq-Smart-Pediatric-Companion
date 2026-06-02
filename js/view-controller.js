@@ -29,7 +29,7 @@ const ViewController = (function() {
 
     function _hideAllViews() {
         document.querySelectorAll('.view-content').forEach(v => {
-            v.style.display = '';
+            v.style.display = ''; // CLEARED INLINE STYLES
             v.classList.remove('active-view');
         });
     }
@@ -43,7 +43,6 @@ const ViewController = (function() {
             _hideAllViews();
             _resetNavButtons();
             
-            // Prevent fatal SecurityError crashes when testing locally
             try {
                 if (skipHistory !== true) {
                     history.pushState({ type: 'nav', id: tabId }, "", "#" + tabId);
@@ -55,7 +54,6 @@ const ViewController = (function() {
             const target = document.getElementById(tabId);
             const workspace = document.getElementById('activeWorkspace');
 
-            // Workspace Gatekeeper
             if (tabId === 'homeDashboardView' || tabId === 'databaseFeatureView' || tabId === 'aboutFeatureView' || tabId === 'toolsTab' || tabId === 'personaliseFeatureView' || tabId === 'customFormularyView') {
                 if (workspace) workspace.style.display = 'none';
             } else if (workspace && AppStore.getActivePatientId()) {
@@ -63,11 +61,10 @@ const ViewController = (function() {
             }
 
             if (target) {
-                target.style.display = '';
-                setTimeout(() => target.classList.add('active-view'), 10);
+                target.style.display = ''; // CLEARED INLINE STYLES
+                target.classList.add('active-view'); 
             }
 
-            // Handle the active blue highlight reliably
             if (typeof skipHistory === 'object' && skipHistory !== null) {
                 skipHistory.classList.add('active');
             } else {
@@ -96,7 +93,6 @@ const ViewController = (function() {
 
             parentView.querySelectorAll('.sub-tab-content').forEach(content => {
                 content.classList.remove('active');
-                // Erase any lingering inline styles blocking the CSS
                 content.style.display = ''; 
             });
 
@@ -118,13 +114,10 @@ const ViewController = (function() {
     };
 })();
 
-// --- LEGACY BRIDGES ---
 window.switchNavTab = ViewController.switchNavTab;
 window.switchMainFeature = ViewController.switchNavTab; 
 window.switchSubTab = ViewController.switchSubTab;
 
-// --- TOOL ROUTING & VITAL SYNCING ---
-// 🔄 PHASE 2: THE GLOBAL AUTO-FILL ENGINE
 window.updateGlobalVital = function(vitalType, val) {
     if (!activePatientId) return;
     const p = AppStore.getPatient(activePatientId);
@@ -133,22 +126,18 @@ window.updateGlobalVital = function(vitalType, val) {
     let numVal = parseFloat(val);
     if (isNaN(numVal)) numVal = "";
 
-    // 1. Save directly to the secure Vault (AppStore)
     if (vitalType === 'weight') p.weight = numVal;
     if (vitalType === 'height') p.htCm = numVal;
     if (typeof AppStore !== 'undefined') AppStore.savePatient(p);
 
-    // 2. Broadcast the update to ALL tools simultaneously
     const weightInputs = ['inlineCalcWeight', 'fluidWeight', 'crashWeight', 'seizureWeight', 'girWt', 'umbilicalWt', 'sbeWeight', 'triageWt', 'growthWtOnTheGo', 'pWeight'];
     const heightInputs = ['triageHt', 'htCmOnTheGo', 'htCm'];
 
     if (vitalType === 'weight') {
         weightInputs.forEach(id => {
             let el = document.getElementById(id);
-            // Change value without stealing focus from the box the doctor is typing in
             if (el && el.value != numVal && document.activeElement !== el) el.value = numVal;
         });
-        // Update Sticky Banner instantly
         let bannerWt = document.getElementById('bannerPWeight');
         if (bannerWt) bannerWt.innerText = numVal ? `${numVal} kg` : "-- kg";
     }
@@ -160,14 +149,12 @@ window.updateGlobalVital = function(vitalType, val) {
         });
     }
 
-    // 3. Force calculators to instantly recalculate with the new data
     if (typeof calcInlineDose === 'function') calcInlineDose();
     if (typeof calcGrowth === 'function') calcGrowth();
     if (typeof calcMalnutrition === 'function') calcMalnutrition();
     if (typeof updateCopilot === 'function') updateCopilot(activePatientId);
 };
 
-// Fire this when opening a patient file to seed the initial data
 window.syncVitalsToTools = function() {
     if(!activePatientId) return;
     const p = AppStore.getPatient(activePatientId);
@@ -183,20 +170,17 @@ window.openClinicalTool = function(viewId, skipHistory = false) {
         return;
     }
     
-    // Log tool opening in the native mobile history
     if (!skipHistory) {
         history.pushState({ type: 'tool', id: viewId }, "", "#" + viewId);
     }
 
     document.getElementById('activeWorkspace').style.display = 'block';
     
-    // 🧠 SYNC THE MEGA CASE FILE TABS
     const subNavTabs = document.querySelectorAll('.case-tab');
     if (subNavTabs.length > 0) {
         subNavTabs.forEach(tab => {
             if (tab.getAttribute('data-target') === viewId) {
                 tab.classList.add('active');
-                // Automatically scroll the selected tab into view on mobile
                 tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             } else {
                 tab.classList.remove('active');
@@ -204,18 +188,16 @@ window.openClinicalTool = function(viewId, skipHistory = false) {
         });
     }
     
-    // Hide all currently open tools
     document.querySelectorAll('.view-content').forEach(v => {
-        v.style.display = '';
+        v.style.display = ''; // CLEARED INLINE STYLES
         v.classList.remove('active-view');
     });
 
     const target = document.getElementById(viewId);
     if (target) {
-        target.style.display = '';
+        target.style.display = ''; // CLEARED INLINE STYLES
         target.classList.add('active-view');
         
-        // Let CSS handle the visibility, just assign the 'active' classes
         let firstTabBtn = target.querySelector('.sub-tab-btn');
         let firstTabContent = target.querySelector('.sub-tab-content');
         
@@ -223,25 +205,19 @@ window.openClinicalTool = function(viewId, skipHistory = false) {
             target.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
             target.querySelectorAll('.sub-tab-content').forEach(content => {
                 content.classList.remove('active');
-                content.style.display = ''; // Clear the inline block!
+                content.style.display = ''; 
             });
             firstTabBtn.classList.add('active');
             firstTabContent.classList.add('active');
         }
     }
 
-    // Push patient details into the tools dynamically
     syncVitalsToTools();
 
-    // Specific Tool Triggers
     if (viewId === 'milestoneFeatureView' && typeof renderMilestoneTimeline === 'function') {
         renderMilestoneTimeline();
     }
 };
-
-// ==========================================
-// AI COPILOT & WORKSPACE LOADER
-// ==========================================
 
 window.updateCopilot = function(pId) {
     const p = AppStore.getPatient(pId);
@@ -280,7 +256,6 @@ window.loadPatientFromDB = function(pId) {
     if (typeof updateStickyBanner === 'function') updateStickyBanner(pId);
 
     if (typeof window.openClinicalTool === 'function') {
-        // Direct routing into the Mega Case File Tab 1 (Rx/Notes)
         window.openClinicalTool('prescriptionFeatureView');
     }
 
@@ -311,20 +286,14 @@ window.loadPatientFromDB = function(pId) {
 
 window.triggerActiveWorkspaceBuild = window.loadPatientFromDB;
 
-// ==========================================
-// NATIVE MOBILE BACK BUTTON / SWIPE SUPPORT
-// ==========================================
 window.addEventListener('popstate', function(event) {
-    // 1. If a modal is open, the back button should close the modal FIRST.
     let activeModal = document.querySelector('.modal-overlay.active');
     if (activeModal) {
         activeModal.classList.remove('active');
-        // Push the state back so we don't accidentally navigate away
         history.pushState(event.state, "", document.location.hash);
         return;
     }
 
-    // 2. Otherwise, route backward normally
     if (event.state) {
         if (event.state.type === 'nav') {
             ViewController.switchNavTab(event.state.id, true);
@@ -332,19 +301,14 @@ window.addEventListener('popstate', function(event) {
             window.openClinicalTool(event.state.id, true);
         }
     } else {
-        // Fallback to home if they swipe all the way back
         ViewController.switchNavTab('homeDashboardView', true);
     }
 });
 
-// Set the baseline anchor when the app boots
 document.addEventListener("DOMContentLoaded", () => {
     history.replaceState({ type: 'nav', id: 'homeDashboardView' }, "", "#homeDashboardView");
 });
 
-// ==========================================
-// WORKSPACE NAVIGATION CONTROLS
-// ==========================================
 window.closePatientFile = function() {
     AppStore.clearActivePatient();
     activePatientId = null;
