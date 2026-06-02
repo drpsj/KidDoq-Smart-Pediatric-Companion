@@ -101,12 +101,17 @@
    Widescreen 2-Column Layout
    ========================================= */
 
-#homeDashboardView {
+/* Only apply the heavy grid if the dashboard is actively selected */
+#homeDashboardView.active-view {
     display: grid !important;
-    grid-template-columns: 340px 1fr !important; /* Fixed left sidebar, fluid right bento */
+    grid-template-columns: 340px 1fr !important; 
     grid-template-rows: auto 1fr !important;
     gap: 30px !important;
     align-items: start !important;
+}
+
+#homeDashboardView:not(.active-view) {
+    display: none !important;
 }
 
 /* Top Section Spans Both Columns */
