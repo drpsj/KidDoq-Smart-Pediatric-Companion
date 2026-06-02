@@ -29,7 +29,7 @@ const ViewController = (function() {
 
     function _hideAllViews() {
         document.querySelectorAll('.view-content').forEach(v => {
-            v.style.display = 'none';
+            v.style.display = '';
             v.classList.remove('active-view');
         });
     }
@@ -63,7 +63,7 @@ const ViewController = (function() {
             }
 
             if (target) {
-                target.style.display = 'block';
+                target.style.display = '';
                 setTimeout(() => target.classList.add('active-view'), 10);
             }
 
@@ -206,13 +206,13 @@ window.openClinicalTool = function(viewId, skipHistory = false) {
     
     // Hide all currently open tools
     document.querySelectorAll('.view-content').forEach(v => {
-        v.style.display = 'none';
+        v.style.display = '';
         v.classList.remove('active-view');
     });
 
     const target = document.getElementById(viewId);
     if (target) {
-        target.style.display = 'block';
+        target.style.display = '';
         target.classList.add('active-view');
         
         // Let CSS handle the visibility, just assign the 'active' classes

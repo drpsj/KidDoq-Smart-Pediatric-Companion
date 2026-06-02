@@ -119,23 +119,23 @@
 
 <div class="app-shell home-active">
     <nav class="main-nav" style="position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; z-index: 999999 !important; background: var(--bg-surface); display: flex; justify-content: space-around; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 3px solid #00D4FF; pointer-events: auto;">
-        <button class="nav-item active" style="width: 20%;" onclick="emergencyNav('homeDashboardView', this)">
+        <button class="nav-item active" style="width: 20%;" onclick="switchNavTab('homeDashboardView', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             Home
         </button>
-        <button class="nav-item" style="width: 20%;" onclick="emergencyNav('databaseFeatureView', this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('databaseFeatureView', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
             Patients
         </button>
-        <button class="nav-item" style="width: 20%;" onclick="emergencyNav('toolsTab', this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('toolsTab', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             Tools
         </button>
-        <button class="nav-item" style="width: 20%;" onclick="emergencyNav('historicalEncountersView', this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('historicalEncountersView', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
             Ledger
         </button>
-        <button class="nav-item" style="width: 20%;" onclick="emergencyNav('aboutFeatureView', this)">
+        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('aboutFeatureView', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             Config
         </button>
@@ -2722,10 +2722,18 @@ document.addEventListener('DOMContentLoaded', () => {
     attachDirectScrub('scrubAgeZone', 'age');
     attachDirectScrub('scrubWtZone', 'weight');
     
-    // NEW: Listen for Anthropometry input in the top drawer
-    document.getElementById('hudHc').addEventListener('input', renderAnthropometry);
-    document.getElementById('hudMac').addEventListener('input', renderAnthropometry);
-    renderInstantDoses(document.getElementById('hudWeight').value);
+    // Listen for Anthropometry input in the top drawer
+    const hudHcEl = document.getElementById('hudHc');
+    const hudMacEl = document.getElementById('hudMac');
+    if (hudHcEl) hudHcEl.addEventListener('input', renderAnthropometry);
+    if (hudMacEl) hudMacEl.addEventListener('input', renderAnthropometry);
+    
+    // Safely check if weight input exists before grabbing its value
+    const weightInput = document.getElementById('hudWeight');
+    if (weightInput) {
+        renderInstantDoses(weightInput.value);
+    }
+    
     renderFavoriteTools();
     renderVaccinesDue(0);
     renderVitalsAndFluids(0, 0);
@@ -2734,82 +2742,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<script>
-window.emergencyNav = function(tabId, btnElement) {
-    // 1. Hide everything
-    document.querySelectorAll('.view-content').forEach(view => {
-        view.classList.remove('active-view');
-        view.style.display = 'none'; 
-    });
-    
-    // 2. Show the target
-    const target = document.getElementById(tabId);
-    if (target) {
-        target.classList.add('active-view');
-        target.style.display = 'block'; 
-    }
-
-    // 3. Update the blue button highlight
-    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    if (btnElement) {
-        btnElement.classList.add('active');
-    }
-    
-    // 4. Reset scroll position
-    window.scrollTo(0, 0);
-};
-</script>
-
 <style>
-    /* Guarantee the mobile nav bar is never blocked by invisible ghost elements */
+    /* Guarantee the mobile nav bar is never blocked */
     .main-nav {
         z-index: 999999 !important;
         pointer-events: auto !important;
     }
-    /* Guarantee hidden pages cannot intercept screen taps */
+    
+    /* Safely completely hide inactive screens */
     .view-content:not(.active-view) {
-        pointer-events: none !important;
-        opacity: 0 !important;
+        display: none !important;
     }
 </style>
-
-<script>
-window.switchNavTab = function(tabId, btnElement = null) {
-    try {
-        // 1. Force-kill every single view with maximum CSS priority
-        document.querySelectorAll('.view-content').forEach(view => {
-            view.classList.remove('active-view');
-            view.style.setProperty('display', 'none', 'important');
-        });
-
-        // 2. Resurrect ONLY the target view
-        const target = document.getElementById(tabId);
-        if (target) {
-            target.classList.add('active-view');
-            // 'block' is applied, but if it's the dashboard on desktop, 
-            // our new CSS rule will upgrade it to 'grid' automatically
-            target.style.setProperty('display', 'block', 'important');
-        }
-
-        // 3. Reset UI Highlights
-        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-        if (btnElement) {
-            btnElement.classList.add('active');
-        } else {
-            const fallbackBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
-            if (fallbackBtn) fallbackBtn.classList.add('active');
-        }
-
-        // 4. Snap to the top of the new page
-        window.scrollTo(0, 0);
-
-        // 5. Safely bypass Local History crashes
-        try { history.pushState({ id: tabId }, "", "#" + tabId); } catch(e) { console.warn("Local testing: History ignored."); }
-
-    } catch (error) {
-        console.error("Critical Nav Failure:", error);
-    }
-};
-</script>
 </body>
 </html>
