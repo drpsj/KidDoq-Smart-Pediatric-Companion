@@ -288,7 +288,9 @@ input, select, textarea {
 /* 4. THE ANCHOR PILL (Sticky Top) */
 #cortexAnchorPill {
     position: relative; top: 10px; z-index: 7000;
-    background: var(--bg-surface);
+    background: var(--bg-surface) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     margin-bottom: 20px;

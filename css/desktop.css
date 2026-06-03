@@ -51,10 +51,20 @@ body.dark-mode .main-nav {
     padding: 14px 20px !important; 
     border-radius: var(--radius-md) !important; 
     font-size: 1rem !important; 
+    background: transparent !important; 
+    border: none !important;
+    box-shadow: none !important;
 }
 
-.nav-item:hover { background: var(--bg-body); }
-.nav-item.active { background: var(--primary-light); color: var(--primary); }
+.nav-item:hover { 
+    background: rgba(255, 255, 255, 0.1) !important; 
+}
+
+.nav-item.active { 
+    background: transparent !important; /* Removes the heavy block */
+    color: var(--brand-cyan) !important; 
+    text-shadow: 0 0 15px rgba(0, 229, 255, 0.3); /* Adds a soft text halo */
+}
 
 .fab { bottom: 30px; right: 40px; width: 70px; height: 70px; }
 
