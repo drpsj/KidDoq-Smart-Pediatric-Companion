@@ -9,9 +9,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" type="image/png" href="kiddoq lite.png">
     <title>KidDoq | Smart Pediatric Companion</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -29,15 +26,26 @@
         const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
         document.addEventListener('DOMContentLoaded', () => document.head.appendChild(link));
     </script>
-
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="css/theme.css?v=99">
-    
     <link rel="stylesheet" href="css/desktop.css?v=10" media="screen and (min-width: 1024px)">
-    
     <link rel="stylesheet" href="css/mobile.css?v=99" media="screen and (max-width: 1023px)">
+    
+    <style>
+        /* The ONLY CSS needed to make the views switch properly */
+        .view-content { display: none; }
+        .view-content.active-view { display: block; }
+        
+        /* Skeleton placeholder styling so you can see the pages working */
+        .skeleton-box { padding: 40px; text-align: center; border: 2px dashed var(--brand-cyan); border-radius: 16px; margin: 20px; font-weight: bold; color: var(--primary-dark); }
+    </style>
 </head>
-<body>
-    <div id="splashScreen" class="splash-screen">
+
+<div id="splashScreen" class="splash-screen">
         <div class="splash-content">
             <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 90px; height: 90px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(0,212,255,0.4));">
             <h1>Kid<span style="color: var(--brand-cyan);">Doq</span></h1>
@@ -52,11 +60,8 @@
             <img src="kiddoq lite.png" style="width:64px; height:64px; margin-bottom:15px; filter: drop-shadow(0 4px 10px rgba(0,212,255,0.3));">
             <h2 style="margin:0; font-size: 1.6rem; color:var(--text-main); letter-spacing:-0.5px;">Welcome to KidDoq</h2>
             <p style="color:var(--text-muted); font-size:0.95rem; margin-top:5px;">Select your physician profile</p>
-            
             <div id="doctorProfileList" class="profile-list"></div>
-            
             <button class="secondary" onclick="document.getElementById('newDoctorForm').style.display='block'" style="width:100%; border-style:dashed;">➕ Create New Profile</button>
-            
             <div id="newDoctorForm" style="display:none; text-align:left; margin-top:20px; border-top:1px solid var(--border-soft); padding-top:20px;">
                 <label>Doctor's Name</label>
                 <input type="text" id="newDocName" placeholder="e.g. Dr. Peter Suraj" style="margin-bottom:12px;">
@@ -68,11 +73,10 @@
     </div>
 
     <div id="systemToastContainer" style="position:fixed; bottom:100px; right:30px; z-index:99999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
-  
+<body>
+
     <header>
-        <div style="width: 30%; display: flex; align-items: center;">
-            <div id="headerAvatar" class="avatar-circle" onclick="showAuthScreen()" title="Switch User" style="display:none;"></div>
-        </div>
+        <div style="width: 30%; display: flex; align-items: center;"></div>
         <div class="brand-logo" onclick="switchNavTab('homeDashboardView')" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 40%;">
             <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 32px; height: 32px; object-fit: contain;">
             <span class="brand-text" style="line-height: 1;">KidDoq</span>
@@ -80,73 +84,74 @@
         <div style="width: 30%; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
             <div id="headerPatientText" onclick="if(typeof activePatientId !== 'undefined' && activePatientId) { window.openClinicalTool('patientProfileView'); populatePatientProfile(activePatientId); }" style="cursor:pointer; font-size: 0.9rem; font-weight: 600; color: var(--brand-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
             
-            <!-- NEW: TOP RIGHT ADD PATIENT BUTTON -->
-            <button onclick="incrementEncounter(); document.getElementById('registryModal').classList.add('active')" style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; box-shadow: var(--shadow-sm); cursor: pointer; white-space: nowrap;">➕ New</button>
+            <button onclick="if(typeof incrementEncounter === 'function') incrementEncounter(); document.getElementById('registryModal').classList.add('active')" style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; box-shadow: var(--shadow-sm); cursor: pointer; white-space: nowrap;">➕ New</button>
         </div>
     </header>
 
-  <div class="modal-overlay" id="registryModal" onclick="if(event.target===this) this.classList.remove('active')">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
-            <h3 style="margin:0; font-size:1.4rem;">➕ New Patient</h3>
-            <button onclick="document.getElementById('registryModal').classList.remove('active')" style="background:var(--bg-body); border:none; width:36px; height:36px; border-radius:50%; font-size:1.2rem; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center;">✖</button>
-        </div>
-        
-        <label>Patient Name</label>
-        <input type="text" id="pName" placeholder="e.g., Baby of Sunita" autocomplete="off" style="margin-bottom:12px;">
-        <label>Phone</label>
-        <input type="text" id="pPhone" placeholder="e.g., 9876543210" oninput="saveAndRegisterPatient(true)" style="margin-bottom:12px;">
-        <label>DOB</label>
-        <input type="date" id="dob" onchange="calculateAgeFromDob()">
-        
-        <div class="row-inputs" style="margin-top:16px;">
-            <div><label>Age (Yrs)</label><input type="number" id="ageYrs" oninput="estimateWeightFromAge()"></div>
-            <div><label>Age (Mos)</label><input type="number" id="ageMos" oninput="estimateWeightFromAge()"></div>
-        </div>
-        <div class="row-inputs" style="margin-top:16px;">
-            <div><label>Wt (kg)</label><input type="number" step="0.1" id="pWeight" oninput="saveAndRegisterPatient(true)"></div>
-            <div><label>Ht (cm)</label><input type="number" step="0.1" id="htCm" oninput="saveAndRegisterPatient(true)"></div>
-        </div>
-        <div class="row-inputs" style="margin-top:16px;">
-            <div><label>HC (cm)</label><input type="number" step="0.1" id="hcCm" oninput="saveAndRegisterPatient(true)"></div>
-            <div><label>Gender</label><select id="gender" onchange="saveAndRegisterPatient(true)"><option value="male">Male</option><option value="female">Female</option></select></div>
-        </div>
-        
-        <button class="action" style="margin-top:24px; box-shadow: 0 4px 12px rgba(91, 97, 246, 0.25);" onclick="saveAndRegisterPatient(false)">💾 Save & Open File</button>
-        <button class="secondary" style="margin-top:12px; border:none;" onclick="prepNewPatient()">🧹 Clear Form</button>
-    </div>
-  </div>
-
-<div class="app-shell home-active">
-    <nav class="main-nav" style="position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; z-index: 999999 !important; background: var(--bg-surface); display: flex; justify-content: space-around; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 3px solid #00D4FF; pointer-events: auto;">
-        <button class="nav-item active" style="width: 20%;" onclick="switchNavTab('homeDashboardView', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            Home
-        </button>
-        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('databaseFeatureView', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-            Patients
-        </button>
-        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('toolsTab', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            Tools
-        </button>
-        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('historicalEncountersView', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-            Ledger
-        </button>
-        <button class="nav-item" style="width: 20%;" onclick="switchNavTab('aboutFeatureView', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            Config
-        </button>
-    </nav>
-
-    <div class="main-content">
-        <div id="homeDashboardView" class="view-content active-view cortex-fusion-mode">
+    <div class="modal-overlay" id="registryModal" onclick="if(event.target===this) this.classList.remove('active')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+                <h3 style="margin:0; font-size:1.4rem;">➕ New Patient</h3>
+                <button onclick="document.getElementById('registryModal').classList.remove('active')" style="background:var(--bg-body); border:none; width:36px; height:36px; border-radius:50%; font-size:1.2rem; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center;">✖</button>
+            </div>
             
-            <div class="cortex-top-section">
+            <label>Patient Name</label>
+            <input type="text" id="pName" placeholder="e.g., Baby of Sunita" autocomplete="off" style="margin-bottom:12px;">
+            <label>Phone</label>
+            <input type="text" id="pPhone" placeholder="e.g., 9876543210" oninput="saveAndRegisterPatient(true)" style="margin-bottom:12px;">
+            <label>DOB</label>
+            <input type="date" id="dob" onchange="calculateAgeFromDob()">
+            
+            <div class="row-inputs" style="margin-top:16px;">
+                <div><label>Age (Yrs)</label><input type="number" id="ageYrs" oninput="estimateWeightFromAge()"></div>
+                <div><label>Age (Mos)</label><input type="number" id="ageMos" oninput="estimateWeightFromAge()"></div>
+            </div>
+            <div class="row-inputs" style="margin-top:16px;">
+                <div><label>Wt (kg)</label><input type="number" step="0.1" id="pWeight" oninput="saveAndRegisterPatient(true)"></div>
+                <div><label>Ht (cm)</label><input type="number" step="0.1" id="htCm" oninput="saveAndRegisterPatient(true)"></div>
+            </div>
+            <div class="row-inputs" style="margin-top:16px;">
+                <div><label>HC (cm)</label><input type="number" step="0.1" id="hcCm" oninput="saveAndRegisterPatient(true)"></div>
+                <div><label>Gender</label><select id="gender" onchange="saveAndRegisterPatient(true)"><option value="male">Male</option><option value="female">Female</option></select></div>
+            </div>
+            
+            <button class="action" style="margin-top:24px; box-shadow: 0 4px 12px rgba(91, 97, 246, 0.25);" onclick="saveAndRegisterPatient(false)">💾 Save & Open File</button>
+            <button class="secondary" style="margin-top:12px; border:none;" onclick="prepNewPatient()">🧹 Clear Form</button>
+        </div>
+    </div>
+    </header>
+
+    <div class="app-shell">
+        
+        <nav class="main-nav">
+            <button class="nav-item active" onclick="switchNavTab('homeDashboardView', this)">Home</button>
+            <button class="nav-item" onclick="switchNavTab('databaseFeatureView', this)">Patients</button>
+            <button class="nav-item" onclick="switchNavTab('toolsTab', this)">Tools</button>
+            <button class="nav-item" onclick="switchNavTab('encounterSummaryGlobalView', this)">Summary</button>
+            <button class="nav-item" onclick="switchNavTab('aboutFeatureView', this)">Settings</button>
+        </nav>
+
+        <div class="main-content">
+            
+            <div id="homeDashboardView" class="view-content active-view cortex-fusion-mode">
+            
+            <div class="cortex-greeting-wrapper" style="padding: 10px 0 20px 0;">
+                <div class="cortex-greeting" style="margin: 0; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div class="greeting-text">
+                        <h1 style="color: var(--text-main); font-weight: 800; letter-spacing: -0.5px;">
+                            <span id="greetingTime">Good Morning</span>, Dr. <span id="doctorNameDisplay" style="color: var(--brand-cyan); text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">Patel</span> <span id="greetingIcon">☀️</span>
+                        </h1>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Ready to make a difference today</p>
+                    </div>
+                    <div class="opd-queue" style="background: var(--bg-surface); border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm); padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span class="queue-label" style="color: var(--brand-pink); font-weight: 700;">Encounters</span>
+                        <span class="queue-count" id="encounterCount" style="color: var(--primary-dark); font-weight: 900;">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cortex-sticky-anchor" style="position: sticky; top: -1px; z-index: 4000; margin: 0 -20px 20px -20px; padding: 0 20px 10px 20px; background: var(--bg-body);">
                 <div id="cortexAnchorPill" class="anchor-pill-premium">
-                    
                     <input type="hidden" id="hudAgeYrs" value="0">
                     <input type="hidden" id="hudAgeMos" value="0">
                     <input type="hidden" id="hudAge" value="0">
@@ -188,19 +193,7 @@
                         <div class="cortex-input-group"><label>MAC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudMac" oninput="broadcastGlobalParameters()" placeholder="--"></div>
                     </div>
                 </div>
-
-                <div class="cortex-greeting">
-                    <div class="greeting-text">
-                        <h1 style="color: var(--text-main); font-weight: 800; letter-spacing: -0.5px;">
-                            <span id="greetingTime">Good Morning</span>, Dr. <span id="doctorNameDisplay" style="color: var(--brand-cyan); text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">Patel</span> <span id="greetingIcon">☀️</span>
-                        </h1>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Ready to make a difference today</p>
-                    </div>
-                    <div class="opd-queue" style="background: rgba(13, 17, 28, 0.6); border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                        <span class="queue-label" style="color: var(--brand-pink);">Encounters</span>
-                        <span class="queue-count" id="encounterCount" style="text-shadow: 0 0 10px rgba(255,255,255,0.3);">0</span>
-                    </div>
-                </div>
+            </div>
 
             <!-- NEW: HERO DOSE ENGINE (Sits above the Bento Grid) -->
             <div class="cortex-hero-card" id="heroDoseEngine">
@@ -301,67 +294,7 @@
             </div>
         </div>
 
-        <div id="toolsTab" class="view-content">
-            <div class="section-header" style="margin-bottom:20px;">
-                <h3 style="font-size:1.3rem;">🧰 Clinical Modules</h3>
-            </div>
-            <div class="tools-grid">
-                <div class="tool-btn" onclick="openClinicalTool('prescriptionFeatureView')">
-                        <div class="tool-icon-wrapper"><img src="icon-rx.png" alt="Rx"></div>
-                        <span>Case File</span>
-                    </div>
-                <div class="tool-btn" onclick="openClinicalTool('certificateFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-cert.png" alt="Cert"></div>
-                    <span>Certificates</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('growthFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-growth.png" alt="Growth"></div>
-                    <span>Growth Curves</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('trackerFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-vax.png" alt="Vax"></div>
-                    <span>Vaccination</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('cardiologyFeatureView'); if(typeof syncCardioWeight === 'function') syncCardioWeight();">
-                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🫀</div>
-                    <span>Cardiology</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('toxicologyFeatureView')">
-                    <div class="tool-icon-wrapper" style="font-size: 2rem;">☠️</div>
-                    <span>Toxicology</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('dermFeatureView')">
-                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🔬</div>
-                    <span>Dermatology</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('erFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-er.png" alt="ER"></div>
-                    <span>ER & Resus</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('milestoneFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-miles.png" alt="Milestones"></div>
-                    <span>Milestones</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('malnutritionFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-triage.png" alt="Triage"></div>
-                    <span>Triage & MAC</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('nutritionFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-diet.png" alt="Diet"></div>
-                    <span>Diet Recall</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('jaundiceFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-jaundice.png" alt="Jaundice"></div>
-                    <span>Jaundice</span>
-                </div>
-                <div class="tool-btn" onclick="openClinicalTool('asthmaFeatureView')">
-                    <div class="tool-icon-wrapper"><img src="icon-asthma.png" alt="Asthma"></div>
-                    <span>PRAM Score</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="databaseFeatureView" class="view-content">
+            <div id="databaseFeatureView" class="view-content">
             <h2 class="section-title" style="margin-bottom: 0;">🗄️ Patient Master Database</h2>
             <p style="color:var(--text-muted); font-size:0.9rem; margin-top:5px; margin-bottom:1.5rem;">Search and open existing patient files.</p>
             
@@ -378,7 +311,54 @@
             </div>
         </div>
 
-        <div id="aboutFeatureView" class="view-content">
+            <div id="toolsTab" class="view-content">
+            <div class="section-header" style="margin-bottom:20px;">
+                <h3 style="font-size:1.3rem;">🧰 Clinical Modules</h3>
+            </div>
+            <div class="tools-grid">
+                <div class="tool-btn" onclick="openClinicalTool('prescriptionFeatureView')">
+                        <div class="tool-icon-wrapper"><img src="icon-rx.png" alt="Rx"></div>
+                        <span>Case File</span>
+                    </div>
+                <div class="tool-btn" onclick="openClinicalTool('certificateFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-cert.png" alt="Cert"></div>
+                    <span>Certificates</span>
+                </div>
+                
+                <div class="tool-btn" onclick="openClinicalTool('cardiologyFeatureView'); if(typeof syncCardioWeight === 'function') syncCardioWeight();">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🫀</div>
+                    <span>Cardiology</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('toxicologyFeatureView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">☠️</div>
+                    <span>Toxicology</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('dermFeatureView')">
+                    <div class="tool-icon-wrapper" style="font-size: 2rem;">🔬</div>
+                    <span>Dermatology</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('erFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-er.png" alt="ER"></div>
+                    <span>ER & Resus</span>
+                </div>
+                
+                <div class="tool-btn" onclick="openClinicalTool('jaundiceFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-jaundice.png" alt="Jaundice"></div>
+                    <span>Jaundice</span>
+                </div>
+                <div class="tool-btn" onclick="openClinicalTool('asthmaFeatureView')">
+                    <div class="tool-icon-wrapper"><img src="icon-asthma.png" alt="Asthma"></div>
+                    <span>PRAM Score</span>
+                </div>
+            </div>
+        </div>
+
+            <div id="historicalEncountersView" class="view-content">
+                <h2 class="section-title">📂 Historical Ledger</h2>
+                <div id="historicalLedgerContainer"></div>
+            </div>
+
+            <div id="aboutFeatureView" class="view-content">
             <h2 class="section-title">⚙️ Settings & About</h2>
             
             <!-- NEW ENTRY BUTTON -->
@@ -389,10 +369,6 @@
                     <h4 style="margin-top:0; color:var(--primary);">👨‍⚕️ Letterhead / Rx Builder</h4>
                     <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">These details appear at the top of printed prescriptions.</p>
                     <div class="panel" style="background:var(--bg-body); border:1px solid var(--border-soft); border-radius:var(--radius-lg);">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border-soft);">
-                            <label style="margin:0; font-weight:bold; font-size:0.9rem; color:var(--text-main);">🌙 Dark Mode</label>
-                            <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)" style="width:22px !important; height:22px !important; margin:0; cursor:pointer;">
-                        </div>
                         <div class="row-inputs"><div><label>Doctor's Name</label><input type="text" id="setDocName" placeholder="Dr. Peter Suraj Joseph"></div><div><label>Qualifications</label><input type="text" id="setQual" placeholder="MBBS, MD"></div></div>
                         <div class="row-inputs"><div><label>Medical Reg. No.</label><input type="text" id="setRegNo" placeholder="e.g. KMC 12345"></div><div><label>Clinic Name</label><input type="text" id="setClinic" placeholder="Sunrise Clinic"></div></div>
                         <label>Tagline</label><input type="text" id="setTagline" placeholder="Child Development Center">
@@ -436,7 +412,7 @@
             </div>
         </div>
 
-        <!-- PAGE 1: PERSONALISATION HUB -->
+         <!-- PAGE 1: PERSONALISATION HUB -->
         <div id="personaliseFeatureView" class="view-content">
             <div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
                 <button class="secondary" onclick="switchNavTab('aboutFeatureView')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
@@ -542,7 +518,7 @@
                     <button class="case-tab" onclick="window.openClinicalTool('growthFeatureView')" data-target="growthFeatureView">📈 Growth</button>
                     <button class="case-tab" onclick="window.openClinicalTool('trackerFeatureView')" data-target="trackerFeatureView">💉 Vaccines</button>
                     <button class="case-tab" onclick="window.openClinicalTool('milestoneFeatureView')" data-target="milestoneFeatureView">🧠 Milestones</button>
-                    <button class="case-tab" onclick="window.openClinicalTool('malnutritionFeatureView')" data-target="malnutritionFeatureView">🚨 Vitals & Anthro</button>
+                    <button class="case-tab" onclick="window.openClinicalTool('advancedAnthroFeatureView')" data-target="advancedAnthroFeatureView">🚨 Vitals & Anthro</button>
                     <button class="case-tab" onclick="window.openClinicalTool('nutritionFeatureView')" data-target="nutritionFeatureView">🍎 Diet</button>
                 </div>
             </div>
@@ -627,6 +603,12 @@
         </div>
 
         <div style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <button class="secondary" onclick="window.openClinicalTool('erCrashView')" style="margin:0; border: 1px solid var(--danger); color: var(--danger); font-weight: bold; background: rgba(239, 68, 68, 0.05); box-shadow: var(--shadow-sm);">⚡ Code Blue Cart</button>
+                <button class="secondary" onclick="window.openClinicalTool('erSeizureView')" style="margin:0; border: 1px solid var(--warning); color: var(--warning); font-weight: bold; background: rgba(245, 158, 11, 0.05); box-shadow: var(--shadow-sm);">🧠 Seizure Protocol</button>
+                <button class="secondary" onclick="window.openClinicalTool('erFluidsView')" style="margin:0; border: 1px solid var(--brand-blue); color: var(--brand-blue); font-weight: bold; background: rgba(91, 97, 246, 0.05); box-shadow: var(--shadow-sm);">🔥 Burns & Fluids</button>
+                <button class="secondary" onclick="window.openClinicalTool('erNicuView')" style="margin:0; border: 1px solid var(--primary); color: var(--primary); font-weight: bold; background: var(--primary-light); box-shadow: var(--shadow-sm);">🍼 NICU Metrics</button>
+            </div>
             <!-- Inputs -->
             <div style="background: var(--bg-body); border: 1px solid var(--border-soft); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
                 <div class="row-inputs">
@@ -952,45 +934,6 @@
 
             <!-- CASE FILE & PRESCRIPTION TOOL -->
     <div id="prescriptionFeatureView" class="view-content">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-surface); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(106, 112, 255, 0.2); position: sticky; top: 0; z-index: 100;">
-            <button onclick="switchNavTab('homeDashboardView')" style="background: transparent; border: none; color: var(--brand-blue); font-size: 1.5rem; padding: 0; margin: 0; cursor: pointer;">←</button>
-            <h2 style="margin: 0; font-size: 1.2rem; color: var(--text-main); text-shadow: 0 0 10px rgba(106, 112, 255, 0.3);">Case File & Rx</h2>
-            <div style="width: 24px;"></div>
-        </div>
-
-        <div style="padding: 20px;">
-            <div style="background: var(--bg-body); border: 1px solid var(--border-soft); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
-                
-                <button onclick="pullVitalsToRx()" style="width: 100%; background: rgba(106, 112, 255, 0.15); color: var(--brand-cyan); border: 1px solid rgba(106, 112, 255, 0.4); padding: 12px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.1);">
-                    <span>⚡</span> Sync Vitals from Dashboard
-                </button>
-
-                <div style="margin-bottom: 15px;">
-                    <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Chief Complaint (C/O)</label>
-                    <input type="text" id="rxCc" oninput="generateRxPreview()" placeholder="e.g., Fever x 3 days, Cough" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: var(--brand-blue); font-weight: 700; font-size: 0.85rem;">Diagnosis (Dx)</label>
-                    <input type="text" id="rxDx" oninput="generateRxPreview()" placeholder="e.g., Viral URI" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: var(--brand-cyan); font-weight: 700; font-size: 0.85rem;">Rx (Medications)</label>
-                    <textarea id="rxMeds" oninput="generateRxPreview()" placeholder="1. Syp Paracetamol (250/5) - 4 mL Q6H..." rows="4" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px; resize: none;"></textarea>
-                </div>
-                <div>
-                    <label style="color: var(--success); font-weight: 700; font-size: 0.85rem;">Advice / Follow-up</label>
-                    <input type="text" id="rxAdvice" oninput="generateRxPreview()" placeholder="Review SOS / After 3 days" style="width: 100%; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-main); border-radius: 8px; font-weight: bold; margin-top: 5px;">
-                </div>
-            </div>
-
-            <!-- The Output Prescription Card -->
-            <div id="rxOutputContainer" data-wt="--" data-age="--">
-                <div class="hud-empty-state" style="border: 1px dashed rgba(106, 112, 255, 0.3); color: rgba(255,255,255,0.5);">Sync vitals or start typing to generate Rx...</div>
-            </div>
-        </div>
-    </div>
-                
-                <div id="rxNotesTab" class="sub-tab-content active" style="display: block;">
                     <div class="timeline-section">
                         <div id="rxLedgerView" style="display:block;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:2px solid var(--border-soft); padding-bottom:10px;">
@@ -1223,7 +1166,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div> </div> </div> <div id="certificateFeatureView" class="view-content">
+                    </div> </div> <div id="certificateFeatureView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">📄 Medical Certificates</h2>
                     <button onclick="executePrint('certificate')" class="secondary" style="width:auto; border-color:var(--warning); color:var(--warning);">🖨️ Print Cert</button>
@@ -1316,6 +1259,13 @@
             
             <!-- ADVANCED ANTHRO TOOLS (Wrapped to prevent DOM stacking) -->
             <div id="advancedAnthroFeatureView" class="view-content" style="display:none;">
+    
+    <div class="sub-tabs-nav">
+        <button class="sub-tab-btn active" onclick="switchSubTab('malnCalcTab', this)">⚖️ Anthro & Triage</button>
+        <button class="sub-tab-btn" onclick="switchSubTab('malnBPTab', this)">🩸 BP Tracker</button>
+        <button class="sub-tab-btn" onclick="switchSubTab('malnMathTab', this)">🧮 Clinical Math</button>
+        <button class="sub-tab-btn" onclick="switchSubTab('malnSensoryTab', this); if(typeof renderSensory === 'function') renderSensory();">👁️ Sensory</button>
+    </div>
                 
                 <!-- TAB 1: ANTHROPOMETRY -->
                 <div id="malnCalcTab" class="sub-tab-content active">
@@ -1601,40 +1551,25 @@
         </div>
     </div>
 
-            <div id="jaundiceFeatureView" class="view-content">
-                <h2 class="section-title">🍼 Bhutani Nomogram Standards</h2>
-                <div class="timeline-section tool-grid">
-                    <div>
-                        <label>Postnatal Lifespan (Hours)</label><input type="number" id="jaunHours" oninput="calcJaundice()">
-                        <label>TSB Matrix Concentration (mg/dL)</label><input type="number" step="0.1" id="jaunTSB" oninput="calcJaundice()">
-                        <label>Risk Assignment Level</label><select id="jaunRisk" onchange="calcJaundice()"><option value="low">Low Risk Profile (&ge;38w & Well)</option><option value="med">Medium Risk Profile (35w-37w Well OR 38w+ Risk Factors)</option><option value="high">High Risk Profile (35w-37w with Associated Hemolysis Factors)</option></select>
-                    </div>
-                    <div id="jaunResultArea" class="tool-result neutral">Awaiting data entry to map standard Bhutani bands.</div>
-                </div>
-            </div>
-
         </div> 
         </div> 
 
+        </div>
     </div>
-</div>
 
-<div id="printEngine" class="print-container"></div>
+    <div id="printEngine" class="print-container"></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+
+        <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-<!-- 1. Core Data & Storage -->
 <script src="js/database.js?v=32"></script>
 <script src="js/store.js?v=32"></script>
 <script src="js/patient-store.js?v=32"></script>
-<script src="js/patient-registry.js?v=32"></script> <!-- ADD THIS NEW FILE HERE -->
+<script src="js/patient-registry.js?v=32"></script>
 
-<!-- 2. Clinical Math Engine (Must load before modules) -->
 <script src="js/clinical-math.js?v=32"></script>
 
-<!-- 3. Clinical Modules -->
-<script src="js/encounter-ledger.js?v=32"></script> <!-- ADD THIS NEW FILE HERE -->
+<script src="js/encounter-ledger.js?v=32"></script>
 <script src="js/module-rx.js?v=32"></script>
 <script src="js/module-er.js?v=32"></script>
 <script src="js/module-nutrition.js?v=32"></script>
@@ -1644,8 +1579,7 @@
 <script src="js/module-tox.js?v=32"></script>
 <script src="js/module-derm.js?v=32"></script>
 
-<!-- 4. UI & App Logic -->
-<script src="js/app.js?v=32"></script> <!-- Moved to the top of this section -->
+<script src="js/app.js?v=32"></script>
 <script src="js/core-settings.js?v=32"></script>
 <script src="js/print-engine.js?v=32"></script>
 <script src="js/view-controller.js?v=33"></script>
@@ -1663,7 +1597,21 @@
         });
     }
 </script>
+
 <script>
+// 1. Fix the Frozen Dropdown Drawer
+window.toggleCortexDrawer = function() {
+    const drawer = document.getElementById('cortexDrawer');
+    const chevron = document.querySelector('.anchor-chevron');
+    if(drawer && drawer.classList.contains('cortex-collapsed')) {
+        drawer.classList.remove('cortex-collapsed');
+        if(chevron) chevron.style.transform = 'rotate(180deg)';
+    } else if (drawer) {
+        drawer.classList.add('cortex-collapsed');
+        if(chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+};
+
 // ==========================================
 // KINETIC CORTEX: DIRECT SCRUB TELEMETRY
 // ==========================================
@@ -2712,10 +2660,12 @@ function generateRxPreview() {
     `;
 }
 
-// Initialize the Vortex
+// 2. Initialize the Vortex (Turn the power on!)
 document.addEventListener('DOMContentLoaded', () => {
-    attachDirectScrub('scrubAgeZone', 'age');
-    attachDirectScrub('scrubWtZone', 'weight');
+    if(typeof attachDirectScrub === 'function') {
+        attachDirectScrub('scrubAgeZone', 'age');
+        attachDirectScrub('scrubWtZone', 'weight');
+    }
     
     // Listen for Anthropometry input in the top drawer
     const hudHcEl = document.getElementById('hudHc');
@@ -2725,29 +2675,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Safely check if weight input exists before grabbing its value
     const weightInput = document.getElementById('hudWeight');
-    if (weightInput) {
+    if (weightInput && typeof renderInstantDoses === 'function') {
         renderInstantDoses(weightInput.value);
     }
     
-    renderFavoriteTools();
-    renderVaccinesDue(0);
-    renderVitalsAndFluids(0, 0);
-    renderMilestonesAndRedFlags(0);
-    updateDashboardContext();
+    if(typeof renderFavoriteTools === 'function') renderFavoriteTools();
+    if(typeof renderVaccinesDue === 'function') renderVaccinesDue(0);
+    if(typeof renderVitalsAndFluids === 'function') renderVitalsAndFluids(0, 0);
+    if(typeof renderMilestonesAndRedFlags === 'function') renderMilestonesAndRedFlags(0);
+    if(typeof updateDashboardContext === 'function') updateDashboardContext();
 });
 </script>
-
-<style>
-    /* Guarantee the mobile nav bar is never blocked */
-    .main-nav {
-        z-index: 999999 !important;
-        pointer-events: auto !important;
-    }
-    
-    /* Safely completely hide inactive screens */
-    .view-content:not(.active-view) {
-        display: none !important;
-    }
-</style>
 </body>
 </html>

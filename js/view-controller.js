@@ -175,18 +175,28 @@ window.openClinicalTool = function(viewId, skipHistory = false) {
     }
 
     document.getElementById('activeWorkspace').style.display = 'block';
-    
-    const subNavTabs = document.querySelectorAll('.case-tab');
-    if (subNavTabs.length > 0) {
-        subNavTabs.forEach(tab => {
-            if (tab.getAttribute('data-target') === viewId) {
-                tab.classList.add('active');
-                tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            } else {
-                tab.classList.remove('active');
-            }
-        });
-    }
+        
+        let isCaseTool = false;
+        const subNavTabs = document.querySelectorAll('.case-tab');
+        if (subNavTabs.length > 0) {
+            subNavTabs.forEach(tab => {
+                if (tab.getAttribute('data-target') === viewId) {
+                    tab.classList.add('active');
+                    isCaseTool = true;
+                    tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+        
+        // Cleanly hide Case File tabs and AI Banner when opening external tools
+        const caseSubNav = document.getElementById('caseFileSubNav');
+        const aiBanner = document.getElementById('aiCopilotBanner');
+        
+        if (caseSubNav) caseSubNav.style.display = isCaseTool ? 'flex' : 'none';
+        if (!isCaseTool && aiBanner) aiBanner.style.display = 'none';
+        if (isCaseTool && typeof updateCopilot === 'function') updateCopilot(AppStore.getActivePatientId());
     
     document.querySelectorAll('.view-content').forEach(v => {
         v.style.display = ''; // CLEARED INLINE STYLES

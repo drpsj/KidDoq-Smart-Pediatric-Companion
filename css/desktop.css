@@ -19,7 +19,7 @@
 
 .main-nav { 
     position: fixed !important; 
-    top: 72px !important; /* Locks perfectly below the header */
+    top: 72px !important; 
     left: 0 !important;
     bottom: 0 !important;
     width: 280px !important; 
@@ -27,7 +27,7 @@
     flex-direction: column !important; 
     justify-content: flex-start !important; 
     padding: 30px 20px !important; 
-    background: var(--bg-surface) !important;
+    background: transparent !important;
     border-right: 1px solid var(--border-soft) !important;
     box-shadow: none !important;
     align-items: stretch !important; 
@@ -35,6 +35,10 @@
     z-index: 4000 !important;
 }
 
+/* Fix for Dark Mode Glass */
+body.dark-mode .main-nav {
+    background: transparent !important;
+}
 .main-content {
     margin-left: 280px !important;
     width: calc(100% - 280px) !important;
@@ -178,4 +182,13 @@
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 20px !important;
+}
+
+/* FORCE DESKTOP TO SCROLL NATURALLY (IGNORE MOBILE STICKY GLUE) */
+.cortex-top-section {
+    position: relative !important; 
+}
+
+#cortexAnchorPill {
+    position: relative !important;
 }
