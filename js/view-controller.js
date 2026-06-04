@@ -4,23 +4,63 @@
  * Centralizes all DOM manipulation for navigation, tabs, and modals.
  */
 
-// --- 1. GLOBAL SYSTEM TOAST ---
+// --- 1. GLOBAL SYSTEM TOAST (Dynamic Island Spatial UI) ---
 window.showSystemToast = function(msg) {
     const container = document.getElementById('systemToastContainer');
     if (!container) { 
         alert(msg); 
         return; 
     }
+    
+    // Force the container to act like a Top-Center Dynamic Island
+    container.style.cssText = `
+        position: fixed;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 10000;
+        pointer-events: none;
+    `;
+
     const toast = document.createElement('div');
     toast.className = 'system-toast';
+    
+    // Inject the frosted spatial pill styling directly
+    toast.style.cssText = `
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 0 15px rgba(0, 229, 255, 0.15);
+        color: #ffffff;
+        padding: 14px 28px;
+        border-radius: 50px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        transform: translateY(-40px) scale(0.85);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Fluid Spring Physics */
+    `;
+    
     toast.innerHTML = msg;
     container.appendChild(toast);
     
+    // Trigger the fluid drop animation
+    requestAnimationFrame(() => {
+        toast.style.transform = 'translateY(0) scale(1)';
+        toast.style.opacity = '1';
+    });
+    
+    // Trigger the retraction animation
     setTimeout(() => {
+        toast.style.transform = 'translateY(-20px) scale(0.9)';
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
+        setTimeout(() => toast.remove(), 500);
     }, 3000);
 };
 
@@ -261,12 +301,24 @@ window.loadPatientFromDB = function(pId) {
     AppStore.setActivePatient(pId);
     activePatientId = pId; 
 
+    // --- SPATIAL HUD UPGRADE ---
     const headerEl = document.getElementById('headerPatientText');
-    if (headerEl) headerEl.innerText = `👤 ${p.name} | ${p.ageYrs || 0}Y ${p.ageMos || 0}M | ${p.weight} kg`;
+    if (headerEl) {
+        headerEl.innerHTML = `
+        <div style="display: inline-flex; align-items: center; gap: 12px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 8px 20px; border-radius: 50px; border: 1px solid rgba(0, 229, 255, 0.2); box-shadow: inset 0 0 15px rgba(0,229,255,0.05), 0 4px 20px rgba(0,0,0,0.4); transition: all 0.3s ease; cursor: default;" onmouseover="this.style.borderColor='rgba(0,229,255,0.5)'; this.style.boxShadow='inset 0 0 20px rgba(0,229,255,0.15), 0 6px 25px rgba(0,0,0,0.5)';" onmouseout="this.style.borderColor='rgba(0, 229, 255, 0.2)'; this.style.boxShadow='inset 0 0 15px rgba(0,229,255,0.05), 0 4px 20px rgba(0,0,0,0.4)';">
+            <span style="font-size: 1.3rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.6));">👤</span>
+            <span style="color: var(--brand-cyan); font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(0,229,255,0.4);">${p.name}</span>
+            <span style="color: rgba(255,255,255,0.2);">|</span>
+            <span style="color: var(--text-main); font-weight: 600; font-size: 1rem; opacity: 0.9;">${p.ageYrs || 0}Y ${p.ageMos || 0}M</span>
+            <span style="color: rgba(255,255,255,0.2);">|</span>
+            <span style="color: var(--brand-pink); font-weight: 800; font-size: 1rem; text-shadow: 0 0 10px rgba(255,51,102,0.4); background: rgba(255,51,102,0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,51,102,0.2);">Wt: ${p.weight} kg</span>
+        </div>`;
+    }
+
     if (typeof updateStickyBanner === 'function') updateStickyBanner(pId);
 
     if (typeof window.openClinicalTool === 'function') {
-        window.openClinicalTool('prescriptionFeatureView');
+        window.openClinicalTool('patientProfileView');
     }
 
     setTimeout(() => {

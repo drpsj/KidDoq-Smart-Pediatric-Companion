@@ -125,7 +125,7 @@ window.calculateAndRenderTimeline = function(pId) {
     if (nisArea) {
         nisArea.innerHTML = `
             <table class="theory-table" style="font-size:0.85rem; width:100%; text-align:left;">
-                <thead><tr style="background:var(--bg-body);"><th style="padding:8px;">Age Group</th><th style="padding:8px;">NIS India Guidelines</th></tr></thead>
+                <thead><tr style="background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); color: var(--brand-pink); border-bottom: 2px solid rgba(255, 51, 102, 0.3);"><th style="padding:12px;">Age Group</th><th style="padding:12px;">NIS India Guidelines</th></tr></thead>
                 <tbody>
                     <tr><td style="padding:8px; border-bottom:1px solid var(--border-soft);">Birth</td><td style="padding:8px; border-bottom:1px solid var(--border-soft);">BCG, OPV-0, Hep B-0</td></tr>
                     <tr><td style="padding:8px; border-bottom:1px solid var(--border-soft);">6, 10, 14 Wks</td><td style="padding:8px; border-bottom:1px solid var(--border-soft);">OPV 1-3, Pentavalent 1-3, RVV 1-3, fIPV 1-2 (6/14)</td></tr>

@@ -54,7 +54,7 @@ window.calcTox = function() {
     out.innerHTML = `
         <div style="text-align:left; width:100%;">
             <h3 style="margin:0 0 10px 0; color:var(--danger);">Antidote: ${data.antidote}</h3>
-            <div style="background:var(--bg-surface); padding:15px; border-radius:8px; border-left:4px solid var(--danger); box-shadow:var(--shadow-sm); font-size:0.95rem; line-height:1.6; color:var(--text-main);">
+            <div style="background: rgba(239, 68, 68, 0.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.15); font-size: 0.95rem; line-height: 1.6; color: var(--text-main);">
                 ${data.management}
             </div>
             <div style="margin-top:15px; font-size:0.8rem; color:var(--text-muted);">

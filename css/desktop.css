@@ -17,31 +17,54 @@
     flex-direction: row !important; 
 }
 
+/* Sleek Collapsed Sidebar by Default */
 .main-nav { 
     position: fixed !important; 
-    top: 72px !important; 
+    top: 0 !important; 
     left: 0 !important;
     bottom: 0 !important;
-    width: 280px !important; 
-    height: calc(100vh - 72px) !important; 
+    width: 80px !important; /* Shrunk from 280px */
+    height: 100vh !important; 
     flex-direction: column !important; 
     justify-content: flex-start !important; 
-    padding: 30px 20px !important; 
+    padding: 30px 15px !important; 
     background: transparent !important;
-    border-right: 1px solid var(--border-soft) !important;
-    box-shadow: none !important;
+    border-right: 1px solid rgba(255,255,255,0.05) !important; /* Very subtle border */
     align-items: stretch !important; 
     gap: 10px !important;
-    z-index: 4000 !important;
+    z-index: 6000 !important; /* Ensures it floats above everything when expanded */
+    overflow-x: hidden !important;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease !important;
 }
 
-/* Fix for Dark Mode Glass */
-body.dark-mode .main-nav {
-    background: transparent !important;
+/* Hide text labels in collapsed state */
+.main-nav .nav-item span {
+    opacity: 0 !important;
+    transition: opacity 0.2s ease !important;
+    white-space: nowrap !important;
 }
+
+/* Expand Sidebar on Hover (Transparent Glassmorphism) */
+.main-nav:hover {
+    width: 260px !important; /* Expands to full size */
+    background: rgba(11, 14, 20, 0.6) !important; /* Dark transparent tint */
+    backdrop-filter: blur(20px) !important; /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: 20px 0 40px rgba(0,0,0,0.3) !important;
+    border-right: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* Show text labels on hover */
+.main-nav:hover .nav-item span {
+    opacity: 1 !important;
+    transition-delay: 0.1s !important; /* Smooth fade-in after expansion */
+}
+
+/* Reclaim the space for the main dashboard! */
 .main-content {
-    margin-left: 280px !important;
-    width: calc(100% - 280px) !important;
+    margin-left: 80px !important; /* Matches the new 80px sleek sidebar */
+    width: calc(100% - 80px) !important;
+    transition: margin-left 0.3s ease, width 0.3s ease !important;
 }
 
 .nav-item { 
@@ -128,27 +151,37 @@ body.dark-mode .main-nav {
     display: none !important;
 }
 
-/* Top Section Spans Both Columns */
-.cortex-top-section {
+/* Top Sections Span Both Columns */
+.cortex-sticky-anchor,
+.cortex-greeting-wrapper {
     grid-column: 1 / -1 !important;
+    width: 100% !important;
+}
+
+/* Desktop Sticky Pill Configuration */
+.cortex-sticky-anchor {
+    position: sticky !important;
+    top: 15px !important;
+    z-index: 5000 !important;
     display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-end !important;
-    background: transparent !important; 
-    padding: 0 0 15px 0 !important;
-    margin: 0 0 15px 0 !important;
-    border-bottom: 2px solid var(--border-soft) !important;
-    position: relative !important;
+    justify-content: center !important;
+    margin-bottom: 0 !important; /* Removed huge gap */
+    background: transparent !important;
+}
+
+/* Keep Greeting tighter beneath the pill */
+.cortex-greeting-wrapper {
+    margin-bottom: 20px !important;
+    margin-top: 10px !important; /* Tighter spacing */
+    border-bottom: 1px solid var(--border-soft) !important;
+    padding-bottom: 15px !important;
 }
 
 .cortex-greeting {
     margin-top: 0 !important;
-    order: -1 !important;
-}
-
-#cortexAnchorPill {
-    margin-bottom: 0 !important;
-    min-width: 350px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
 }
 
 /* Float the parameter drawer */
@@ -194,11 +227,9 @@ body.dark-mode .main-nav {
     gap: 20px !important;
 }
 
-/* FORCE DESKTOP TO SCROLL NATURALLY (IGNORE MOBILE STICKY GLUE) */
-.cortex-top-section {
-    position: relative !important; 
-}
-
+/* Allow Sticky Floating on Desktop */
 #cortexAnchorPill {
-    position: relative !important;
+    position: relative !important; /* Keeps pill structure intact inside the sticky anchor */
+    margin: 0 auto !important;
+    min-width: 350px !important;
 }

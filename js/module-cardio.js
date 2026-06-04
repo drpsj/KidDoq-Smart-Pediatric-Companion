@@ -60,7 +60,7 @@ window.calcSBE = function() {
     out.innerHTML = `
         <div style="text-align:left;">
             <h4 style="margin:0 0 10px 0; color:var(--danger);">SBE Prophylaxis (Give 1hr before procedure)</h4>
-            <div style="background:var(--bg-surface); padding:15px; border-radius:6px; border-left:4px solid var(--danger);">
+            <div style="background: rgba(239, 68, 68, 0.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.15);">
                 <b>${drug}:</b> <span style="font-size:1.2rem; color:var(--primary); font-weight:bold;">${finalDose.toFixed(0)} mg</span> PO${capWarning}
             </div>
             <div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted);">

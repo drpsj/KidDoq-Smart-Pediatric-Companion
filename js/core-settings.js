@@ -14,9 +14,9 @@ function renderHomeQuickTools() {
         let tool = masterToolRegistry.find(t => t.id === toolId);
         if(tool) {
             html += `
-            <div class="tool-btn" onclick="openClinicalTool('${tool.id}')">
-                <div class="tool-icon-wrapper"><img src="${tool.icon}" alt="${tool.name}"></div>
-                <span>${tool.name}</span>
+            <div class="tool-btn" onclick="openClinicalTool('${tool.id}')" style="background: rgba(0,0,0,0.25); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); border-top: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 20px rgba(0,229,255,0.02), 0 4px 15px rgba(0,0,0,0.2); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.transform='scale(1.05) translateY(-5px)'; this.style.borderColor='rgba(0,229,255,0.4)'; this.style.boxShadow='inset 0 0 20px rgba(0,229,255,0.15), 0 10px 25px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.08)'; this.style.boxShadow='inset 0 0 20px rgba(0,229,255,0.02), 0 4px 15px rgba(0,0,0,0.2)';">
+                <div class="tool-icon-wrapper" style="background: transparent; border: none; box-shadow: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));"><img src="${tool.icon}" alt="${tool.name}"></div>
+                <span style="color: var(--text-main); font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${tool.name}</span>
             </div>`;
         }
     });
@@ -247,25 +247,25 @@ window.renderCustomDrugsList = function() {
 
     Object.keys(customDrugsStore).forEach(cat => {
         if(customDrugsStore[cat] && customDrugsStore[cat].length > 0) {
-            html += `<h4 style="margin:15px 0 5px 0; color:var(--primary); text-transform:uppercase; font-size:0.85rem;">${cat}</h4>`;
+            html += `<h4 style="margin:20px 0 10px 0; color:var(--brand-pink); text-transform:uppercase; font-size:0.85rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255, 51, 102, 0.2); padding-bottom: 5px;">${cat}</h4>`;
             customDrugsStore[cat].forEach(drug => {
                 count++;
                 html += `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-surface); border:1px solid var(--border-soft); padding:12px; border-radius:6px; box-shadow:var(--shadow-sm); margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border:1px solid rgba(255,255,255,0.05); border-top:1px solid rgba(255,255,255,0.15); padding:15px; border-radius:12px; box-shadow:inset 0 4px 15px rgba(0,0,0,0.2), 0 4px 10px rgba(0,0,0,0.1); margin-bottom:12px; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.02)'; this.style.borderColor='rgba(0, 229, 255, 0.3)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.05)';">
                     <div>
-                        <b style="color:var(--text-main); font-size:0.95rem;">${drug.name}</b>
-                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">
-                            ${drug.doseMg}mg/kg ${drug.doseType === 'perDay' ? '/day' : '/dose'} | ${drug.conc}mg/${drug.vol}mL | ${drug.defaultFreq}
+                        <b style="color:var(--brand-cyan); font-size:1rem; text-shadow: 0 0 8px rgba(0,229,255,0.3);">${drug.name}</b>
+                        <div style="font-size:0.85rem; color:var(--text-main); margin-top:6px; opacity: 0.9;">
+                            <span style="color:var(--success); font-weight:bold;">${drug.doseMg}</span>mg/kg ${drug.doseType === 'perDay' ? '/day' : '/dose'} <span style="color:var(--border-soft);">|</span> ${drug.conc}mg/${drug.vol}mL <span style="color:var(--border-soft);">|</span> <span style="background:rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">${drug.defaultFreq}</span>
                         </div>
                     </div>
-                    <button onclick="deleteCustomDrug('${cat}', '${drug.id}')" style="background:rgba(239, 68, 68, 0.1); border:none; color:var(--danger); font-size:1.1rem; cursor:pointer; padding:6px 10px; border-radius:4px;">✖</button>
+                    <button onclick="deleteCustomDrug('${cat}', '${drug.id}')" style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:var(--danger); font-size:1.1rem; cursor:pointer; padding:8px 12px; border-radius:8px; box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.2); transition: all 0.2s ease;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)';">✖</button>
                 </div>`;
             });
         }
     });
 
     if(count === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:2rem; background:var(--bg-body); border:1px dashed var(--border-soft); border-radius:8px; color:var(--text-muted);">No custom drugs added yet.</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--brand-cyan); background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius:var(--radius-lg); border: 1px solid rgba(0, 229, 255, 0.2); box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.05);">No custom drugs added yet.</div>`;
     } else {
         container.innerHTML = html;
     }

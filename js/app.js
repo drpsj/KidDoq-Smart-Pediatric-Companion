@@ -1236,9 +1236,10 @@ function executeCortexSnap() {
     if(ageYrs > 0) ageText += `${ageYrs}Y `;
     if(ageMos > 0 || ageYrs == 0) ageText += `${ageMos}M`;
     
-    document.getElementById('anchorAge').innerText = ageText;
-    document.getElementById('anchorWt').innerText = `${wt} kg`;
-    document.getElementById('anchorGender').innerText = gender === 'male' ? 'M' : 'F';
+    // Updated to match the new UI architecture
+    document.getElementById('anchorAgeDisplay').innerText = ageText;
+    document.getElementById('anchorWtDisplay').innerText = wt; // "kg" is already styled in the HTML
+    document.getElementById('anchorGenderDisplay').innerText = gender === 'male' ? 'Male' : 'Female';
 
     // Reveal Anchor Pill
     const anchor = document.getElementById('cortexAnchorPill');

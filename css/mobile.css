@@ -118,8 +118,10 @@ input, select, textarea {
 }
 #systemToastContainer {
     bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+    top: auto !important; /* Overrides inline top position to prevent vertical stretching */
     right: 15px !important;
     left: 15px !important;
+    transform: none !important; /* THIS KILLS THE ROGUE LEFT-BLEED */
     align-items: center;
 }
 
@@ -314,3 +316,44 @@ input, select, textarea {
 }
 #cortexDrawer.cortex-collapsed { display: none; }
 .expanded-chevron { transform: rotate(180deg); }
+
+/* =========================================================
+   STRICT MOBILE FLOATING HEADER LOCK & SPACING
+   ========================================================= */
+
+/* 1. Ensure the Anchor Pill floats properly and stays dead-center on mobile */
+.cortex-sticky-anchor {
+    position: sticky !important;
+    top: 10px !important; 
+    z-index: 5000 !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    background: transparent !important;
+    margin-left: 0 !important;  /* Kills the negative inline margin pulling it left */
+    margin-right: 0 !important; /* Kills the negative inline margin pulling it right */
+    margin-bottom: 10px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* 2. Push the Good Morning greeting safely down below the pill */
+.cortex-greeting-wrapper {
+    position: relative !important;
+    display: block !important;
+    margin-top: 35px !important; /* This provides the breathing room */
+    padding-top: 10px !important;
+    clear: both !important;
+}
+
+/* 3. Protect the sleek horizontal layout on tiny screens */
+#cortexAnchorPill {
+    display: flex !important; 
+    margin: 0 auto !important;
+    max-width: 100% !important; 
+    overflow-x: auto !important;
+    scrollbar-width: none !important; 
+}
+#cortexAnchorPill::-webkit-scrollbar { 
+    display: none !important; 
+}

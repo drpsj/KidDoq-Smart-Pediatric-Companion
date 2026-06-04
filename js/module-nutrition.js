@@ -131,23 +131,23 @@ window.renderRecallLog = function() {
         return;
     }
 
-    let html = `<table class="theory-table" style="width:100%; font-size:0.95rem; text-align:left;">
-        <thead><tr style="background:var(--bg-body);"><th style="padding:10px;">Meal</th><th style="padding:10px;">Item</th><th style="padding:10px;">Cals</th><th style="padding:10px;">Protein</th><th style="padding:10px; text-align:center;">Del</th></tr></thead><tbody>`;
+    let html = `<table class="theory-table" style="width:100%; font-size:0.95rem; text-align:left; border-collapse: separate; border-spacing: 0 8px;">
+        <thead><tr style="background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); color: var(--brand-cyan);"><th style="padding:12px; border-radius: 8px 0 0 8px;">Meal</th><th style="padding:12px;">Item</th><th style="padding:12px;">Cals</th><th style="padding:12px;">Protein</th><th style="padding:12px; text-align:center; border-radius: 0 8px 8px 0;">Del</th></tr></thead><tbody>`;
     
     let tCals = 0, tPro = 0;
     logs.forEach(log => {
         let cals = parseFloat(log.calories) || 0; let pro = parseFloat(log.protein) || 0;
         tCals += cals; tPro += pro;
-        html += `<tr>
-            <td style="padding:10px; border-bottom:1px solid var(--border-soft);">${log.mealType || 'Meal'}</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border-soft);"><b>${log.foodName || 'Unknown'}</b> <span style="color:var(--text-muted); font-size:0.85rem;">(${log.qty || ''})</span></td>
-            <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--primary);">${cals.toFixed(0)}</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border-soft); color:var(--success);">${pro.toFixed(1)}g</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border-soft); text-align:center;"><button onclick="removeDietRecall('${log.id}')" style="background:rgba(239, 68, 68, 0.1); border:none; color:var(--danger); cursor:pointer; padding:5px 8px; border-radius:4px;">❌</button></td>
+        html += `<tr style="background: rgba(0, 0, 0, 0.2); box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);">
+            <td style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--text-muted); border-radius: 8px 0 0 8px;">${log.mealType || 'Meal'}</td>
+            <td style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--text-main);"><b>${log.foodName || 'Unknown'}</b> <span style="color:var(--text-muted); font-size:0.85rem;">(${log.qty || ''})</span></td>
+            <td style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--brand-cyan); font-weight:bold;">${cals.toFixed(0)}</td>
+            <td style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--success); font-weight:bold;">${pro.toFixed(1)}g</td>
+            <td style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); text-align:center; border-radius: 0 8px 8px 0;"><button onclick="removeDietRecall('${log.id}')" style="background:rgba(239, 68, 68, 0.1); border:none; color:var(--danger); cursor:pointer; padding:5px 8px; border-radius:6px; box-shadow: inset 0 0 5px rgba(239,68,68,0.2);">❌</button></td>
         </tr>`;
     });
     
-    html += `<tr style="font-weight:bold; background:rgba(91, 97, 246, 0.05);"><td colspan="2" style="text-align:right; padding:12px;">24H TOTAL INTAKE:</td><td style="color:var(--primary-dark); padding:12px; font-size:1.1rem;">${tCals.toFixed(0)} kcal</td><td style="color:var(--success); padding:12px; font-size:1.1rem;">${tPro.toFixed(1)} g</td><td></td></tr></tbody></table>`;
+    html += `<tr style="font-weight:bold; background: rgba(0, 229, 255, 0.05); box-shadow: inset 0 0 15px rgba(0,229,255,0.1);"><td colspan="2" style="text-align:right; padding:15px; color:var(--text-main); border-radius: 8px 0 0 8px;">24H TOTAL INTAKE:</td><td style="color:var(--brand-cyan); padding:15px; font-size:1.1rem; text-shadow: 0 0 10px rgba(0,229,255,0.4);">${tCals.toFixed(0)} kcal</td><td style="color:var(--success); padding:15px; font-size:1.1rem; text-shadow: 0 0 10px rgba(0,230,118,0.4);">${tPro.toFixed(1)} g</td><td style="border-radius: 0 8px 8px 0;"></td></tr></tbody></table>`;
     out.innerHTML = html;
 };
 

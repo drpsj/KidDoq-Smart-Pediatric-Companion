@@ -24,7 +24,10 @@ window.renderHistoricalLedger = function() {
     const container = document.getElementById('historicalLedgerContainer');
 
     if (!p.visits || p.visits.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px dashed var(--border-soft);">No historical encounters recorded. Lock an active visit to start the ledger.</div>`;
+        let emptyHtml = `<div style="text-align:center; padding:3rem; color:var(--brand-cyan); background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius:var(--radius-lg); border: 1px solid rgba(0, 229, 255, 0.2); box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.05);">No historical encounters recorded. Lock an active visit to start the ledger.</div>`;
+        if (container) container.innerHTML = emptyHtml;
+        const caseSheetLedger = document.getElementById('rxLedgerList');
+        if (caseSheetLedger) caseSheetLedger.innerHTML = emptyHtml;
         return;
     }
 
@@ -32,30 +35,38 @@ window.renderHistoricalLedger = function() {
 
     [...p.visits].reverse().forEach((visit) => {
         const dateStr = new Date(visit.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-        let rxHtml = visit.rxList && visit.rxList.length > 0 ? visit.rxList.map(rx => `• <b>${rx.name}</b> (${rx.vol} ${rx.unit})`).join("<br>") : "";
-        let dietHtml = visit.dietLogs && visit.dietLogs.length > 0 ? `<div style="font-size:0.85rem; color:#10b981; margin-top:5px;"><b>Diet Logged:</b> ${visit.dietLogs.length} items</div>` : "";
-        let vaxHtml = visit.vaccinesGiven && visit.vaccinesGiven.length > 0 ? `<div style="font-size:0.85rem; color:#5b61f6; margin-top:5px;"><b>Vaccines Given:</b> ${visit.vaccinesGiven.join(', ')}</div>` : "";
+        
+        let rxHtml = visit.rxList && visit.rxList.length > 0 ? visit.rxList.map(rx => `<span style="color:var(--success);">•</span> <b>${rx.name}</b> (${rx.vol} ${rx.unit})`).join("<br>") : "";
+        let dietHtml = visit.dietLogs && visit.dietLogs.length > 0 ? `<div style="font-size:0.85rem; color:var(--success); margin-top:10px; font-weight:600; background:rgba(0,250,154,0.1); padding:4px 10px; border-radius:6px; display:inline-block; border:1px solid rgba(0,250,154,0.2);">🥗 Diet Logged: ${visit.dietLogs.length} items</div>` : "";
+        let vaxHtml = visit.vaccinesGiven && visit.vaccinesGiven.length > 0 ? `<div style="font-size:0.85rem; color:var(--brand-pink); margin-top:10px; margin-left:8px; font-weight:600; background:rgba(255, 51, 102, 0.1); padding:4px 10px; border-radius:6px; display:inline-block; border:1px solid rgba(255, 51, 102, 0.2);">💉 Vaccines: ${visit.vaccinesGiven.join(', ')}</div>` : "";
 
         html += `
-        <div style="border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:1.2rem; margin-bottom:15px; background:var(--bg-surface); box-shadow:var(--shadow-sm);">
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border-soft); padding-bottom:8px;">
-                <b style="color:var(--primary-dark); font-size:1.05rem;">${dateStr}</b>
-                <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Wt: ${visit.weight || '--'} kg</span>
+        <div style="border: 1px solid rgba(255, 255, 255, 0.08); border-top: 1px solid rgba(255, 255, 255, 0.2); border-radius: var(--radius-xl); padding: 1.5rem; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: inset 0 20px 40px -20px rgba(0, 229, 255, 0.05), 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 20px;" onmouseover="this.style.transform='scale(1.01) translateY(-2px)'; this.style.borderColor='rgba(0, 229, 255, 0.3)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255, 255, 255, 0.08)';">
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom:12px;">
+                <b style="color:var(--brand-cyan); font-size:1.1rem; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">${dateStr}</b>
+                <span style="font-size:0.85rem; color:var(--brand-pink); font-weight:800; text-transform:uppercase; letter-spacing: 1px;">Wt: ${visit.weight || '--'} kg</span>
             </div>
-            ${visit.diagnosis ? `<div style="font-size:0.95rem; margin-bottom:10px; color:var(--text-main);"><b>Dx:</b> ${visit.diagnosis}</div>` : ''}
+            
+            ${visit.diagnosis ? `<div style="font-size:1.05rem; margin-bottom:15px; color:var(--text-main);"><b>Dx:</b> <span style="color:var(--brand-cyan); font-weight:bold;">${visit.diagnosis}</span></div>` : ''}
             
             ${(visit.examRS || visit.examCVS || visit.examPA || visit.examCNS) ? 
-                `<div style="font-size:0.85rem; color:var(--text-main); margin-bottom:10px; background:#f1f5f9; padding:8px; border-radius:4px;"><b>O/E:</b> 
-                    ${visit.examRS ? `RS: ${visit.examRS} | ` : ''}
-                    ${visit.examCVS ? `CVS: ${visit.examCVS} | ` : ''}
-                    ${visit.examPA ? `P/A: ${visit.examPA} | ` : ''}
-                    ${visit.examCNS ? `CNS: ${visit.examCNS}` : ''}
+                `<div style="font-size:0.9rem; color:var(--text-main); margin-bottom:15px; background:rgba(0,0,0,0.25); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); box-shadow:inset 0 2px 10px rgba(0,0,0,0.2);"><b style="color:var(--brand-blue);">O/E:</b> 
+                    ${visit.examRS ? `<span style="color:#aaa;">RS:</span> ${visit.examRS} | ` : ''}
+                    ${visit.examCVS ? `<span style="color:#aaa;">CVS:</span> ${visit.examCVS} | ` : ''}
+                    ${visit.examPA ? `<span style="color:#aaa;">P/A:</span> ${visit.examPA} | ` : ''}
+                    ${visit.examCNS ? `<span style="color:#aaa;">CNS:</span> ${visit.examCNS}` : ''}
                 </div>`.replace(/ \|\s*<\//, '</') : ''}
 
-            <div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px; line-height:1.5;">${rxHtml || '<span style="color:var(--text-muted);">No medications.</span>'}</div>
-            ${visit.tests ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;"><b>Tests:</b> ${visit.tests}</div>` : ''}
-            ${visit.advice ? `<div style="font-size:0.85rem; color:var(--text-main); background: #fef3c7; padding:8px; border-radius:4px; border-left:3px solid #f59e0b;"><b>Advice / Next Steps:</b><br>${visit.advice}</div>` : ''}
-            ${dietHtml} ${vaxHtml}
+            <div style="font-size:0.95rem; color:var(--text-main); margin-bottom:15px; line-height:1.6; background:rgba(0,0,0,0.25); padding:12px; border-radius:10px; box-shadow:inset 0 2px 10px rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.03);">${rxHtml || '<span style="color:var(--text-muted);">No medications.</span>'}</div>
+            
+            ${visit.tests ? `<div style="font-size:0.9rem; color:var(--text-main); margin-bottom:10px;"><b style="color:var(--brand-pink);">Tests:</b> ${visit.tests}</div>` : ''}
+            
+            ${visit.advice ? `<div style="font-size:0.9rem; color:var(--text-main); background: rgba(0, 229, 255, 0.05); padding:12px; border-radius:8px; border-left:3px solid rgba(0, 229, 255, 0.5); box-shadow:inset 0 0 10px rgba(0,229,255,0.05);"><b style="color:var(--brand-cyan);">Advice / Next Steps:</b><br><span style="opacity:0.9;">${visit.advice}</span></div>` : ''}
+            
+            <div style="margin-top: 10px;">
+                ${dietHtml} ${vaxHtml}
+            </div>
         </div>`;
     });
     

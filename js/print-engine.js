@@ -405,10 +405,34 @@ window.executePrint = function(mode) {
     const style = document.createElement('style');
     style.innerHTML = `
         @media print {
-            /* Using display:none completely collapses the white space pushing the print to the bottom half */
+            /* INVERT VARIABLES TO LIGHT MODE FOR PRINTER */
+            :root, body, body.dark-mode {
+                --text-main: #000000 !important;
+                --text-muted: #333333 !important;
+                --bg-body: #ffffff !important;
+                --bg-surface: #ffffff !important;
+                --border-soft: #cccccc !important;
+            }
+            
+            /* HIDE APP, SHOW PRINT CONTAINER */
             body > *:not(#printEngine) { display: none !important; }
-            #printEngine { display: block !important; position: static !important; width: 100%; padding: 0; background: white; }
+            #printEngine { 
+                display: block !important; 
+                position: absolute !important; left:0; top:0; width:100%; 
+                background: white !important; 
+                color: black !important; 
+            }
+            
+            /* STRIP GLASS EFFECTS */
+            #printEngine * { 
+                box-shadow: none !important; 
+                text-shadow: none !important; 
+                backdrop-filter: none !important; 
+                -webkit-backdrop-filter: none !important;
+            }
+            
             .chip-checkbox { display: none !important; }
+            @page { size: A4; margin: 1cm; }
         }
     `;
     document.head.appendChild(style);

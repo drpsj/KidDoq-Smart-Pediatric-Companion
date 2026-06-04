@@ -787,12 +787,14 @@ window.printFormalRx = function() {
         p.rxList.forEach((rx, idx) => {
             let freq = window.translateFreqToLocal ? translateFreqToLocal(rx.freq) : rx.freq;
             let dur = rx.dur ? ` for ${rx.dur}` : "";
+            let details = rx.details ? `<div style="font-size:0.85rem; color:#64748b; margin-top:2px; font-style:italic;">${rx.details}</div>` : "";
             rxListHtml += `
                 <div style="margin-bottom:18px;">
                     <div style="font-weight:bold; font-size:1.1rem; color:#0f172a;">${idx+1}. ${rx.name}</div>
                     <div style="font-size:1rem; color:#334155; margin-top:3px;">
                         Give <b style="color:#000;">${rx.vol} ${rx.unit}</b>, <span style="font-weight:bold;">${freq}</span>${dur}
                     </div>
+                    ${details}
                 </div>
             `;
         });
@@ -846,10 +848,20 @@ window.printFormalRx = function() {
             </div>
 
             <!-- FOOTER: Signature -->
-            <div style="margin-top:40px; border-top:1px solid #cbd5e1; padding-top:15px; display:flex; justify-content:flex-end;">
-                <div style="text-align:center;">
-                    ${sigHtml}
-                    <div style="border-top:1px solid #000; padding-top:4px; font-weight:bold; font-size:0.9rem;">${docName}</div>
+            <div style="margin-top:40px; border-top:1px solid #cbd5e1; padding-top:15px; display:flex; justify-content:space-between; align-items:flex-end;">
+                <div style="font-size: 0.75rem; color: #777;">
+                    Reference: IAP Guidelines 2024 | WHO MGRS<br>
+                    <em>Clinical reference only. Verify doses against standard protocols.</em>
+                </div>
+                <div style="display:flex; gap: 20px; align-items: flex-end;">
+                    <div style="text-align: center;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('Follow-up / Contact Clinic: ' + clinicPhone)}" style="width: 50px; height: 50px; display: block; margin: 0 auto 5px auto;">
+                        <div style="font-size: 8px; color: #777;">Scan for Follow-up</div>
+                    </div>
+                    <div style="text-align:center; min-width: 150px;">
+                        ${sigHtml}
+                        <div style="border-top:1px dashed #333; padding-top:4px; font-weight:bold; font-size:0.9rem;">${docName}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -864,13 +876,43 @@ window.printFormalRx = function() {
 
     engine.innerHTML = printHtml;
     
-    // Inject temporary print styles
+    // Inject temporary print styles (Variable Inversion & Safe Isolation)
     const style = document.createElement('style');
-    style.innerHTML = `@media print { 
-        body > *:not(#printEngine) { display: none !important; } 
-        #printEngine { display: block !important; position: static !important; } 
-        @page { size: A4; margin: 1cm; }
-    }`;
+    style.innerHTML = `
+        @media print { 
+            /* 1. INVERT THEME VARIABLES TO LIGHT MODE FOR PRINTER */
+            :root, body, body.dark-mode {
+                --text-main: #000000 !important;
+                --text-muted: #334155 !important;
+                --bg-body: #ffffff !important;
+                --bg-surface: #ffffff !important;
+                --border-soft: #cbd5e1 !important;
+                --primary-light: transparent !important;
+            }
+
+            /* 2. HIDE APP, SHOW PRINT CONTAINER */
+            body > *:not(#printEngine) { display: none !important; }
+            #printEngine { 
+                display: block !important; 
+                position: absolute !important; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                background: white !important; 
+                color: black !important; 
+            }
+            
+            /* 3. STRIP SPATIAL EFFECTS */
+            #printEngine * { 
+                box-shadow: none !important; 
+                text-shadow: none !important; 
+                backdrop-filter: none !important; 
+                -webkit-backdrop-filter: none !important;
+            }
+            
+            @page { size: A4; margin: 1cm; }
+        }
+    `;
     document.head.appendChild(style);
     
     setTimeout(() => {
@@ -878,4 +920,77 @@ window.printFormalRx = function() {
         // Cleanup after print dialog closes
         setTimeout(() => { engine.innerHTML = ""; style.remove(); }, 500);
     }, 250);
+}; // <--- THIS is the bracket that went missing! It closes printFormalRx.
+
+// --- MS WORD EXPORT ENGINE ---
+window.downloadAsWord = function() {
+    const engine = document.getElementById('printEngine');
+    
+    // Safety check: ensure the Rx has been generated first
+    if (!engine || !engine.innerHTML || engine.innerHTML.trim() === "") {
+        if(typeof showSystemToast === 'function') showSystemToast("⚠️ Generate the Rx preview first before downloading.");
+        return;
+    }
+    
+    // MS Word XML Headers (Forces Word to read the HTML properly)
+    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word</title></head><body>";
+    const footer = "</body></html>";
+    
+    // Combine headers with your clinical print view
+    const sourceHTML = header + engine.innerHTML + footer;
+    
+   // Convert to a raw data Blob
+    const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a hidden link and trigger the download silently
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Name the file intelligently based on the patient (if available)
+    let fileName = "KidDoq_Rx";
+    if (typeof AppStore !== 'undefined' && AppStore.getActivePatientId()) {
+        const p = AppStore.getPatient(AppStore.getActivePatientId());
+        if (p && p.name) fileName = `Rx_${p.name.replace(/\s+/g, '_')}`;
+    }
+    link.download = `${fileName}_${new Date().getTime()}.doc`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    if(typeof showSystemToast === 'function') showSystemToast("✅ Editable Word Document Downloaded!");
+};
+
+// 🚀 MASTER OVERRIDE: Unified Anchor Pill Identity Engine (Workspace Pill)
+window.updateStickyBanner = function(pId) {
+    const p = AppStore.getPatient(pId) || AppStore.getAllPatients()[pId];
+    if(!p) return;
+    
+    const nameEl = document.getElementById('workspacePName');
+    const symbolEl = document.getElementById('workspacePGender');
+    const pillEl = document.getElementById('workspacePatientPill');
+    
+    if (nameEl && symbolEl && pillEl) {
+        pillEl.style.display = 'flex';
+        
+        // Parse First Name to keep pill compact
+        let firstName = p.name ? p.name.split(' ')[0] : "Unknown";
+        nameEl.innerText = firstName;
+        
+        let genderSym = p.gender === 'male' ? '♂️' : (p.gender === 'female' ? '♀️' : '⚧️');
+        let color = p.gender === 'female' ? 'var(--brand-pink)' : 'var(--brand-cyan)';
+        
+        symbolEl.innerText = genderSym;
+        symbolEl.style.color = color;
+        pillEl.style.borderLeft = `3px solid ${color}`;
+    }
+};
+
+// Hook into the close function to hide the pill when leaving a file
+const originalCloseFile = window.closePatientFile;
+window.closePatientFile = function() {
+    if (originalCloseFile) originalCloseFile();
+    const pillEl = document.getElementById('workspacePatientPill');
+    if (pillEl) pillEl.style.display = 'none';
 };

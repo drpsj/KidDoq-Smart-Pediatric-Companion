@@ -42,6 +42,241 @@
         
         /* Skeleton placeholder styling so you can see the pages working */
         .skeleton-box { padding: 40px; text-align: center; border: 2px dashed var(--brand-cyan); border-radius: 16px; margin: 20px; font-weight: bold; color: var(--primary-dark); }
+
+        /* --- SPATIAL GLASS SUB-NAVIGATION OVERRIDE --- */
+        .case-subnav, .sub-tabs-nav {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+        .case-subnav::-webkit-scrollbar, .sub-tabs-nav::-webkit-scrollbar {
+            display: none; /* Hide scrollbar Chrome/Safari */
+        }
+        
+        .case-tab, .sub-tab-btn {
+            background: transparent !important;
+            border: 1px solid transparent !important;
+            color: rgba(255,255,255,0.7) !important;
+            padding: 10px 18px !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: none !important;
+        }
+        
+        .case-tab:hover:not(.active), .sub-tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.05) !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            color: var(--brand-cyan) !important;
+            transform: translateY(-2px);
+        }
+        
+        .case-tab.active, .sub-tab-btn.active {
+            background: rgba(0, 229, 255, 0.1) !important;
+            border: 1px solid rgba(0, 229, 255, 0.3) !important;
+            color: var(--brand-cyan) !important;
+            box-shadow: inset 0 0 10px rgba(0,229,255,0.1), 0 4px 10px rgba(0,0,0,0.3) !important;
+            text-shadow: 0 0 8px rgba(0,229,255,0.3);
+            transform: scale(1.02);
+        }
+
+        /* --- SPATIAL ER & TRIAGE RESULTS OVERRIDE --- */
+        .tool-result {
+            background: rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 16px !important;
+            padding: 20px !important;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2) !important;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            color: var(--text-main) !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+        }
+        
+        /* The "Awaiting Input" State */
+        .tool-result.neutral {
+            border: 1px dashed rgba(0, 229, 255, 0.3) !important;
+            color: rgba(255,255,255,0.5) !important;
+            background: rgba(0, 0, 0, 0.15) !important;
+            box-shadow: inset 0 0 20px rgba(0,229,255,0.02) !important;
+        }
+
+        /* Critical Alerts (Code Blue / Anaphylaxis) */
+        .tool-result.danger {
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            border-left: 4px solid var(--danger) !important;
+            background: rgba(239, 68, 68, 0.08) !important;
+            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.1), 0 4px 15px rgba(0,0,0,0.3) !important;
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Triage Warnings (Seizures / MAM) */
+        .tool-result.warning {
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+            border-left: 4px solid var(--warning) !important;
+            background: rgba(245, 158, 11, 0.08) !important;
+            box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.1), 0 4px 15px rgba(0,0,0,0.3) !important;
+        }
+
+        /* Normal Ranges / Success */
+        .tool-result.success {
+            border: 1px solid rgba(16, 185, 129, 0.3) !important;
+            border-left: 4px solid var(--success) !important;
+            background: rgba(16, 185, 129, 0.08) !important;
+            box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.1), 0 4px 15px rgba(0,0,0,0.3) !important;
+        }
+        
+        /* The Reference Note Boxes (Harriet Lane formulas) */
+        .formula-box {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border-radius: 10px !important;
+            color: rgba(255,255,255,0.7) !important;
+            padding: 12px !important;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2) !important;
+        }
+
+        /* =========================================================
+           FINAL POLISH: SPATIAL MODALS, AUTH & INPUTS 
+           ========================================================= */
+           
+        /* 1. Spatial Modals & Auth Screen */
+        .modal-content, .auth-box {
+            background: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(35px) !important;
+            -webkit-backdrop-filter: blur(35px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.05) !important;
+            border-radius: 24px !important;
+            color: var(--text-main) !important;
+        }
+
+        /* 2. Deep Glass Inputs, Selects & Textareas */
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
+            background: rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: var(--text-main) !important;
+            border-radius: 12px !important;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* Glowing Focus State for Inputs */
+        input:focus, select:focus, textarea:focus {
+            border-color: rgba(0, 229, 255, 0.5) !important;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3), 0 0 15px rgba(0, 229, 255, 0.2) !important;
+            outline: none !important;
+            background: rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* Placeholder Text Muting */
+        ::placeholder {
+            color: rgba(255, 255, 255, 0.3) !important;
+            font-weight: 400 !important;
+        }
+
+        /* Dropdown Menu Item Readability Fix */
+        select option {
+            background: #0f172a !important; /* Solid dark slate for dropdown menus */
+            color: #ffffff !important;
+        }
+
+        /* =========================================================
+           PHASE 7: BENTO GRID, ANCHOR PILL & RX PREVIEW
+           ========================================================= */
+           
+        /* 1. Dashboard Bento Cards */
+        .bento-card {
+            background: rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(25px) !important;
+            -webkit-backdrop-filter: blur(25px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: inset 0 2px 15px rgba(0,0,0,0.2), 0 8px 25px rgba(0,0,0,0.4) !important;
+            border-radius: 20px !important;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        
+        .bento-card:hover {
+            transform: translateY(-4px) !important;
+            border-color: rgba(0, 229, 255, 0.3) !important;
+            box-shadow: inset 0 2px 15px rgba(0,229,255,0.1), 0 12px 30px rgba(0,0,0,0.5) !important;
+        }
+
+        /* 2. Top Telemetry Scrub Zone (Anchor Pill) */
+        .anchor-pill-premium {
+            background: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(35px) !important;
+            -webkit-backdrop-filter: blur(35px) !important;
+            border: 1px solid rgba(0, 229, 255, 0.25) !important;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.1) !important;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 20px rgba(0, 229, 255, 0.1) !important;
+            border-radius: 50px !important;
+        }
+
+        /* The "Encounters" Queue Badge in the Header */
+        .cortex-greeting-wrapper .opd-queue {
+            background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 51, 102, 0.3) !important;
+            box-shadow: inset 0 0 10px rgba(255, 51, 102, 0.15) !important;
+        }
+        
+        .cortex-greeting-wrapper .opd-queue .queue-count {
+            color: #ffffff !important;
+            text-shadow: 0 0 8px rgba(255, 51, 102, 0.6) !important;
+        }
+
+        /* 3. Fix the Blinding White Rx Summary Preview */
+        #liveSummaryPreview {
+            background: rgba(0, 0, 0, 0.25) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.3) !important;
+            color: var(--text-main) !important;
+            border-radius: 16px !important;
+        }
+
+        /* =========================================================
+           DESKTOP-ONLY OVERRIDES (Activates only on screens > 1024px)
+           ========================================================= */
+        @media screen and (min-width: 1024px) {
+            .cortex-sticky-anchor {
+                position: sticky !important;
+                top: 20px !important;
+                display: block !important; /* Kills the flex bug causing centering issues */
+                width: 100% !important;
+                margin-bottom: 50px !important; /* Forces the greeting down */
+            }
+            
+            .cortex-greeting-wrapper {
+                display: block !important;
+                width: 100% !important;
+                clear: both !important;
+                padding-top: 30px !important; /* Extra breathing room */
+            }
+
+            .cortex-greeting {
+                justify-content: space-between !important;
+                align-items: flex-end !important;
+                text-align: left !important; /* Locks greeting to the left */
+            }
+        }
     </style>
 </head>
 
@@ -75,18 +310,7 @@
     <div id="systemToastContainer" style="position:fixed; bottom:100px; right:30px; z-index:99999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
 <body>
 
-    <header>
-        <div style="width: 30%; display: flex; align-items: center;"></div>
-        <div class="brand-logo" onclick="switchNavTab('homeDashboardView')" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 40%;">
-            <img src="kiddoq lite.png" alt="KidDoq Logo" style="width: 32px; height: 32px; object-fit: contain;">
-            <span class="brand-text" style="line-height: 1;">KidDoq</span>
-        </div>
-        <div style="width: 30%; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
-            <div id="headerPatientText" onclick="if(typeof activePatientId !== 'undefined' && activePatientId) { window.openClinicalTool('patientProfileView'); populatePatientProfile(activePatientId); }" style="cursor:pointer; font-size: 0.9rem; font-weight: 600; color: var(--brand-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
-            
-            <button onclick="if(typeof incrementEncounter === 'function') incrementEncounter(); document.getElementById('registryModal').classList.add('active')" style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; box-shadow: var(--shadow-sm); cursor: pointer; white-space: nowrap;">➕ New</button>
-        </div>
-    </header>
+    <!-- Global Header Removed. Unified Floating Header Active. -->
 
     <div class="modal-overlay" id="registryModal" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -123,25 +347,51 @@
 
     <div class="app-shell">
         
-        <nav class="main-nav">
+        <!-- SPATIAL NAVIGATION MENU -->
+        <nav class="main-nav" style="background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid rgba(255,255,255,0.05); box-shadow: 10px 0 30px rgba(0,0,0,0.5), inset -1px 0 10px rgba(0,229,255,0.05);">
+            <style>
+                .main-nav .nav-item {
+                    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    background: transparent;
+                    border: 1px solid transparent;
+                    color: rgba(255,255,255,0.6);
+                }
+                .main-nav .nav-item:hover:not(.active) {
+                    transform: translateX(5px);
+                    background: rgba(255,255,255,0.05);
+                    border-color: rgba(255,255,255,0.1);
+                    color: var(--brand-cyan);
+                }
+                .main-nav .nav-item.active {
+                    background: rgba(0, 0, 0, 0.3) !important;
+                    border: 1px solid rgba(0, 229, 255, 0.3) !important;
+                    color: var(--brand-cyan) !important;
+                    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,229,255,0.1) !important;
+                    transform: scale(0.98);
+                }
+                .main-nav .nav-item.active svg {
+                    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+                }
+            </style>
+            
             <button class="nav-item active" onclick="switchNavTab('homeDashboardView', this)">
-                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 Home
             </button>
             <button class="nav-item" onclick="switchNavTab('databaseFeatureView', this)">
-                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 Patients
             </button>
             <button class="nav-item" onclick="switchNavTab('toolsTab', this)">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 Tools
             </button>
             <button class="nav-item" onclick="switchNavTab('encounterSummaryGlobalView', this)">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Summary
             </button>
             <button class="nav-item" onclick="switchNavTab('aboutFeatureView', this)">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 Settings
             </button>
         </nav>
@@ -150,6 +400,65 @@
             
             <div id="homeDashboardView" class="view-content active-view cortex-fusion-mode">
             
+            <!-- 1. The Scrub Pill is now at the very top (Solid Flex Wrapper to prevent collapse) -->
+            <!-- Wrapper changed to block/text-center to neutralize the unsafe flexbox bleed -->
+            <div class="cortex-sticky-anchor" style="position: sticky; top: 15px; z-index: 4000; display: block; text-align: center; width: 100%; margin: 0 0 30px 0; padding: 0; background: transparent;">
+                
+                <!-- Pill changed to inline-flex to obey text-align while retaining its internal grid -->
+                <div id="cortexAnchorPill" class="anchor-pill-premium" style="display: inline-flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; flex-wrap: nowrap !important; white-space: nowrap !important; max-width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; min-height: 64px !important; margin: 0 auto !important; gap: 12px !important; padding: 10px 16px !important; border-radius: 50px !important; scrollbar-width: none;">
+                    <input type="hidden" id="hudAgeYrs" value="0">
+                    <input type="hidden" id="hudAgeMos" value="0">
+                    <input type="hidden" id="hudAge" value="0">
+                    <input type="hidden" id="hudWeight" value="0">
+                    <select id="hudGender" style="display:none;"><option value="male">Male</option><option value="female">Female</option></select>
+
+                    <!-- LOGO ONLY -->
+                    <div style="display: flex; align-items: center; cursor: pointer; flex-shrink: 0;" onclick="toggleCortexDrawer()">
+                        <img src="kiddoq lite.png" id="anchorDefaultLogo" alt="KidDoq" style="width: 38px; height: 38px; filter: drop-shadow(0 0 12px rgba(0,229,255,0.5));">
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+
+                    <!-- AGE (Stacked) -->
+                    <div class="anchor-stat scrub-zone" id="scrubAgeZone" onclick="manualEditAge()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex-shrink: 0;">
+                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">AGE <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
+                        <span class="stat-value" id="anchorAgeDisplay" style="font-size: 1.15rem; font-weight: 800; color: white;">0Y 0M</span>
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+                    
+                    <!-- WEIGHT (Stacked) -->
+                    <div class="anchor-stat scrub-zone" id="scrubWtZone" onclick="manualEditWeight()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex-shrink: 0;">
+                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">WEIGHT <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
+                        <span class="stat-value" style="font-size: 1.15rem; font-weight: 800; color: white;"><span id="anchorWtDisplay">0.0</span> <small style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">kg</small></span>
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+                    
+                    <!-- GENDER (Symbol + Text Stacked) -->
+                    <div class="anchor-stat" id="tapGenderZone" onclick="toggleAnchorGender()" style="cursor:pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex-shrink: 0;">
+                        <span class="stat-icon" id="anchorGenderIcon" style="font-size: 1.4rem; color: var(--brand-blue); filter: drop-shadow(0 0 8px rgba(77, 123, 255, 0.4)); line-height: 1;">♂️</span>
+                        <span class="stat-value" id="anchorGenderDisplay" style="font-size: 0.75rem; font-weight: 700; color: white; margin-top: 2px; display: block;">Male</span>
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+
+                    <!-- TOGGLE -->
+                    <div class="anchor-action" onclick="toggleCortexDrawer()" style="display: flex; align-items: center; cursor: pointer; flex-shrink: 0;">
+                        <div class="anchor-chevron" style="font-size: 1.2rem; color: var(--brand-blue);">⌄</div>
+                    </div>
+                </div>
+                
+                <div id="cortexDrawer" class="cortex-collapsed">
+                    <div class="drawer-inputs" style="margin-top: 10px;">
+                        <div class="cortex-input-group"><label>Ht (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHeight" oninput="broadcastGlobalParameters()" placeholder="--"></div>
+                        <div class="cortex-input-group"><label>HC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHc" oninput="broadcastGlobalParameters()" placeholder="--"></div>
+                        <div class="cortex-input-group"><label>MAC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudMac" oninput="broadcastGlobalParameters()" placeholder="--"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. The Greeting now sits cleanly beneath the pill -->
             <div class="cortex-greeting-wrapper" style="padding: 10px 0 20px 0;">
                 <div class="cortex-greeting" style="margin: 0; display: flex; justify-content: space-between; align-items: flex-end;">
                     <div class="greeting-text">
@@ -161,51 +470,6 @@
                     <div class="opd-queue" style="background: var(--bg-surface); border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm); padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
                         <span class="queue-label" style="color: var(--brand-pink); font-weight: 700;">Encounters</span>
                         <span class="queue-count" id="encounterCount" style="color: var(--primary-dark); font-weight: 900;">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cortex-sticky-anchor" style="position: sticky; top: -1px; z-index: 4000; margin: 0 -20px 20px -20px; padding: 0 20px 10px 20px; background: transparent;">
-                <div id="cortexAnchorPill" class="anchor-pill-premium">
-                    <input type="hidden" id="hudAgeYrs" value="0">
-                    <input type="hidden" id="hudAgeMos" value="0">
-                    <input type="hidden" id="hudAge" value="0">
-                    <input type="hidden" id="hudWeight" value="0">
-                    <select id="hudGender" style="display:none;"><option value="male">Male</option><option value="female">Female</option></select>
-
-                    <div class="anchor-avatar" onclick="toggleCortexDrawer()">
-                        <img src="kiddoq lite.png" alt="Patient">
-                    </div>
-                    
-                    <div class="anchor-stat scrub-zone" id="scrubAgeZone" onclick="manualEditAge()" style="cursor: pointer;">
-                        <span class="stat-label" style="color:var(--brand-cyan);">AGE <span class="scrub-hint-mini" style="color: var(--text-muted);">‹ click or drag ›</span></span>
-                        <span class="stat-value" id="anchorAgeDisplay">0Y 0M</span>
-                    </div>
-                    
-                    <div class="anchor-divider"></div>
-                    
-                    <div class="anchor-stat scrub-zone" id="scrubWtZone" onclick="manualEditWeight()" style="cursor: pointer;">
-                        <span class="stat-label" style="color:var(--brand-cyan);">WEIGHT <span class="scrub-hint-mini" style="color: var(--text-muted);">‹ click or drag ›</span></span>
-                        <span class="stat-value"><span id="anchorWtDisplay">0.0</span> <small style="font-size: 0.7rem;">kg</small></span>
-                    </div>
-                    
-                    <div class="anchor-divider"></div>
-                    
-                    <div class="anchor-stat" id="tapGenderZone" onclick="toggleAnchorGender()" style="cursor:pointer; padding: 0 5px;">
-                        <span class="stat-icon" id="anchorGenderIcon" style="font-size: 1.3rem; color: var(--brand-blue);">♂️</span>
-                        <span class="stat-value" id="anchorGenderDisplay" style="font-size: 0.75rem; margin-top: 2px;">Male</span>
-                    </div>
-                    
-                    <div class="anchor-action" onclick="toggleCortexDrawer()" style="padding-left: 10px;">
-                        <div class="anchor-chevron">⌄</div>
-                    </div>
-                </div>
-                
-                <div id="cortexDrawer" class="cortex-collapsed">
-                    <div class="drawer-inputs" style="margin-top: 10px;">
-                        <div class="cortex-input-group"><label>Ht (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHeight" oninput="broadcastGlobalParameters()" placeholder="--"></div>
-                        <div class="cortex-input-group"><label>HC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHc" oninput="broadcastGlobalParameters()" placeholder="--"></div>
-                        <div class="cortex-input-group"><label>MAC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudMac" oninput="broadcastGlobalParameters()" placeholder="--"></div>
                     </div>
                 </div>
             </div>
@@ -310,7 +574,10 @@
         </div>
 
             <div id="databaseFeatureView" class="view-content">
-            <h2 class="section-title" style="margin-bottom: 0;">🗄️ Patient Master Database</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
+                <h2 class="section-title" style="margin-bottom: 0; border: none;">🗄️ Patient Master Database</h2>
+                <button onclick="if(typeof incrementEncounter === 'function') incrementEncounter(); document.getElementById('registryModal').classList.add('active')" style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 800; font-size: 0.95rem; box-shadow: var(--shadow-md); cursor: pointer; white-space: nowrap; transition: transform 0.2s;">➕ New Patient</button>
+            </div>
             <p style="color:var(--text-muted); font-size:0.9rem; margin-top:5px; margin-bottom:1.5rem;">Search and open existing patient files.</p>
             
             <div class="timeline-section">
@@ -504,22 +771,15 @@
        <div id="activeWorkspace" style="display:none; width:100%;">
             
             <div class="case-file-header">
-                
-                <div class="sticky-patient-banner" style="background:transparent; border:none; padding:0; margin-bottom:15px; box-shadow:none;">
-                    <div class="patient-banner-info">
-                        <span id="bannerPName" style="font-size:1.4rem; font-weight:800; color:var(--primary-dark);">Patient Name</span>
-                        <span class="patient-tags" style="font-size:0.95rem; margin-top:4px;">
-                            <span id="bannerPAge">-- Y -- M</span> • 
-                            <span id="bannerPWeight">-- kg</span> • 
-                            <span id="bannerPGender">--</span>
-                        </span>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="secondary" onclick="editActivePatient()" style="padding:6px 12px; font-size:0.85rem; margin:0; border:1px solid var(--border-soft);">✏️ Edit</button>
-                        <button class="banner-close-btn" onclick="closePatientFile()" style="margin:0; background:#fee2e2; color:#ef4444; border:1px solid #f87171;">🔙 Close File</button>
+
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                    <div id="workspacePatientPill" style="display: none; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                        <span id="workspacePName" style="font-size: 0.95rem; font-weight: 800; color: #fff;"></span>
+                        <span id="workspacePGender" style="font-size: 1.1rem;"></span>
+                        <button onclick="closePatientFile()" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; margin-left: 5px;">✖</button>
                     </div>
                 </div>
-
+                
                 <div id="aiCopilotBanner" style="display:none; background: linear-gradient(135deg, rgba(91, 97, 246, 0.08), rgba(0, 212, 255, 0.05)); border: 1px dashed var(--primary); border-radius: 12px; padding: 15px; margin-bottom: 10px;">
                     <div style="font-size: 0.8rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
                         <span style="font-size: 1.2rem;">🧠</span> AI Clinical Copilot
@@ -527,9 +787,9 @@
                     <div id="aiCopilotSuggestions" style="display: flex; gap: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 5px;"></div>
                 </div>
 
-                <div class="case-subnav" id="caseFileSubNav">
-                    <button class="case-tab" onclick="window.openClinicalTool('patientProfileView'); populatePatientProfile(activePatientId);" data-target="patientProfileView">👤 Profile</button>
-                    <button class="case-tab active" onclick="window.openClinicalTool('prescriptionFeatureView')" data-target="prescriptionFeatureView">📝 Case Sheet</button>
+                <div class="case-subnav" id="caseFileSubNav" style="display: flex; align-items: center;">
+                    <button class="case-tab active" onclick="window.openClinicalTool('patientProfileView'); populatePatientProfile(activePatientId);" data-target="patientProfileView">👤 Profile</button>
+                    <button class="case-tab" onclick="window.openClinicalTool('prescriptionFeatureView')" data-target="prescriptionFeatureView">📝 Case Sheet</button>
                     <button class="case-tab" onclick="window.openClinicalTool('growthFeatureView')" data-target="growthFeatureView">📈 Growth</button>
                     <button class="case-tab" onclick="window.openClinicalTool('trackerFeatureView')" data-target="trackerFeatureView">💉 Vaccines</button>
                     <button class="case-tab" onclick="window.openClinicalTool('milestoneFeatureView')" data-target="milestoneFeatureView">🧠 Milestones</button>
@@ -538,7 +798,7 @@
                 </div>
             </div>
 
-            <div id="patientProfileView" class="view-content" style="display:none;">
+            <div id="patientProfileView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">👤 Patient Details</h2>
                     <button onclick="editActivePatient()" class="secondary" style="width:auto; margin:0; font-weight:bold;">✏️ Edit Patient</button>
@@ -568,7 +828,15 @@
                     </div>
                 </div>
                 
-                <button class="action" onclick="deleteActivePatient()" style="background:var(--danger); color:white; width:100%; padding:15px; font-size:1.1rem; margin-top:10px; box-shadow:var(--shadow-sm); border-radius:var(--radius-md);">🚨 Delete Patient Permanently</button>
+                <div id="rxLedgerView" style="display:block; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-soft); box-shadow: inset 0 5px 15px rgba(0,0,0,0.3); margin-top: 15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px dashed var(--border-soft); padding-bottom:10px;">
+                        <h4 style="margin:0; color:var(--brand-cyan); font-size:1.1rem; text-transform: uppercase;">🗂️ Historical Encounters</h4>
+                        <button class="action" onclick="startNewVisit(); window.openClinicalTool('prescriptionFeatureView');" style="width:auto; margin:0; padding:10px 20px; border-radius: var(--radius-pill); background: var(--success); box-shadow: 0 4px 15px rgba(0,250,154,0.3);">➕ Start New Visit</button>
+                    </div>
+                    <div id="rxLedgerList" style="display:flex; flex-direction:column; gap:15px; max-height:300px; overflow-y:auto; padding-right:10px;"></div>
+                </div>
+
+                <button class="action" onclick="deleteActivePatient()" style="background:var(--danger); color:white; width:100%; padding:15px; font-size:1.1rem; margin-top:15px; box-shadow:var(--shadow-sm); border-radius:var(--radius-md);">🚨 Delete Patient Permanently</button>
             </div>
 
             <div id="historicalEncountersView" class="view-content">
@@ -948,25 +1216,18 @@
         </div>
 
             <!-- CASE FILE & PRESCRIPTION TOOL -->
-    <div id="prescriptionFeatureView" class="view-content">
+    <div id="prescriptionFeatureView" class="view-content" style="display:none;">
                     <div class="timeline-section">
-                        <div id="rxLedgerView" style="display:block;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:2px solid var(--border-soft); padding-bottom:10px;">
-                                <h4 style="margin:0; color:var(--primary); font-size:1.1rem;">🗂️ Historical Encounters</h4>
-                                <button class="action" onclick="startNewVisit()" style="width:auto; margin:0; padding:10px 20px; box-shadow:var(--shadow-md);">➕ Start New Visit</button>
-                            </div>
-                            <div id="rxLedgerList" style="display:flex; flex-direction:column; gap:15px; max-height:500px; overflow-y:auto; padding-right:10px;"></div>
-                        </div>
 
-                        <div id="rxDraftView" style="display:none; border:2px solid var(--primary); border-radius:var(--radius-lg); padding:1.5rem; background:var(--bg-surface); position:relative;">
+                        <div id="rxDraftView" style="display:none; background: var(--bg-surface); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: inset 0 40px 60px -30px rgba(77, 123, 255, 0.12), var(--shadow-md); border-top: 1px solid rgba(77, 123, 255, 0.2); border-radius: var(--radius-xl); padding: 1.5rem; position: relative;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-soft); padding-bottom:10px;">
                                 <h4 style="margin:0; color:var(--primary); font-size:1.1rem;">📝 Active Draft (<span id="draftDateText"></span>)</h4>
                                 <button onclick="cancelNewVisit()" style="background:var(--bg-body); color:var(--text-muted); border:1px solid var(--border-soft); border-radius:50%; width:36px; height:36px; cursor:pointer; font-weight:bold; transition:all 0.2s;">✖</button>
                             </div>
                             
-                            <div style="margin-bottom: 20px; padding: 12px 15px; background: rgba(91,97,246,0.06); border: 1px dashed var(--primary); border-radius: var(--radius-md);">
-                                <label style="color: var(--primary-dark); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block;">⚡ Quick Protocol (Order Sets)</label>
-                                <select id="orderSetSelect" onchange="applyOrderSet(this.value)" style="width: 100%; font-weight: 600; color: var(--primary); border: 1px solid var(--border-soft); border-radius: 6px; padding: 8px;">
+                            <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); border: 1px solid var(--border-soft); box-shadow: inset 0 5px 15px rgba(0,0,0,0.3); border-radius: var(--radius-md);">
+                                <label style="color: var(--brand-cyan); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block;">⚡ Quick Protocol (Order Sets)</label>
+                                <select id="orderSetSelect" onchange="applyOrderSet(this.value)" style="width: 100%; font-weight: 600; color: var(--text-main); background: var(--bg-body); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px;">
                                     <option value="">-- Select a Clinical Protocol to Auto-Fill --</option>
                                     <option disabled>── STANDARD PROTOCOLS ──</option>
                                     <option value="os_uri">Viral Upper Respiratory Infection (URI)</option>
@@ -1006,8 +1267,10 @@
                                         
                                         <div style="display:grid; grid-template-columns: 1fr 1.2fr auto; gap:8px;">
                                             <input type="number" id="sympDurVal" placeholder="Qty" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; box-sizing:border-box;">
-                                            <select id="sympDurUnit" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; background:white; box-sizing:border-box;">
-                                                <option value="Days">Days</option><option value="Weeks">Weeks</option><option value="Months">Months</option>
+                                            <select id="sympDurUnit" style="width:100%; border:1px solid var(--border-soft); border-radius:8px; padding:12px; font-size:1rem; background:var(--bg-surface); color:var(--text-main); box-sizing:border-box;">
+                                                <option value="Weeks" selected>Weeks</option>
+                                                <option value="Days">Days</option>
+                                                <option value="Months">Months</option>
                                             </select>
                                             <button class="secondary" onclick="addSymptomTag()" style="margin:0; padding:0 20px; box-shadow:none; border-radius:8px; background:var(--primary-light); color:var(--primary-dark); font-weight:bold; border:none; height:100%;">➕ Add</button>
                                         </div>
@@ -1028,8 +1291,8 @@
                                     <label>History of Present Illness (HOPI)</label>
                                     <textarea id="rxHopi" style="width:100%; min-height:80px; margin-bottom:10px; font-family:inherit; padding:10px;" placeholder="Document history and findings..."></textarea>
                                     
-                                    <div style="background:rgba(91,97,246,0.04); padding:12px; border-radius:8px; border:1px dashed var(--primary); margin-bottom:15px;">
-                                        <h4 style="margin:0 0 8px 0; color:var(--primary); font-size:0.85rem; text-transform:uppercase;">💊 Medications Taken (Audit)</h4>
+                                    <div style="background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: inset 0 5px 15px rgba(0,0,0,0.3); margin-bottom: 15px;">
+                                        <h4 style="margin:0 0 12px 0; color:var(--brand-blue); font-size:0.85rem; text-transform:uppercase;">💊 Medications Taken (Audit)</h4>
                                         <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
                                             <select id="revCategory" onchange="populateRevDrugs()" style="flex:1 1 45%; border:1px solid var(--border-soft); border-radius:6px; padding:8px; font-size:0.9rem; min-width:110px;">
     <option value="">-- Cat --</option>
@@ -1054,9 +1317,9 @@
                                     </div>
 
                                     <!-- NEW SYSTEMIC EXAMINATION BLOCK -->
-                                    <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); margin-bottom:15px;">
-                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                            <h4 style="margin:0; color:var(--primary-dark); font-size:0.9rem; text-transform:uppercase;">🩺 Systemic Examination</h4>
+                                    <div style="background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: inset 0 5px 15px rgba(0,0,0,0.3); margin-bottom: 15px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                            <h4 style="margin:0; color:var(--brand-blue); font-size:0.9rem; text-transform:uppercase;">🩺 Systemic Examination</h4>
                                             <button class="secondary" onclick="fillNormalExams()" style="margin:0; padding:4px 10px; font-size:0.8rem; background:var(--success); color:white; border:none; box-shadow:var(--shadow-sm);">✨ Fill All Normal</button>
                                         </div>
                                         
@@ -1091,9 +1354,9 @@
                                         .chip-checkbox span { display: inline-block; padding: 6px 14px; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--border-soft); font-size: 0.85rem; color: var(--text-muted); transition: all 0.2s; user-select: none; }
                                         .chip-checkbox input:checked + span { background: rgba(91,97,246,0.1); color: var(--primary-dark); border-color: var(--primary); font-weight: 700; box-shadow: 0 2px 4px rgba(91,97,246,0.15); }
                                     </style>
-                                    <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); margin-bottom:15px;">
+                                    <div style="background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: inset 0 5px 15px rgba(0,0,0,0.3); margin-bottom: 15px;">
                                         <div style="margin-bottom:15px;">
-                                            <strong style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">🩸 Pathology / Blood</strong>
+                                            <strong style="font-size:0.8rem; color:var(--brand-pink); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">🩸 Pathology / Blood</strong>
                                             <div style="display:flex; flex-wrap:wrap; gap:8px;" class="investigation-chips" onchange="updateTestsTextarea()">
                                                 <label class="chip-checkbox"><input type="checkbox" value="CBC"><span>CBC</span></label>
                                                 <label class="chip-checkbox"><input type="checkbox" value="CRP"><span>CRP</span></label>
@@ -1126,9 +1389,9 @@
                                 </div>
 
                                 <div style="min-width:0; display:flex; flex-direction:column; height:100%;">
-                                    <div style="background:var(--bg-body); padding:15px; border-radius:8px; border:1px solid var(--border-soft); margin-bottom:15px; box-shadow:var(--shadow-sm);">
+                                    <div style="background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); margin-bottom: 15px; box-shadow: inset 0 5px 15px rgba(0,0,0,0.3);">
                                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                            <h4 style="margin:0; color:var(--primary);">🧮 Calculator</h4>
+                                            <h4 style="margin:0; color:var(--brand-blue);">🧮 Calculator</h4>
                                             <div style="display:flex; align-items:center; gap:5px;">
                                                 <label style="margin:0; font-size:0.8rem; color:var(--text-muted); font-weight:bold;">Wt (kg)</label>
                                                 <input type="number" id="inlineCalcWeight" step="0.1" oninput="updateGlobalVital('weight', this.value)" style="width:65px; padding:4px 8px; border:2px solid var(--border-soft); border-radius:6px; font-size:0.95rem; font-weight:bold; text-align:center; color:var(--primary-dark);">
@@ -1162,8 +1425,10 @@
                                             </select>
                                             <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:8px;">
                                                 <input type="number" id="inlineDurVal" placeholder="Qty" oninput="calcInlineDose()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem; box-sizing:border-box;">
-                                                <select id="inlineDurUnit" onchange="calcInlineDose()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem; background:white; box-sizing:border-box;">
-                                                    <option value="Days">Days</option><option value="Weeks">Weeks</option><option value="Months">Months</option>
+                                                <select id="inlineDurUnit" onchange="calcInlineDose()" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem; background:var(--bg-surface); color:var(--text-main); box-sizing:border-box;">
+                                                    <option value="Weeks" selected>Weeks</option>
+                                                    <option value="Days">Days</option>
+                                                    <option value="Months">Months</option>
                                                 </select>
                                             </div>
                                             <input type="text" id="inlineFreq" placeholder="Frequency (e.g. BID)" style="width:100%; border:1px solid var(--border-soft); border-radius:6px; padding:10px; font-size:0.95rem; margin-top:8px;">
@@ -1176,7 +1441,7 @@
                                     </div>
 
                                     <h4 style="margin:0 0 10px 0; color:var(--primary);">📄 Live Rx Preview</h4>
-                                    <div id="rxCartList" style="background:#ffffff; padding:20px; border-radius:6px; border:1px solid var(--border-soft); flex-grow:1; margin-bottom:15px; min-height:320px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family:sans-serif; color:#333;"></div>
+                                    <div id="rxCartList" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 20px; border-radius: 12px; border: 1px solid var(--border-soft); flex-grow: 1; margin-bottom: 15px; min-height: 320px; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); color: var(--text-main); font-family: 'Poppins', sans-serif;"></div>
                                     <button class="action" onclick="openActiveSummary(this)" style="background:var(--brand-blue); margin:0; box-shadow:var(--shadow-md); padding:1rem; font-size:1.1rem;">👁️ Preview & Save Draft</button>
                                 </div>
                             </div>
@@ -1643,15 +1908,24 @@ function toggleCortexDrawer() {
     }
 }
 
+// --- UPDATED DOSE LAYER TOGGLE ---
 function toggleDoseLayer2() {
     const layer2 = document.getElementById('layer2FullCalc');
     const hint = document.querySelector('.expand-hint');
+    const instantCards = document.getElementById('hudSmartDoseCards'); // The target to hide
+
     if (layer2.classList.contains('cortex-collapsed')) {
+        // Opening Formulary
         layer2.classList.remove('cortex-collapsed');
-        hint.innerText = "Close Formulary ⌃";
+        if (hint) hint.innerText = "Close Formulary ⌃";
+        // Smoothly hide Instant Doses
+        if (instantCards) instantCards.style.display = 'none';
     } else {
+        // Closing Formulary
         layer2.classList.add('cortex-collapsed');
-        hint.innerText = "Full Formulary ⌄";
+        if (hint) hint.innerText = "Full Formulary ⌄";
+        // Restore Instant Doses
+        if (instantCards) instantCards.style.display = 'flex';
     }
 }
 
@@ -1863,39 +2137,54 @@ function runCortexTelemetry(totalMonths) {
     }
 }
 
-// 4. HERO DOSE ENGINE (Light Mode Version)
+// 4. HERO DOSE ENGINE (Spatial Glass + Randomization)
 function renderInstantDoses(weight) {
     const container = document.getElementById('hudSmartDoseCards');
     const wt = parseFloat(weight);
 
     if (!wt || wt <= 0) {
-        container.innerHTML = `<div class="hud-empty-state" style="width: 100%; border: 1px dashed var(--border-soft); text-align: left; padding: 15px; color: var(--text-muted);">Enter Weight to unlock Instant Doses...</div>`;
+        container.innerHTML = `<div class="hud-empty-state" style="width: 100%; border: 1px dashed rgba(0, 229, 255, 0.3) !important; background: rgba(0,0,0,0.2) !important; border-radius: 12px !important; text-align: left; padding: 15px !important; color: rgba(255,255,255,0.6) !important;">Enter Weight to unlock Instant Doses...</div>`;
         return;
     }
 
-    const doses = [
-        { name: "Paracetamol", dose: "15 mg/kg", form: "250mg/5mL", calc: ((15 * wt * 5) / 250).toFixed(1), unit: "mL", freq: "Q6H PRN", color: "var(--brand-blue)" },
-        { name: "Ibuprofen", dose: "10 mg/kg", form: "100mg/5mL", calc: ((10 * wt * 5) / 100).toFixed(1), unit: "mL", freq: "var(--warning)", color: "var(--warning)" },
-        { name: "Amoxicillin", dose: "40 mg/kg/day", form: "200mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" }
+    // Master Pool of 10 High-Yield Pediatric OPD Drugs
+    const dosePool = [
+        { name: "Paracetamol", dose: "15 mg/kg", form: "250mg/5mL", calc: ((15 * wt * 5) / 250).toFixed(1), unit: "mL", freq: "Q6H PRN", color: "var(--brand-cyan)" },
+        { name: "Ibuprofen", dose: "10 mg/kg", form: "100mg/5mL", calc: ((10 * wt * 5) / 100).toFixed(1), unit: "mL", freq: "Q8H PRN", color: "var(--warning)" },
+        { name: "Amoxicillin", dose: "40 mg/kg/day", form: "200mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" },
+        { name: "Amox-Clav", dose: "40 mg/kg/day", form: "228mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" },
+        { name: "Azithromycin", dose: "10 mg/kg", form: "200mg/5mL", calc: ((10 * wt * 5) / 200).toFixed(1), unit: "mL", freq: "OD", color: "var(--brand-pink)" },
+        { name: "Ondansetron", dose: "0.15 mg/kg", form: "2mg/5mL", calc: ((0.15 * wt * 5) / 2).toFixed(1), unit: "mL", freq: "STAT", color: "#a855f7" }, 
+        { name: "Domperidone", dose: "0.2 mg/kg", form: "1mg/1mL", calc: (0.2 * wt).toFixed(1), unit: "mL", freq: "TDS", color: "#a855f7" },
+        { name: "Cetirizine", dose: "0.25 mg/kg", form: "5mg/5mL", calc: ((0.25 * wt * 5) / 5).toFixed(1), unit: "mL", freq: "OD HS", color: "var(--brand-blue)" },
+        { name: "Levosalbutamol", dose: "0.05 mg/kg", form: "1mg/5mL", calc: ((0.05 * wt * 5) / 1).toFixed(1), unit: "mL", freq: "TDS", color: "#f97316" },
+        { name: "Mefenamic Acid", dose: "8 mg/kg", form: "50mg/5mL", calc: ((8 * wt * 5) / 50).toFixed(1), unit: "mL", freq: "Q8H PRN", color: "var(--warning)" }
     ];
 
+    // Randomize the pool and slice out 4 cards
+    const shuffledPool = dosePool.sort(() => 0.5 - Math.random());
+    const selectedDoses = shuffledPool.slice(0, 4);
+
     let html = '';
-    doses.forEach(d => {
+    selectedDoses.forEach(d => {
         html += `
-        <div style="min-width: 145px; background: var(--bg-surface); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px; border-left: 4px solid ${d.color}; flex-shrink: 0; box-shadow: var(--shadow-sm);">
-            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">${d.name}</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;">${d.dose} • ${d.form}</div>
+        <div style="min-width: 155px; background: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-top: 1px solid rgba(255,255,255,0.2) !important; border-radius: 14px !important; padding: 14px !important; border-left: 4px solid ${d.color} !important; flex-shrink: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.3) !important; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.transform='scale(1.03) translateY(-2px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.2); letter-spacing: 0.5px;">${d.name}</div>
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6) !important; font-weight: 600; margin-bottom: 12px;">${d.dose} • ${d.form}</div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
-                    <span style="font-size: 1.5rem; font-weight: 900; color: ${d.color};">${d.calc}</span>
-                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${d.unit}</span>
+                    <span style="font-size: 1.9rem; font-weight: 900; color: ${d.color} !important; line-height: 1; text-shadow: 0 0 10px ${d.color};">${d.calc}</span>
+                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.8) !important; font-weight: 700;">${d.unit}</span>
                 </div>
-                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-main); background: var(--bg-body); padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-soft);">${d.freq}</div>
+                <div style="font-size: 0.7rem; font-weight: 800; color: ${d.color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${d.freq}</div>
             </div>
         </div>`;
     });
     container.innerHTML = html;
 }
+
+// 🚀 MASTER OVERRIDE: Hijack the old flat-web app.js calls to use our new Spatial Engine!
+window.renderHudSmartCards = renderInstantDoses;
 
 // 5. NIS VACCINE TELEMETRY (3-Layer Architecture)
 function renderVaccinesDue(totalMonths) {
@@ -2728,8 +3017,12 @@ function generateRxPreview() {
             ` : ''}
         </div>
         
-        <button style="width: 100%; margin-top: 20px; background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 1.05rem; cursor: pointer; box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); text-transform: uppercase; letter-spacing: 1px;">
-            🖨️ Print / Share Rx
+        <button onclick="downloadAsWord()" style="background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.4); color: var(--brand-cyan); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: inset 0 0 15px rgba(0,229,255,0.2), 0 0 20px rgba(0, 229, 255, 0.4); backdrop-filter: blur(10px); transition: transform 0.2s ease, box-shadow 0.2s ease; margin: 0 auto;" title="Download as Editable Word Doc" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='inset 0 0 20px rgba(0,229,255,0.4), 0 0 30px rgba(0, 229, 255, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='inset 0 0 15px rgba(0,229,255,0.2), 0 0 20px rgba(0, 229, 255, 0.4)';">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.8));">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
         </button>
     `;
 }

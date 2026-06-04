@@ -568,8 +568,10 @@ window.calcMathTools = function() {
             if(currentNa < targetNa) {
                 // Hyponatremia: Needs Sodium
                 lytesOut.innerHTML = `
-                    <div style="color:var(--danger); font-weight:bold; font-size:1.4rem;">${correction.naDeficit.toFixed(1)} mEq</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted);"><b>Total Sodium Deficit</b><br>⚠️ Max correction rate: 0.5 mEq/L/hr to prevent Central Pontine Myelinolysis.</div>`;
+                    <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 15px; box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.15);">
+                        <div style="color:var(--danger); font-weight:bold; font-size:1.4rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">${correction.naDeficit.toFixed(1)} mEq</div>
+                        <div style="font-size:0.85rem; color:var(--text-main); margin-top: 5px;"><b>Total Sodium Deficit</b><br><span style="color:var(--danger);">⚠️ Max correction rate: 0.5 mEq/L/hr to prevent Central Pontine Myelinolysis.</span></div>
+                    </div>`;
             } else if (currentNa > targetNa) {
                 // Hypernatremia: Needs Free Water
                 lytesOut.innerHTML = `
