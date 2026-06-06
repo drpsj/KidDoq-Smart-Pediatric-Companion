@@ -67,26 +67,48 @@
     transition: margin-left 0.3s ease, width 0.3s ease !important;
 }
 
-.nav-item { 
-    width: 100% !important; 
-    flex-direction: row !important; 
-    justify-content: flex-start !important; 
-    padding: 14px 20px !important; 
-    border-radius: var(--radius-md) !important; 
-    font-size: 1rem !important; 
-    background: transparent !important; 
+/* =========================================
+   THE HUD HOVER EFFECT (SPATIAL ICONS)
+   ========================================= */
+
+/* Base State for Sidebar Items */
+.main-nav .nav-item {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    padding: 12px 10px !important; 
+    border-radius: 12px !important;
+    font-size: 1rem !important;
+    background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    color: var(--brand-blue) !important; /* Space Blue default */
+    transition: all 0.3s ease !important;
+    border-left: 3px solid transparent !important; /* Invisible border for the active line */
 }
 
-.nav-item:hover { 
-    background: rgba(255, 255, 255, 0.1) !important; 
+/* Prepare the SVG for smooth animations */
+.main-nav .nav-item svg {
+    transition: filter 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
 
-.nav-item.active { 
-    background: transparent !important; /* Removes the heavy block */
+/* When hovering or active: Snap to Neon Cyan and add a subtle background */
+.main-nav .nav-item:hover,
+.main-nav .nav-item.active {
     color: var(--brand-cyan) !important; 
-    text-shadow: 0 0 15px rgba(0, 229, 255, 0.3); /* Adds a soft text halo */
+    background: rgba(0, 229, 255, 0.05) !important; 
+}
+
+/* Ignite the SVG Glow and Levitate the icon */
+.main-nav .nav-item:hover svg,
+.main-nav .nav-item.active svg {
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6)) !important; /* Ambient Neon Glow */
+    transform: scale(1.08) translateY(-2px) !important; /* Subtle magnetic levitation */
+}
+
+/* The Active Indicator Line (Subtle left border snap) */
+.main-nav .nav-item.active {
+    border-left: 3px solid var(--brand-cyan) !important;
+    box-shadow: inset 15px 0 20px -20px var(--brand-cyan) !important; /* Internal light bleed */
 }
 
 .fab { bottom: 30px; right: 40px; width: 70px; height: 70px; }
@@ -219,12 +241,54 @@
     gap: 12px !important;
 }
 
-/* Right Column: Expanded Bento Grid */
+/* Right Column: Expanded Bento Grid (Now a 3D Space) */
 .cortex-bento-grid {
     grid-column: 2 / 3 !important;
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 20px !important;
+    perspective: 1200px !important; /* THE 3D CAMERA: Gives the grid depth */
+}
+
+/* =========================================
+   SPATIAL PARALLAX 3D PHYSICS (Cleaned)
+   ========================================= */
+
+/* 1. Base Card Physics (The 3D Canvas) */
+.bento-card {
+    transform-style: preserve-3d !important; 
+    overflow: visible !important; /* 🚀 THE FIX: Unlocks the 3D dimension */
+    will-change: transform; 
+}
+
+/* 2. The 3D Tunnels (Allows children to pop through the wrappers) */
+.bento-card .card-header,
+.bento-card .card-body,
+.bento-card .card-title-group {
+    transform-style: preserve-3d !important;
+}
+
+/* 3. The Hologram Elements (The actual pop-out distances) */
+.bento-card .card-icon {
+    transform: translateZ(40px) !important;
+    transition: transform 0.3s ease !important;
+}
+
+.bento-card .card-title-group {
+    transform: translateZ(25px) !important;
+    transition: transform 0.3s ease !important;
+}
+
+.bento-card .card-body {
+    transform: translateZ(15px) !important;
+}
+
+/* 4. Elevate layers further when hovering */
+.bento-card:hover .card-icon {
+    transform: translateZ(55px) scale(1.1) !important;
+}
+.bento-card:hover .card-title-group {
+    transform: translateZ(35px) !important;
 }
 
 /* Allow Sticky Floating on Desktop */
@@ -232,4 +296,148 @@
     position: relative !important; /* Keeps pill structure intact inside the sticky anchor */
     margin: 0 auto !important;
     min-width: 350px !important;
+}
+
+/* =========================================
+   DESKTOP GRID GAP OVERRIDES
+   (Keeps the pill and greeting together without breaking mobile)
+   ========================================= */
+
+.desktop-grid-override {
+    grid-column: 1 / -1 !important; /* Forces them to span the full grid */
+}
+
+.cortex-sticky-anchor.desktop-grid-override {
+    margin-bottom: -25px !important; /* Closes the gap ONLY on desktop */
+}
+
+.cortex-greeting-wrapper.desktop-grid-override {
+    margin-top: 0 !important;
+}
+
+/* =========================================
+   DESKTOP NAVIGATION SPATIAL GLASS
+   ========================================= */
+@media (min-width: 1024px) {
+    nav.main-nav {
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border-right: 1px solid rgba(255,255,255,0.05) !important;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5), inset -1px 0 10px rgba(0,229,255,0.05) !important;
+        padding: 30px 15px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    nav.main-nav button.nav-item {
+        display: flex !important;
+        align-items: center !important;
+        text-align: left !important;
+        width: 100% !important;
+        padding: 12px 15px !important;
+        margin-bottom: 5px !important;
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        border-radius: 12px !important;
+        color: rgba(255,255,255,0.6) !important;
+        cursor: pointer !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        outline: none !important;
+    }
+    
+    nav.main-nav button.nav-item svg {
+        width: 28px !important;
+        height: 28px !important;
+        flex-shrink: 0 !important;
+        margin-right: 15px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    nav.main-nav button.nav-item span {
+        font-weight: 700 !important;
+        font-size: 1.05rem !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
+    }
+    
+    /* The Hover State: Just levitate and glow, no box */
+    nav.main-nav button.nav-item:hover:not(.active) {
+        transform: translateX(5px) !important;
+        background: transparent !important;
+        border-color: transparent !important;
+        color: var(--brand-cyan) !important;
+    }
+    
+    /* The Active State: No box, just a sleek vertical indicator line and glow */
+    nav.main-nav button.nav-item.active {
+        background: transparent !important;
+        border: none !important;
+        border-left: 3px solid var(--brand-cyan) !important; /* Sleek indicator line */
+        border-radius: 0 12px 12px 0 !important; /* Flatten the left edge for the line */
+        color: var(--brand-cyan) !important;
+        box-shadow: none !important;
+        transform: scale(0.98) !important;
+    }
+    
+    nav.main-nav button.nav-item.active svg,
+    nav.main-nav button.nav-item:hover svg {
+        filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6)) !important;
+    }
+}
+
+/* =========================================
+   HERO GREETING TYPOGRAPHY & ANIMATIONS
+   ========================================= */
+
+/* 1. Entrance Animation for the whole banner */
+.animate-entrance {
+    animation: fadeInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    opacity: 0;
+    transform: translateY(15px);
+}
+
+@keyframes fadeInUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2. The Futuristic Typography for the Greeting */
+.hero-greeting-font {
+    font-family: 'Outfit', sans-serif !important; /* Geometric, sleek, futuristic */
+    font-size: 2.5rem !important;
+    font-weight: 300 !important; /* Ultra-thin weight for that holographic feel */
+    color: rgba(255, 255, 255, 0.8) !important;
+    letter-spacing: -0.5px !important; 
+    line-height: 1.2 !important;
+}
+
+/* 3. The Continuous Gradient Flow for the Doctor's Name */
+.animated-gradient-text {
+    font-weight: 800 !important; /* Heavy contrast against the thin greeting */
+    background: linear-gradient(to right, var(--brand-cyan), #9D4EDD, var(--brand-pink), var(--brand-cyan));
+    background-size: 300% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: liquidGradient 5s linear infinite;
+    display: inline-block;
+    filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.5)); /* Outer neon glow */
+}
+
+@keyframes liquidGradient {
+    to { background-position: 300% center; }
+}
+
+/* 4. Gentle Float & Glow for the Emoji */
+.animated-emoji {
+    font-size: 1.8rem !important;
+    vertical-align: baseline !important;
+    display: inline-block;
+    animation: gentleFloat 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px rgba(255, 200, 0, 0.4));
+}
+
+@keyframes gentleFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-4px) rotate(8deg); }
 }

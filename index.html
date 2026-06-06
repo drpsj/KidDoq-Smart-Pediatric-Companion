@@ -29,7 +29,15 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Master Font Override: Forces the crisp 'Inter' font across the entire UI */
+        body, input, button, select, textarea, span, div, h1, h2, h3, h4, h5, p {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+            letter-spacing: -0.01em; /* Tightens the text slightly for that premium Apple feel */
+        }
+    </style>
     
     <link rel="stylesheet" href="css/theme.css?v=99">
     <link rel="stylesheet" href="css/desktop.css?v=10" media="screen and (min-width: 1024px)">
@@ -199,22 +207,40 @@
            ========================================================= */
            
         /* 1. Dashboard Bento Cards */
-        .bento-card {
-            background: rgba(0, 0, 0, 0.3) !important;
-            backdrop-filter: blur(25px) !important;
-            -webkit-backdrop-filter: blur(25px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: inset 0 2px 15px rgba(0,0,0,0.2), 0 8px 25px rgba(0,0,0,0.4) !important;
-            border-radius: 20px !important;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-        
-        .bento-card:hover {
-            transform: translateY(-4px) !important;
-            border-color: rgba(0, 229, 255, 0.3) !important;
-            box-shadow: inset 0 2px 15px rgba(0,229,255,0.1), 0 12px 30px rgba(0,0,0,0.5) !important;
-        }
+.bento-card {
+    /* RESTORE THE PHYSICAL CARD BODY & LIGHTING */
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.2), 0 8px 25px rgba(0,0,0,0.4) !important;
+    border-radius: 20px !important;
+    
+    /* KILL ONLY THE GLASS BLUR TO UNLOCK 3D */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    
+    /* DO NOT transition the 'transform' here, let your JavaScript handle the physics */
+    transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ISOLATED GLASS LAYER (Safely behind the 3D children) */
+.bento-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-radius: inherit !important;
+    transform: translateZ(-1px) !important;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.bento-card:hover {
+    /* GLOW EFFECTS ONLY (JS handles the tilt) */
+    border-color: rgba(0, 229, 255, 0.3) !important;
+    box-shadow: inset 0 2px 15px rgba(0,229,255,0.1), 0 12px 30px rgba(0,0,0,0.5) !important;
+}
 
         /* 2. Top Telemetry Scrub Zone (Anchor Pill) */
         .anchor-pill-premium {
@@ -347,95 +373,101 @@
 
     <div class="app-shell">
         
-        <!-- SPATIAL NAVIGATION MENU -->
-        <nav class="main-nav" style="background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid rgba(255,255,255,0.05); box-shadow: 10px 0 30px rgba(0,0,0,0.5), inset -1px 0 10px rgba(0,229,255,0.05);">
-            <style>
-                .main-nav .nav-item {
-                    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    background: transparent;
-                    border: 1px solid transparent;
-                    color: rgba(255,255,255,0.6);
-                }
-                .main-nav .nav-item:hover:not(.active) {
-                    transform: translateX(5px);
-                    background: rgba(255,255,255,0.05);
-                    border-color: rgba(255,255,255,0.1);
-                    color: var(--brand-cyan);
-                }
-                .main-nav .nav-item.active {
-                    background: rgba(0, 0, 0, 0.3) !important;
-                    border: 1px solid rgba(0, 229, 255, 0.3) !important;
-                    color: var(--brand-cyan) !important;
-                    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,229,255,0.1) !important;
-                    transform: scale(0.98);
-                }
-                .main-nav .nav-item.active svg {
-                    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
-                }
-            </style>
-            
-            <button class="nav-item active" onclick="switchNavTab('homeDashboardView', this)">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                Home
-            </button>
-            <button class="nav-item" onclick="switchNavTab('databaseFeatureView', this)">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                Patients
-            </button>
-            <button class="nav-item" onclick="switchNavTab('toolsTab', this)">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                Tools
-            </button>
-            <button class="nav-item" onclick="switchNavTab('encounterSummaryGlobalView', this)">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                Summary
-            </button>
-            <button class="nav-item" onclick="switchNavTab('aboutFeatureView', this)">
-                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                Settings
-            </button>
-        </nav>
+       <!-- SPATIAL NAVIGATION MENU (Clean HTML - CSS moved to files) -->
+<nav class="main-nav">
+    <!-- Home -->
+    <button class="nav-item active" onclick="switchNavTab('homeDashboardView', this)">
+        <svg viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="currentColor" opacity="0.15"></path>
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        </svg>
+        <span>Home</span>
+    </button>
+
+    <!-- Patients -->
+    <button class="nav-item" onclick="switchNavTab('databaseFeatureView', this)">
+        <svg viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" fill="currentColor" opacity="0.15"></path>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <span>Patients</span>
+    </button>
+
+    <!-- Tools -->
+    <button class="nav-item" onclick="switchNavTab('toolsTab', this)">
+        <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.15"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.15"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.15"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.15"></rect>
+            <rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+        </svg>
+        <span>Tools</span>
+    </button>
+
+    <!-- Summary -->
+    <button class="nav-item" onclick="switchNavTab('encounterSummaryGlobalView', this)">
+        <svg viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="currentColor" opacity="0.15"></path>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <polyline points="14 2 14 8 20 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="16" y1="17" x2="8" y2="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+            <polyline points="10 9 9 9 8 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></polyline>
+        </svg>
+        <span>Summary</span>
+    </button>
+
+    <!-- Settings -->
+    <button class="nav-item" onclick="switchNavTab('aboutFeatureView', this)">
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.15"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" fill="currentColor" opacity="0.15"></path>
+            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <span>Settings</span>
+    </button>
+</nav>
 
         <div class="main-content">
             
             <div id="homeDashboardView" class="view-content active-view cortex-fusion-mode">
-            
-            <!-- 1. The Scrub Pill is now at the very top (Solid Flex Wrapper to prevent collapse) -->
-            <!-- Wrapper changed to block/text-center to neutralize the unsafe flexbox bleed -->
-            <div class="cortex-sticky-anchor" style="position: sticky; top: 15px; z-index: 4000; display: block; text-align: center; width: 100%; margin: 0 0 30px 0; padding: 0; background: transparent;">
+
+                <div class="cortex-sticky-anchor desktop-grid-override" style="position: sticky; top: 15px; z-index: 4000; display: block; text-align: center; width: 100%; max-width: 100vw; margin: 0 0 10px 0; padding: 0 10px; background: transparent; box-sizing: border-box;">
                 
-                <!-- Pill changed to inline-flex to obey text-align while retaining its internal grid -->
-                <div id="cortexAnchorPill" class="anchor-pill-premium" style="display: inline-flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; flex-wrap: nowrap !important; white-space: nowrap !important; max-width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; min-height: 64px !important; margin: 0 auto !important; gap: 12px !important; padding: 10px 16px !important; border-radius: 50px !important; scrollbar-width: none;">
+                <div id="cortexAnchorPill" class="anchor-pill-premium" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; width: 92% !important; max-width: 500px !important; min-height: 52px !important; margin: 0 auto !important; gap: 10px !important; padding: 6px 16px !important; border-radius: 50px !important; scrollbar-width: none;">
+                    
                     <input type="hidden" id="hudAgeYrs" value="0">
                     <input type="hidden" id="hudAgeMos" value="0">
                     <input type="hidden" id="hudAge" value="0">
                     <input type="hidden" id="hudWeight" value="0">
                     <select id="hudGender" style="display:none;"><option value="male">Male</option><option value="female">Female</option></select>
 
-                    <!-- LOGO ONLY -->
                     <div style="display: flex; align-items: center; cursor: pointer; flex-shrink: 0;" onclick="toggleCortexDrawer()">
-                        <img src="kiddoq lite.png" id="anchorDefaultLogo" alt="KidDoq" style="width: 38px; height: 38px; filter: drop-shadow(0 0 12px rgba(0,229,255,0.5));">
+                        <img src="kiddoq lite.png" id="anchorDefaultLogo" alt="KidDoq" style="width: 32px; height: 32px; filter: drop-shadow(0 0 12px rgba(0,229,255,0.5));">
                     </div>
                     
-                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+                    <div class="anchor-divider" style="width: 1px; height: 28px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
 
-                    <!-- AGE (Stacked) -->
-                    <div class="anchor-stat scrub-zone" id="scrubAgeZone" onclick="manualEditAge()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex-shrink: 0;">
-                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">AGE <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
+                    <div class="anchor-stat scrub-zone" id="scrubAgeZone" onclick="manualEditAge()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex: 1;">
+                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 0;">AGE <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
                         <span class="stat-value" id="anchorAgeDisplay" style="font-size: 1.15rem; font-weight: 800; color: white;">0Y 0M</span>
                     </div>
                     
-                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+                    <div class="anchor-divider" style="width: 1px; height: 28px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
                     
-                    <!-- WEIGHT (Stacked) -->
-                    <div class="anchor-stat scrub-zone" id="scrubWtZone" onclick="manualEditWeight()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex-shrink: 0;">
-                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">WEIGHT <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
+                    <div class="anchor-stat scrub-zone" id="scrubWtZone" onclick="manualEditWeight()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex: 1;">
+                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 0;">WEIGHT <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
                         <span class="stat-value" style="font-size: 1.15rem; font-weight: 800; color: white;"><span id="anchorWtDisplay">0.0</span> <small style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">kg</small></span>
                     </div>
                     
-                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+                    <div class="anchor-divider" style="width: 1px; height: 28px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
                     
-                    <!-- GENDER (Symbol + Text Stacked) -->
                     <div class="anchor-stat" id="tapGenderZone" onclick="toggleAnchorGender()" style="cursor:pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex-shrink: 0;">
                         <span class="stat-icon" id="anchorGenderIcon" style="font-size: 1.4rem; color: var(--brand-blue); filter: drop-shadow(0 0 8px rgba(77, 123, 255, 0.4)); line-height: 1;">♂️</span>
                         <span class="stat-value" id="anchorGenderDisplay" style="font-size: 0.75rem; font-weight: 700; color: white; margin-top: 2px; display: block;">Male</span>
@@ -443,34 +475,47 @@
                     
                     <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
 
-                    <!-- TOGGLE -->
                     <div class="anchor-action" onclick="toggleCortexDrawer()" style="display: flex; align-items: center; cursor: pointer; flex-shrink: 0;">
-                        <div class="anchor-chevron" style="font-size: 1.2rem; color: var(--brand-blue);">⌄</div>
+                        <div class="anchor-chevron" style="font-size: 1.2rem; color: var(--brand-blue); transition: transform 0.3s ease;">⌄</div>
                     </div>
                 </div>
                 
-                <div id="cortexDrawer" class="cortex-collapsed">
-                    <div class="drawer-inputs" style="margin-top: 10px;">
-                        <div class="cortex-input-group"><label>Ht (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHeight" oninput="broadcastGlobalParameters()" placeholder="--"></div>
-                        <div class="cortex-input-group"><label>HC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudHc" oninput="broadcastGlobalParameters()" placeholder="--"></div>
-                        <div class="cortex-input-group"><label>MAC (cm)</label><input type="number" pattern="[0-9]*" step="0.1" id="hudMac" oninput="broadcastGlobalParameters()" placeholder="--"></div>
+                <div id="cortexDrawer" class="cortex-collapsed" style="max-height: 0px; opacity: 0; padding: 0 20px; overflow: hidden; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(0, 229, 255, 0.2); border-top: none; border-radius: 0 0 24px 24px; max-width: 480px; margin: -20px auto 10px auto; box-shadow: 0 20px 40px rgba(0,0,0,0.6); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; z-index: -1;">
+                    <div class="row-inputs" style="padding-top: 30px; margin-bottom: 10px;">
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Height (cm)</label>
+                            <input type="number" id="hudHt" placeholder="0.0" oninput="renderAnthropometry()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Head Circ (cm)</label>
+                            <input type="number" id="hudHc" placeholder="0.0" oninput="renderAnthropometry()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">MAC (cm)</label>
+                            <input type="number" id="hudMac" placeholder="0.0" oninput="renderAnthropometry()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        </div>
                     </div>
                 </div>
+
             </div>
 
-            <!-- 2. The Greeting now sits cleanly beneath the pill -->
-            <div class="cortex-greeting-wrapper" style="padding: 10px 0 20px 0;">
-                <div class="cortex-greeting" style="margin: 0; display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div class="greeting-text">
-                        <h1 style="color: var(--text-main); font-weight: 800; letter-spacing: -0.5px;">
-                            <span id="greetingTime">Good Morning</span>, Dr. <span id="doctorNameDisplay" style="color: var(--brand-cyan); text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">Patel</span> <span id="greetingIcon">☀️</span>
-                        </h1>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Ready to make a difference today</p>
+            <div class="cortex-greeting-wrapper desktop-grid-override animate-entrance" style="position: relative; width: 100%; padding: 15px 0; border-bottom: 1px solid var(--border-soft);">
+                <div class="cortex-greeting" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; margin: 0;">
+                    
+                    <div class="greeting-text" style="display: flex; flex-direction: column; text-align: left;">
+                        <h2 class="hero-greeting-font" style="margin: 0;">
+                            <span id="liveGreetingTime">Good Evening</span>, Dr. 
+                            <span id="liveDoctorName" class="animated-gradient-text">User</span> 
+                            <span id="liveGreetingEmoji" class="animated-emoji">🌙</span>
+                        </h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin: 5px 0 0 0;">Ready to make a difference today</p>
                     </div>
-                    <div class="opd-queue" style="background: var(--bg-surface); border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm); padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+
+                    <div class="opd-queue" style="background: var(--bg-surface); border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm); padding: 8px 16px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; width: max-content; flex-shrink: 0;">
                         <span class="queue-label" style="color: var(--brand-pink); font-weight: 700;">Encounters</span>
-                        <span class="queue-count" id="encounterCount" style="color: var(--primary-dark); font-weight: 900;">0</span>
+                        <span class="queue-count" id="encounterCount" style="color: var(--primary-dark); font-weight: 900; font-size: 1.1rem;">0</span>
                     </div>
+
                 </div>
             </div>
 
@@ -674,6 +719,15 @@
                     <h4 style="margin-top:0; color:var(--primary);">📱 Dashboard Quick Access</h4>
                     <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Select which tools appear on your Home screen.</p>
                     <div id="settingsQuickToolsList" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background:var(--bg-body); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); margin-bottom:1.5rem;"></div>
+
+<h4 style="margin-top:0; color:var(--brand-cyan);">⚡ Performance & Workflow</h4>
+<div style="background:var(--bg-body); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);">
+    <div>
+        <div style="font-weight:bold; color:var(--text-main);">Clinical Velocity Mode</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top: 4px;">Disables stagger animations and calculation delays for instant data rendering during peak OPD hours.</div>
+    </div>
+    <input type="checkbox" id="velocityModeToggle" onchange="toggleVelocityMode(this.checked)" style="width:24px; height:24px; flex-shrink: 0; margin-left: 15px; accent-color: var(--brand-cyan);">
+</div>
                     <h4 style="margin-top:0; color:var(--primary);">📚 Clinical Guidelines & Sources</h4>
                     <div style="font-size:0.85rem; line-height:1.6; background:var(--bg-body); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-soft); margin-bottom:1rem;">
                         <ul style="margin:0; padding-left:1.2rem; color:var(--text-main);">
@@ -1865,7 +1919,7 @@
 <script src="js/view-controller.js?v=33"></script>
 <script>
     // PERMANENT DEVELOPMENT FIX: Kill all Service Workers and DO NOT restart them.
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', () => {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
@@ -1873,7 +1927,7 @@
                         console.log('🛑 Offline Engine Killed. Caching is now disabled for development.');
                     });
                 }
-            });
+            }).catch(err => console.log('Service worker unregistration skipped.', err));
         });
     }
 </script>
@@ -1896,16 +1950,73 @@ window.toggleCortexDrawer = function() {
 // KINETIC CORTEX: DIRECT SCRUB TELEMETRY
 // ==========================================
 
+// 🚀 THE FIX: Bulletproof inline drawer physics
 function toggleCortexDrawer() {
     const drawer = document.getElementById('cortexDrawer');
     const chevron = document.querySelector('.anchor-chevron');
-    if(drawer.classList.contains('cortex-collapsed')) {
+    if (!drawer) return;
+    
+    if (drawer.classList.contains('cortex-collapsed')) {
+        drawer.style.maxHeight = '200px';
+        drawer.style.opacity = '1';
+        drawer.style.padding = '0 20px 20px 20px';
         drawer.classList.remove('cortex-collapsed');
-        chevron.style.transform = 'rotate(180deg)';
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
     } else {
+        drawer.style.maxHeight = '0px';
+        drawer.style.opacity = '0';
+        drawer.style.padding = '0 20px';
         drawer.classList.add('cortex-collapsed');
-        chevron.style.transform = 'rotate(0deg)';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
     }
+}
+
+// 🚀 CNS AUTO-APPROXIMATION ENGINE (Upgraded)
+function autoApproximateVitals(totalMonths) {
+    const yrs = Math.floor(totalMonths / 12);
+    
+    // 1. Approximate Weight (Weech's Formula)
+    let wt = 3.0;
+    if (totalMonths > 0 && totalMonths < 12) wt = (totalMonths + 9) / 2;
+    else if (yrs >= 1 && yrs <= 6) wt = (yrs * 2) + 8;
+    else if (yrs > 6 && yrs <= 12) wt = ((yrs * 7) - 5) / 2;
+    else if (yrs > 12) wt = (yrs * 3); 
+
+    // 2. Approximate Height
+    let ht = 50;
+    if (totalMonths > 0 && totalMonths < 12) ht = 50 + (totalMonths * 2); 
+    else if (yrs >= 1 && yrs <= 12) ht = (yrs * 6) + 77;
+    else if (yrs > 12) ht = 150; 
+
+    // 3. Approximate Head Circumference (Weaver/CDC rough curve)
+    let hc = 35;
+    if(totalMonths <= 3) hc = 35 + (totalMonths * 1.66);
+    else if(totalMonths <= 6) hc = 40 + ((totalMonths - 3) * 1.0);
+    else if(totalMonths <= 12) hc = 43 + ((totalMonths - 6) * 0.5);
+    else if(totalMonths <= 24) hc = 46 + ((totalMonths - 12) * 0.16);
+    else if(totalMonths <= 36) hc = 48 + ((totalMonths - 24) * 0.16);
+    else hc = 50 + ((totalMonths - 36) * 0.05);
+
+    // 4. Approximate MAC
+    let mac = (totalMonths >= 6 && totalMonths <= 59) ? 15.5 : 0;
+
+    // Push securely to the DOM (including our new Drawer inputs!)
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val > 0) el.value = val.toFixed(1); };
+    
+    setVal('hudWeight', wt);
+    const dispWt = document.getElementById('anchorWtDisplay');
+    if (dispWt) dispWt.innerText = wt.toFixed(1);
+
+    setVal('hudHt', ht);
+    setVal('triageHt', ht);
+    setVal('htCmOnTheGo', ht);
+
+    setVal('hudHc', hc);
+    
+    setVal('hudMac', mac);
+    setVal('triageMac', mac);
+
+    return wt.toFixed(1);
 }
 
 // --- UPDATED DOSE LAYER TOGGLE ---
@@ -1992,9 +2103,12 @@ function manualEditAge() {
         if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
         document.getElementById('anchorAgeDisplay').innerText = ageStr;
         
-        const currentWt = document.getElementById('hudWeight').value;
-        renderGrowthSnapshot(newTotal, currentWt);
-        renderVitalsAndFluids(newTotal, currentWt);
+        // 🚀 THE FIX: Run the CNS Auto-Approximator
+        const autoWt = autoApproximateVitals(newTotal);
+        
+        renderInstantDoses(autoWt);
+        renderGrowthSnapshot(newTotal, autoWt);
+        renderVitalsAndFluids(newTotal, autoWt);
         renderAnthropometry();
         renderMilestonesAndRedFlags(newTotal);
         
@@ -2065,16 +2179,13 @@ function attachDirectScrub(zoneId, type) {
                 if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
                 document.getElementById('anchorAgeDisplay').innerText = ageStr;
                 
-                // Trigger Growth Card on Age change
-                const currentWt = document.getElementById('hudWeight').value;
-                renderGrowthSnapshot(newTotal, currentWt);
+                // 🚀 THE FIX: Run the CNS Auto-Approximator dynamically while scrubbing
+                const autoWt = autoApproximateVitals(newTotal);
                 
-                // NEW: Trigger Vitals & Fluids on Age change
-                renderVitalsAndFluids(newTotal, currentWt);
-                // Trigger Anthropometry on Age change (to verify 6-59 month standard)
+                renderInstantDoses(autoWt);
+                renderGrowthSnapshot(newTotal, autoWt);
+                renderVitalsAndFluids(newTotal, autoWt);
                 renderAnthropometry();
-                
-                // NEW: Trigger Milestones and Red Flags on Age change
                 renderMilestonesAndRedFlags(newTotal);
             }
             
@@ -2165,22 +2276,30 @@ function renderInstantDoses(weight) {
     const shuffledPool = dosePool.sort(() => 0.5 - Math.random());
     const selectedDoses = shuffledPool.slice(0, 4);
 
-    let html = '';
-    selectedDoses.forEach(d => {
-        html += `
-        <div style="min-width: 155px; background: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-top: 1px solid rgba(255,255,255,0.2) !important; border-radius: 14px !important; padding: 14px !important; border-left: 4px solid ${d.color} !important; flex-shrink: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.3) !important; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.transform='scale(1.03) translateY(-2px)'" onmouseout="this.style.transform='none'">
-            <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.2); letter-spacing: 0.5px;">${d.name}</div>
-            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6) !important; font-weight: 600; margin-bottom: 12px;">${d.dose} • ${d.form}</div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                <div>
-                    <span style="font-size: 1.9rem; font-weight: 900; color: ${d.color} !important; line-height: 1; text-shadow: 0 0 10px ${d.color};">${d.calc}</span>
-                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.8) !important; font-weight: 700;">${d.unit}</span>
+    // 🚀 THE FIX: Insert the scanning line immediately, then wait 400ms before rendering the cards
+    container.innerHTML = '<div class="cortex-scan-line"></div>'; 
+    
+    setTimeout(() => {
+        let html = '';
+        selectedDoses.forEach((d, index) => {
+            // 🚀 THE FIX: Dynamically add cortex-stagger-1, cortex-stagger-2, etc.
+            const staggerClass = `cortex-stagger-${index + 1}`; 
+            
+            html += `
+            <div class="${staggerClass}" style="min-width: 155px; background: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-top: 1px solid rgba(255,255,255,0.2) !important; border-radius: 14px !important; padding: 14px !important; border-left: 4px solid ${d.color} !important; flex-shrink: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.3) !important; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.transform='scale(1.03) translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.2); letter-spacing: 0.5px;">${d.name}</div>
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6) !important; font-weight: 600; margin-bottom: 12px;">${d.dose} • ${d.form}</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <span style="font-size: 1.9rem; font-weight: 900; color: ${d.color} !important; line-height: 1; text-shadow: 0 0 10px ${d.color};">${d.calc}</span>
+                        <span style="font-size: 0.8rem; color: rgba(255,255,255,0.8) !important; font-weight: 700;">${d.unit}</span>
+                    </div>
+                    <div style="font-size: 0.7rem; font-weight: 800; color: ${d.color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${d.freq}</div>
                 </div>
-                <div style="font-size: 0.7rem; font-weight: 800; color: ${d.color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${d.freq}</div>
-            </div>
-        </div>`;
-    });
-    container.innerHTML = html;
+            </div>`;
+        });
+        container.innerHTML = html;
+    }, 400); 
 }
 
 // 🚀 MASTER OVERRIDE: Hijack the old flat-web app.js calls to use our new Spatial Engine!
@@ -2230,21 +2349,35 @@ function renderVaccinesDue(totalMonths) {
 
     // Layer 2: Clinical Data
     html += `<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">`;
-    due.forEach(vax => {
+    
+    due.forEach((vax, index) => {
+        // 🚀 THE FIX: Calculate a slight delay so they animate sequentially
+        const delay = index * 0.15; 
+        
         html += `
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="cortex-stagger-1" style="animation-delay: ${delay}s; background: rgba(255,255,255,0.03); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
             <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${vax}</span>
-            <span style="color: ${color}; font-size: 1rem;">✓</span>
+            
+            <span style="color: ${color}; display: flex; align-items: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 5px ${color});">
+                    <polyline class="animated-check" points="20 6 9 17 4 12" style="animation-delay: ${delay + 0.1}s;"></polyline>
+                </svg>
+            </span>
         </div>`;
     });
     html += `</div>`;
 
     // Layer 3: Actionable Intelligence
-    let intelIcon = status === "Up to Date" ? "✓" : "⚠";
+    // 🚀 THE FIX: Upgrade the bottom icon to an animated SVG as well
+    let intelIcon = status === "Up to Date" 
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;"><polyline class="animated-check" points="20 6 9 17 4 12" style="animation-delay: 0.8s;"></polyline></svg>` 
+        : `<span>⚠</span>`;
+        
     let intelMsg = status === "Up to Date" ? "Schedule is currently up to date." : "Vaccines due for administration.";
+    
     html += `
-    <div style="margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--border-soft); display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; color: ${color};">
-        <span>${intelIcon}</span> ${intelMsg}
+    <div style="margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--border-soft); display: flex; align-items: center; font-size: 0.75rem; font-weight: 700; color: ${color};">
+        ${intelIcon} ${intelMsg}
     </div>`;
 
     vaxContainer.innerHTML = html;
@@ -2322,6 +2455,27 @@ function renderGrowthSnapshot(totalMonths, weightInKg) {
     `;
 }
 
+// 🚀 NEW: Hardware-Accelerated Number Counter Engine
+function animateValue(obj, start, end, duration) {
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentVal = (progress * (end - start) + start).toFixed(obj.dataset.decimals || 0);
+        
+        obj.innerHTML = currentVal;
+        
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = end; 
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
 // 7. VITALS & FLUIDS TELEMETRY
 function renderVitalsAndFluids(totalMonths, weightInKg) {
     const vitalsContainer = document.getElementById('hudVitalsOutput');
@@ -2340,17 +2494,18 @@ function renderVitalsAndFluids(totalMonths, weightInKg) {
     else if (totalMonths <= 144) { hr = "75-118"; rr = "18-25"; sysBp = "97-120"; }
     else { hr = "60-100"; rr = "12-20"; sysBp = "110-130"; }
 
+    // 🚀 THE FIX 1: Added staggered slide-in classes for Vitals
     vitalsContainer.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
-            <div style="background: rgba(0, 229, 255, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.1);">
+            <div class="cortex-stagger-1" style="background: rgba(0, 229, 255, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.1);">
                 <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">HR (bpm)</div>
                 <div style="font-size: 0.95rem; color: var(--brand-cyan); font-weight: 800; margin-top: 4px;">${hr}</div>
             </div>
-            <div style="background: rgba(0, 250, 154, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(0, 250, 154, 0.1);">
+            <div class="cortex-stagger-2" style="background: rgba(0, 250, 154, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(0, 250, 154, 0.1);">
                 <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">RR (/min)</div>
                 <div style="font-size: 0.95rem; color: var(--success); font-weight: 800; margin-top: 4px;">${rr}</div>
             </div>
-            <div style="background: rgba(255, 176, 32, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(255, 176, 32, 0.1);">
+            <div class="cortex-stagger-3" style="background: rgba(255, 176, 32, 0.05); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(255, 176, 32, 0.1);">
                 <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Sys BP</div>
                 <div style="font-size: 0.95rem; color: var(--warning); font-weight: 800; margin-top: 4px;">${sysBp}</div>
             </div>
@@ -2370,16 +2525,28 @@ function renderVitalsAndFluids(totalMonths, weightInKg) {
 
     let mlPerHour = (mlPerDay / 24).toFixed(1);
 
+    // 🚀 THE FIX 2: Wrapped the fluids in the IV Bag CSS and prepared IDs for counting
     fluidsContainer.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 5px;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Daily Maint.</div>
-            <div style="font-size: 1.05rem; color: var(--brand-blue); font-weight: 800;">${mlPerDay.toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">mL/24h</span></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Hourly Rate</div>
-            <div style="font-size: 1.05rem; color: var(--brand-cyan); font-weight: 800;">${mlPerHour} <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">mL/hr</span></div>
+        <div style="position: relative; overflow: hidden; z-index: 1; padding: 10px; border-radius: 8px; margin-top: 10px;">
+            <div class="iv-fluid-fill" style="--fill-target: 100%;"></div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
+                <div style="font-size: 0.75rem; color: var(--text-main); font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">Daily Maint.</div>
+                <div style="font-size: 1.05rem; color: #ffffff; font-weight: 800; text-shadow: 0 0 8px rgba(0,229,255,0.6);"><span id="animFluidDay" data-decimals="0">0</span> <span style="font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.8);">mL/24h</span></div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; position: relative; z-index: 2;">
+                <div style="font-size: 0.75rem; color: var(--text-main); font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">Hourly Rate</div>
+                <div style="font-size: 1.05rem; color: #ffffff; font-weight: 800; text-shadow: 0 0 8px rgba(0,229,255,0.6);"><span id="animFluidHour" data-decimals="1">0.0</span> <span style="font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.8);">mL/hr</span></div>
+            </div>
         </div>
     `;
+
+    // 🚀 THE FIX 3: Trigger the number rolling physics 50ms after the HTML renders
+    setTimeout(() => {
+        animateValue(document.getElementById('animFluidDay'), 0, mlPerDay, 800);
+        animateValue(document.getElementById('animFluidHour'), 0, mlPerHour, 800);
+    }, 50);
 }
 
 // 8. ANTHROPOMETRY & NUTRITION TELEMETRY
@@ -2387,10 +2554,15 @@ function renderAnthropometry() {
     const container = document.getElementById('hudAnthroOutput');
     if (!container) return;
 
-    // Pull values directly from the DOM
-    const totalMonths = (parseInt(document.getElementById('hudAgeYrs').value) || 0) * 12 + (parseInt(document.getElementById('hudAgeMos').value) || 0);
-    const hc = parseFloat(document.getElementById('hudHc').value) || 0;
-    const mac = parseFloat(document.getElementById('hudMac').value) || 0;
+    // 🚀 THE FIX: Pull values directly from the DOM safely (prevents null crashes)
+    const ageYrsEl = document.getElementById('hudAgeYrs');
+    const ageMosEl = document.getElementById('hudAgeMos');
+    const totalMonths = (parseInt(ageYrsEl ? ageYrsEl.value : 0) || 0) * 12 + (parseInt(ageMosEl ? ageMosEl.value : 0) || 0);
+    
+    const hcEl = document.getElementById('hudHc');
+    const macEl = document.getElementById('hudMac');
+    const hc = hcEl ? parseFloat(hcEl.value) || 0 : 0;
+    const mac = macEl ? parseFloat(macEl.value) || 0 : 0;
 
     // Empty state if nothing is entered
     if (hc <= 0 && mac <= 0) {
@@ -2757,18 +2929,26 @@ function updateDashboardContext() {
     } else if (hour >= 12 && hour < 17) {
         greeting = "Good Afternoon";
         icon = "🌤️";
+    } else if (hour >= 17 && hour < 21) {
+        greeting = "Good Evening";
+        icon = "🌅";
     }
 
-    document.getElementById('greetingTime').innerText = greeting;
-    document.getElementById('greetingIcon').innerText = icon;
+    // 🚀 THE FIX: Matched to the correct HTML IDs and added null safety
+    const timeEl = document.getElementById('liveGreetingTime');
+    const iconEl = document.getElementById('liveGreetingEmoji');
+    if (timeEl) timeEl.innerText = greeting;
+    if (iconEl) iconEl.innerText = icon;
 
     // Pull the doctor's name from localStorage (defaults to 'Peter' if not set)
     const docName = localStorage.getItem('kiddoq_doctor_name') || "Peter";
-    document.getElementById('doctorNameDisplay').innerText = docName;
+    const nameEl = document.getElementById('liveDoctorName');
+    if (nameEl) nameEl.innerText = docName;
 
     // Encounter Counter logic
     let encounters = parseInt(localStorage.getItem('kiddoq_encounter_count')) || 0;
-    document.getElementById('encounterCount').innerText = encounters;
+    const countEl = document.getElementById('encounterCount');
+    if (countEl) countEl.innerText = encounters;
 }
 
 // Function to increment encounters when vitals are scrubbed
@@ -3027,20 +3207,49 @@ function generateRxPreview() {
     `;
 }
 
-// 2. Initialize the Vortex (Turn the power on!)
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // ---------------------------------------------------------
+    // 1. DYNAMIC CONTEXT ENGINE (Greeting & Time Sync)
+    // ---------------------------------------------------------
+    function updateDashboardGreeting() {
+        const hour = new Date().getHours();
+        const timeEl = document.getElementById('liveGreetingTime');
+        const emojiEl = document.getElementById('liveGreetingEmoji');
+        const nameEl = document.getElementById('liveDoctorName');
+        
+        // Profile Sync (Replace 'Peter' with dynamic backend auth later)
+        const loggedInDoctor = "Peter"; 
+        if (nameEl) nameEl.textContent = loggedInDoctor;
+
+        // Time logic
+        let greeting = "Good Evening", emoji = "🌙";
+        if (hour >= 5 && hour < 12) { greeting = "Good Morning"; emoji = "☀️"; } 
+        else if (hour >= 12 && hour < 17) { greeting = "Good Afternoon"; emoji = "🌤️"; } 
+        else if (hour >= 17 && hour < 21) { greeting = "Good Evening"; emoji = "🌅"; } 
+        else { greeting = "Good Night"; emoji = "🌙"; }
+
+        if (timeEl) timeEl.textContent = greeting;
+        if (emojiEl) emojiEl.textContent = emoji;
+    }
+
+    updateDashboardGreeting();
+    setInterval(updateDashboardGreeting, 60000); // Check every minute
+
+
+    // ---------------------------------------------------------
+    // 2. CORE SYSTEM INITIALIZATION (The Vortex)
+    // ---------------------------------------------------------
     if(typeof attachDirectScrub === 'function') {
         attachDirectScrub('scrubAgeZone', 'age');
         attachDirectScrub('scrubWtZone', 'weight');
     }
     
-    // Listen for Anthropometry input in the top drawer
     const hudHcEl = document.getElementById('hudHc');
     const hudMacEl = document.getElementById('hudMac');
     if (hudHcEl) hudHcEl.addEventListener('input', renderAnthropometry);
     if (hudMacEl) hudMacEl.addEventListener('input', renderAnthropometry);
     
-    // Safely check if weight input exists before grabbing its value
     const weightInput = document.getElementById('hudWeight');
     if (weightInput && typeof renderInstantDoses === 'function') {
         renderInstantDoses(weightInput.value);
@@ -3051,6 +3260,76 @@ document.addEventListener('DOMContentLoaded', () => {
     if(typeof renderVitalsAndFluids === 'function') renderVitalsAndFluids(0, 0);
     if(typeof renderMilestonesAndRedFlags === 'function') renderMilestonesAndRedFlags(0);
     if(typeof updateDashboardContext === 'function') updateDashboardContext();
+
+
+    // ---------------------------------------------------------
+    // 3. KINETIC UI ENGINE (Velocity & Smart Sleep)
+    // ---------------------------------------------------------
+    // Velocity Mode Initialization
+    window.isVelocityMode = localStorage.getItem('kiddoq_velocity') === 'true';
+    const velocityToggle = document.getElementById('velocityModeToggle');
+    if(velocityToggle) velocityToggle.checked = window.isVelocityMode;
+
+    window.toggleVelocityMode = function(isActive) {
+        window.isVelocityMode = isActive;
+        localStorage.setItem('kiddoq_velocity', isActive);
+        if(isActive) {
+            // Kill animation durations and delays via CSS variables
+            document.documentElement.style.setProperty('--kinetic-duration', '0.01ms');
+            document.documentElement.style.setProperty('--kinetic-delay', '0ms');
+        } else {
+            // Restore standard clinical animations
+            document.documentElement.style.setProperty('--kinetic-duration', '0.4s');
+            document.documentElement.style.setProperty('--kinetic-delay', '0.4s');
+        }
+    };
+    window.toggleVelocityMode(window.isVelocityMode); // Run on boot
+
+    // Smart Sleep Protocol (Saves tablet battery)
+    const sleepObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                entry.target.classList.add('cortex-sleep'); // Pause animation
+            } else {
+                entry.target.classList.remove('cortex-sleep'); // Resume animation
+            }
+        });
+    }, { threshold: 0.1 });
+
+    // Target all animated elements
+    document.querySelectorAll('.bento-card, .hero-icon, .card-icon').forEach(el => {
+        sleepObserver.observe(el);
+    });
+
+    // ---------------------------------------------------------
+    // 4. SPATIAL PARALLAX ENGINE (Desktop 3D Physics)
+    // ---------------------------------------------------------
+    if (window.innerWidth >= 1024) {
+        const cards = document.querySelectorAll('.bento-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left; 
+                const y = e.clientY - rect.top; 
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -8; 
+                const rotateY = ((x - centerX) / centerX) * 8;
+                
+                // RESTORED: Keep the transform fast, but let the box-shadow "water" glow fade in smoothly!
+                card.style.setProperty('transition', 'transform 0.1s linear, box-shadow 0.4s ease, border-color 0.4s ease', 'important');
+                
+                // RESTORED: Added translateY(-4px) back into the math so it floats up while tilting!
+                card.style.setProperty('transform', `perspective(1200px) translateY(-4px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`, 'important');
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.setProperty('transition', 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
+                card.style.setProperty('transform', `perspective(1200px) translateY(0px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`, 'important');
+            });
+        });
+    }
 });
 </script>
 </body>

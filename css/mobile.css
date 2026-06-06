@@ -357,3 +357,64 @@ input, select, textarea {
 #cortexAnchorPill::-webkit-scrollbar { 
     display: none !important; 
 }
+
+/* =========================================
+   NUCLEAR MOBILE NAVIGATION OVERRIDE
+   (Destroys the box and shrinks the bar)
+   ========================================= */
+@media (max-width: 1023px) {
+    nav.main-nav {
+        background: rgba(11, 14, 20, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-top: 1px solid rgba(255,255,255,0.1) !important;
+        border-right: none !important;
+        height: auto !important;
+        min-height: 65px !important;
+        padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-evenly !important;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.5) !important;
+    }
+    
+    nav.main-nav button.nav-item {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important; /* Kills browser focus rings */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 4px !important;
+        width: auto !important;
+        gap: 4px !important;
+        color: rgba(255,255,255,0.5) !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    
+    nav.main-nav button.nav-item svg {
+        margin: 0 !important;
+        width: 24px !important;
+        height: 24px !important;
+        filter: none !important;
+    }
+    
+    nav.main-nav button.nav-item span {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+    }
+
+    /* THE EXECUTIONER: Kills the box and lights up the active icon */
+    nav.main-nav button.nav-item.active {
+        color: var(--brand-cyan) !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    nav.main-nav button.nav-item.active svg {
+        filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6)) !important;
+    }
+}

@@ -1315,3 +1315,57 @@ document.addEventListener('DOMContentLoaded', () => {
     attachScrubVortex('hudAgeYrs', 1);   // Swipe changes years by 1
     attachScrubVortex('hudWeight', 0.5); // Swipe changes weight by 0.5kg
 });
+
+// ==========================================
+// KINETIC UI JAVASCRIPT CONTROLLERS
+// ==========================================
+
+// 1. Hardware-Accelerated Number Counter
+function animateValue(obj, start, end, duration) {
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        // Use an ease-out cubic curve for the number rolling
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentVal = (progress * (end - start) + start).toFixed(0);
+        
+        obj.innerHTML = currentVal;
+        
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = end; // Ensure exact final value
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+// 2. Circadian Ambient Lighting
+function setCircadianLighting() {
+    const hour = new Date().getHours();
+    const root = document.documentElement;
+    
+    // Smooth transition between states
+    root.style.setProperty('transition', 'background-color 2s ease, --bg-surface 2s ease');
+
+    if (hour >= 5 && hour < 12) {
+        // Morning: Cyan Tint
+        root.style.setProperty('--bg-surface', 'rgba(10, 25, 35, 0.35)');
+    } else if (hour >= 12 && hour < 17) {
+        // Afternoon: Neutral Deep Blue
+        root.style.setProperty('--bg-surface', 'rgba(15, 15, 25, 0.4)');
+    } else if (hour >= 17 && hour < 21) {
+        // Evening: Blue-Violet
+        root.style.setProperty('--bg-surface', 'rgba(20, 15, 30, 0.4)');
+        root.style.setProperty('--brand-cyan', '#00E5FF'); // Keep primary neon
+    } else {
+        // Night: Deep Navy/Purple
+        root.style.setProperty('--bg-surface', 'rgba(10, 8, 20, 0.45)');
+        root.style.setProperty('--brand-blue', '#5A32FA'); 
+    }
+}
+// Run immediately and check every hour
+setCircadianLighting();
+setInterval(setCircadianLighting, 3600000);
