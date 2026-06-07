@@ -234,11 +234,9 @@
     display: none;
 }
 
+/* 🚀 THE FIX: Removed the forced vertical column lock to allow the Spatial Expansion Grid to morph freely */
 #hudSmartDoseCards {
-    flex-direction: column !important;
-    overflow-x: hidden !important;
     padding-right: 5px !important;
-    gap: 12px !important;
 }
 
 /* Right Column: Expanded Bento Grid (Now a 3D Space) */

@@ -22,16 +22,29 @@ const ClinicalMath = (function() {
             isMax = true;
         }
         
-        let reqVol = drug.conc > 0 ? (targetMg * drug.vol) / drug.conc : drug.vol;
+        let rawVol = drug.conc > 0 ? (targetMg * drug.vol) / drug.conc : drug.vol;
+        let finalVol = rawVol;
         
-        return { reqMg: targetMg, reqVol: reqVol, isMax: isMax };
+        // 🚀 THE FIX: Smart Unit Rounding Engine
+        let unit = getUnit(drug);
+        if (unit === 'Tab' || unit === 'Supp') {
+            finalVol = Math.round(rawVol * 4) / 4; // Nearest 0.25 (Quarter Tablet)
+        } else if (unit === 'Cap' || unit === 'Drops') {
+            finalVol = Math.round(rawVol); // Strictly whole numbers
+        } else {
+            finalVol = parseFloat(rawVol.toFixed(1)); // mL standard 1 decimal place
+        }
+        
+        return { reqMg: targetMg, reqVol: finalVol, isMax: isMax };
     }
 
-    // 2. Unit Resolver
+    // 2. Unit Resolver (Upgraded to detect Caps & Supps safely)
     function getUnit(drug) {
         if (!drug || !drug.name) return 'mL';
         let n = drug.name.toLowerCase();
-        if (n.includes('tablet') || n.includes('suppository')) return 'Tab/Supp';
+        if (n.includes('tab')) return 'Tab';
+        if (n.includes('cap')) return 'Cap';
+        if (n.includes('supp')) return 'Supp';
         if (n.includes('drop')) return 'Drops';
         return 'mL';
     }

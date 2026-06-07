@@ -752,8 +752,358 @@ header {
 }
 
 /* ==========================================
-   KINETIC UI ENGINE & SMART SLEEP PROTOCOL
+   INSTANT DOSE HUD EXPANSION (TRANSPARENT TRUST)
    ========================================== */
+.instant-dose-card {
+    max-height: 108px; /* Locks the card to its standard compact height */
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.instant-dose-card:hover {
+    max-height: 200px; /* Expands smoothly to reveal the math overlay */
+    transform: scale(1.03) translateY(-2px); /* Moves hover physics to CSS */
+}
+
+.math-hud-layer {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top: 1px dashed rgba(255,255,255,0.1);
+    margin-top: 12px;
+    padding-top: 12px;
+}
+
+.instant-dose-card:hover .math-hud-layer {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ==========================================
+   LIVING WORKSPACE: KINETIC GLOWS & PLASMA SWEEPS
+   ========================================== */
+/* 1. The 8-Second Ambient Breathing Heartbeat */
+@keyframes ambientBreathe {
+    0%, 100% { filter: drop-shadow(0 0 4px var(--card-color)); opacity: 0.9; }
+    50% { filter: drop-shadow(0 0 15px var(--card-color)); opacity: 1; transform: scale(1.02); }
+}
+.breathing-digit {
+    display: inline-block;
+    animation: ambientBreathe 8s ease-in-out infinite;
+    will-change: filter, transform;
+    transform-origin: left bottom; /* Keeps the number grounded while it breathes */
+}
+
+/* 2. The Color-Matched Plasma Sweep (Fires on Calculation) */
+@keyframes plasmaSweepAnim {
+    0% { transform: translateX(-100%); opacity: 0; }
+    10% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+}
+.plasma-sweep-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 10;
+    border-radius: 3px 3px 0 0;
+    animation: plasmaSweepAnim 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ==========================================
+   FORMULARY ACCORDION PHYSICS & SPOTLIGHT SEARCH
+   ========================================== */
+/* Horizontal Scroll Mode: Show Top 10 Quick Doses, Hide Dividers & Everything Else */
+.formulary-collapsed .formulary-category-divider { display: none !important; }
+.formulary-collapsed .not-quick-dose { display: none !important; }
+
+/* Expanded Grid Mode: The Accordion Logic */
+.formulary-expanded .hidden-by-accordion { display: none !important; }
+.hidden-by-search { display: none !important; }
+
+/* Clickable Divider Styling */
+.formulary-expanded .formulary-category-divider {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    padding: 8px 15px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.formulary-expanded .formulary-category-divider:hover {
+    background: rgba(0,0,0,0.4);
+}
+
+/* ==========================================
+   CALCULATOR UI: PREMIUM GLASS AESTHETIC
+   ========================================== */
+.calc-result-box {
+    margin-top: 15px; 
+    padding: 20px; 
+    background: rgba(0, 0, 0, 0.4) !important; 
+    backdrop-filter: blur(25px) !important; 
+    -webkit-backdrop-filter: blur(25px) !important; 
+    border: 1px solid rgba(0, 229, 255, 0.2) !important; 
+    border-radius: 16px !important; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0, 229, 255, 0.05) !important;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.calc-digit-display {
+    font-size: 3.5rem; 
+    font-weight: 900; 
+    color: var(--brand-cyan); 
+    line-height: 1; 
+    margin: 10px 0; 
+    font-family: 'SF Mono', 'Roboto Mono', monospace;
+    text-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+}
+
+.calc-unit-label {
+    font-size: 1.5rem; 
+    color: var(--text-main); 
+    font-family: sans-serif;
+    margin-left: 5px;
+}
+
+/* ==========================================
+   LIGHTNING TOGGLE & TELEMETRY RING
+   ========================================== */
+.lightning-wrapper {
+    position: relative;
+    width: 65px;
+    height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* The SVG Ring */
+.telemetry-ring-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: rotateRing 20s linear infinite;
+}
+
+.dashed-ring {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 1;
+    stroke-dasharray: 4 6;
+}
+
+.ring-text {
+    font-size: 9.5px;
+    font-family: 'SF Mono', 'Roboto Mono', monospace;
+    fill: rgba(255, 255, 255, 0.3);
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+/* The Lightning Bolt */
+.lightning-bolt-svg {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    z-index: 2;
+}
+
+/* The Lightning Bolt (Base State) */
+.bolt-path {
+    fill: rgba(255, 255, 255, 0.15); /* Dim solid color by default */
+    transition: all 0.3s ease;
+}
+
+/* ==========================================
+   STATE: IGNITED (Weight Entered)
+   ========================================== */
+.lightning-wrapper.is-ignited {
+    background: rgba(250, 204, 21, 0.08); /* Yellow tint */
+    border-color: rgba(250, 204, 21, 0.3);
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.15) inset;
+}
+
+.lightning-wrapper.is-ignited .dashed-ring {
+    stroke: rgba(250, 204, 21, 0.6);
+}
+
+.lightning-wrapper.is-ignited .ring-text {
+    fill: rgba(250, 204, 21, 0.9);
+    text-shadow: 0 0 5px rgba(250, 204, 21, 0.4);
+}
+
+/* ==========================================
+   STATE: IGNITED (High Voltage Sparks & Strobe)
+   ========================================== */
+.lightning-wrapper.is-ignited {
+    background: rgba(250, 204, 21, 0.08);
+    border-color: rgba(250, 204, 21, 0.3);
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.15) inset;
+}
+
+.lightning-wrapper.is-ignited .dashed-ring {
+    stroke: rgba(250, 204, 21, 0.6);
+}
+
+.lightning-wrapper.is-ignited .ring-text {
+    fill: rgba(250, 204, 21, 0.9);
+    text-shadow: 0 0 5px rgba(250, 204, 21, 0.4);
+}
+
+/* ⚡ 1. HIGH VOLTAGE ERRATIC STROBE ⚡ */
+.lightning-wrapper.is-ignited .bolt-path {
+    fill: #facc15;
+    stroke: none; /* Kills any leftover outline code */
+    animation: highVoltageStrobe 2.5s infinite;
+}
+
+@keyframes highVoltageStrobe {
+    0%, 100% { filter: drop-shadow(0 0 10px #facc15); opacity: 1; transform: scale(1); }
+    38% { filter: drop-shadow(0 0 5px #facc15); opacity: 0.9; }
+    40% { filter: drop-shadow(0 0 30px #ffffff); fill: #ffffff; opacity: 1; transform: scale(1.1); } /* White Hot Flash */
+    42% { filter: none; opacity: 0.2; fill: #facc15; transform: scale(0.95); } /* Power Cut */
+    44% { filter: drop-shadow(0 0 20px #facc15); opacity: 1; transform: scale(1.05); } /* Power Surge */
+    70% { filter: drop-shadow(0 0 8px #facc15); opacity: 0.9; transform: scale(1); }
+    72% { filter: drop-shadow(0 0 20px #ffffff); fill: #ffffff; opacity: 1; } /* Secondary Snap */
+    74% { fill: #facc15; }
+}
+
+/* ✨ 2. SHOOTING ARC SPARKS ✨ */
+.lightning-wrapper.is-ignited::before,
+.lightning-wrapper.is-ignited::after {
+    content: '';
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    width: 2px;
+    height: 10px;
+    background: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #facc15, 0 0 5px #facc15;
+    opacity: 0;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.lightning-wrapper.is-ignited::before {
+    animation: shootSparkLeft 2.5s infinite ease-out 0.9s;
+}
+
+.lightning-wrapper.is-ignited::after {
+    animation: shootSparkRight 2.5s infinite ease-out 1.8s;
+}
+
+@keyframes shootSparkLeft {
+    0% { transform: translate(-50%, -50%) rotate(0deg) scale(1.5); opacity: 1; }
+    20% { transform: translate(-30px, -25px) rotate(-55deg) scale(0); opacity: 0; box-shadow: 0 0 20px #facc15; }
+    100% { opacity: 0; }
+}
+
+@keyframes shootSparkRight {
+    0% { transform: translate(-50%, -50%) rotate(0deg) scale(1.5); opacity: 1; }
+    20% { transform: translate(30px, 15px) rotate(70deg) scale(0); opacity: 0; box-shadow: 0 0 20px #facc15; }
+    100% { opacity: 0; }
+}
+
+/* Interactions */
+.lightning-wrapper:hover.is-ignited {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.2) inset, 0 0 10px rgba(250, 204, 21, 0.2);
+}
+.lightning-wrapper:active.is-ignited {
+    transform: scale(0.95);
+}
+
+/* Base Ring Animation */
+@keyframes rotateRing {
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================
+   EXPLORER MODE: CARD ACTIVE STATE
+   ========================================== */
+.hero-layer-1 {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-layer-1.explorer-active {
+    border-color: rgba(167, 139, 250, 0.6) !important;
+    box-shadow: 0 0 30px rgba(167, 139, 250, 0.15), inset 0 0 20px rgba(167, 139, 250, 0.05) !important;
+}
+
+/* ==========================================
+   GROWTH SNAPSHOT: CLINICAL PALETTE & STATES
+   ========================================== */
+:root {
+    --sev-severe: #ef4444;   /* Red */
+    --sev-moderate: #f97316; /* Orange */
+    --sev-mild: #eab308;     /* Yellow */
+    --sev-normal: #10b981;   /* Emerald Green */
+    --sev-high: #3b82f6;     /* Blue */
+}
+
+/* Base Transitions */
+.growth-state-severe, .growth-state-moderate, .growth-state-mild, .growth-state-normal, .growth-state-high {
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* --- STATE: SEVERE (SAM) --- */
+.growth-state-severe {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(0,0,0,0) 100%);
+}
+.growth-state-severe #liveZScore, .growth-state-severe .sparkline-path, .growth-state-severe .sparkline-dot {
+    color: var(--sev-severe);
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+}
+.growth-state-severe #liveSeverityBadge {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--sev-severe);
+}
+
+/* --- STATE: MODERATE (MAM) --- */
+.growth-state-moderate { border-color: rgba(249, 115, 22, 0.3) !important; }
+.growth-state-moderate #liveZScore, .growth-state-moderate .sparkline-path, .growth-state-moderate .sparkline-dot { color: var(--sev-moderate); }
+.growth-state-moderate #liveSeverityBadge { background: rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.3); color: var(--sev-moderate); }
+
+/* --- STATE: MILD --- */
+.growth-state-mild { border-color: rgba(234, 179, 8, 0.2) !important; }
+.growth-state-mild #liveZScore, .growth-state-mild .sparkline-path, .growth-state-mild .sparkline-dot { color: var(--sev-mild); }
+.growth-state-mild #liveSeverityBadge { background: rgba(234, 179, 8, 0.1); border-color: rgba(234, 179, 8, 0.3); color: var(--sev-mild); }
+
+/* --- STATE: NORMAL --- */
+.growth-state-normal { border-color: rgba(16, 185, 129, 0.2) !important; }
+.growth-state-normal #liveZScore, .growth-state-normal .sparkline-path, .growth-state-normal .sparkline-dot { color: var(--sev-normal); }
+.growth-state-normal #liveSeverityBadge { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--sev-normal); }
+
+/* --- STATE: HIGH --- */
+.growth-state-high { border-color: rgba(59, 130, 246, 0.2) !important; }
+.growth-state-high #liveZScore, .growth-state-high .sparkline-path, .growth-state-high .sparkline-dot { color: var(--sev-high); }
+.growth-state-high #liveSeverityBadge { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); color: var(--sev-high); }
+
+/* =========================================================
+   🛑 CRITICAL CORTEX ENGINE 🛑
+   DO NOT EDIT, OVERRIDE, OR NEST ITEMS INSIDE THIS BLOCK.
+   THESE CLASSES CONTROL SPATIAL PHYSICS & SMART SLEEP.
+   NEVER APPLY BACKGROUND BLURS DIRECTLY TO MAIN CARDS.
+   ========================================================= */
 :root {
     --kinetic-duration: 0.4s;
     --kinetic-delay: 0.4s;

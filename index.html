@@ -522,26 +522,96 @@
             <!-- NEW: HERO DOSE ENGINE (Sits above the Bento Grid) -->
             <div class="cortex-hero-card" id="heroDoseEngine">
                 
-                <!-- LAYER 1: INSTANT DOSE DECK (Always visible) -->
-                <div id="layer1InstantDoses" class="hero-layer-1" onclick="toggleDoseLayer2()">
-                    <div class="hero-header">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="hero-icon">⚡</div>
+                <!-- LAYER 1: INSTANT DOSE COCKPIT -->
+                <div id="layer1InstantDoses" class="hero-layer-1">
+                    <div class="hero-header" style="margin-bottom: 15px; position: relative; z-index: 10;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            
+                            <!-- 🚀 THE ANIMATED LIGHTNING TOGGLE -->
+                            <div id="lightningToggleBtn" class="lightning-wrapper is-null" onclick="toggleFormularyExplorer()" title="Tap to expand Explorer">
+                                <!-- Rotating Telemetry Ring & Text -->
+                                <svg class="telemetry-ring-svg" viewBox="0 0 100 100">
+                                    <defs>
+                                        <path id="circlePath" d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0" />
+                                    </defs>
+                                    <circle cx="50" cy="50" r="35" class="dashed-ring" />
+                                    <text class="ring-text">
+                                        <textPath href="#circlePath" startOffset="0%">
+                                            • TAP TO EXPLORE • TAP TO EXPLORE
+                                        </textPath>
+                                    </text>
+                                </svg>
+                                <!-- The Lightning Bolt -->
+                                <svg class="lightning-bolt-svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path class="bolt-path" d="M11.201 1.5l-6.8 10.4a1 1 0 0 0 .837 1.547h4.686l-1.124 9.058a1 1 0 0 0 1.838.59l6.8-10.4a1 1 0 0 0-.837-1.547h-4.686l1.124-9.058a1 1 0 0 0-1.838-.59z" />
+                                </svg>
+                            </div>
+                            
                             <div>
-                                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main);">Instant Doses</h3>
-                                <span style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Auto-calculated based on weight</span>
+                                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main); font-weight: 800;">Instant Doses</h3>
+                                <span id="instantDoseSubtitle" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Awaiting Weight...</span>
                             </div>
                         </div>
-                        <div class="expand-hint">Full Formulary ⌄</div>
                     </div>
                     
-                    <!-- Top 5 Auto Doses will inject here -->
-                    <div id="hudSmartDoseCards" style="display: flex; overflow-x: auto; gap: 10px; padding: 12px 0 5px 0; scrollbar-width: none;">
-                        <div class="hud-empty-state" style="width: 100%; border: 1px dashed var(--border-soft); text-align: left; padding: 15px;">
-                            Enter Weight to unlock Instant Doses...
+                    <div id="zoneAQuickMode" style="transition: opacity 0.3s ease;">
+                        <div id="hudSmartDoseCards" style="display: flex; overflow-x: auto; gap: 12px; padding: 12px 0; scrollbar-width: none;">
+                            <div class="hud-empty-state">Scrub Weight to unlock...</div>
                         </div>
                     </div>
-                </div>
+
+                    <div id="zoneBExplorerMode" style="display: none; opacity: 0; transition: opacity 0.3s ease; margin-top: 10px;">
+                        
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="hudGlobalSearch" oninput="runGlobalSearch(this.value)" placeholder="🔍 Search Formulary (e.g., Amox...)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 229, 255, 0.3); color: white; border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; transition: all 0.3s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
+                        </div>
+
+                        <div id="explorerDropdownContainer" style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 0.7rem; color: #a78bfa; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Select Category</label>
+                                <select id="hudQuickCat" onchange="populateHudDrugs()" style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(167, 139, 250, 0.3); color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
+                                    <option value="">-- Loading Categories... --</option>
+                                </select>
+                            </div>
+                            
+                            <div style="color: rgba(255,255,255,0.2); font-size: 1.2rem; margin-top: 15px; font-weight: 300;">➔</div>
+                            
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 0.7rem; color: #a78bfa; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Select Drug</label>
+                                <select id="hudQuickForm" onchange="runHudQuickDose()" style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(167, 139, 250, 0.3); color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
+                                    <option value="">-- Select Drug --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="hudQuickDoseRes"></div>
+                        
+                        <div id="trustBadgesFooter" style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); gap: 10px;">
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
+                                <div style="font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(216, 180, 254, 0.5));">🛡️</div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: #d8b4fe;">WHO & Standard Doses</div>
+                                    <div style="font-size: 0.6rem; color: rgba(255,255,255,0.5); line-height: 1.2; margin-top: 2px;">Evidence-based math</div>
+                                </div>
+                            </div>
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
+                                <div style="font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.5));">🧠</div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: #c084fc;">Smart Suggestions</div>
+                                    <div style="font-size: 0.6rem; color: rgba(255,255,255,0.5); line-height: 1.2; margin-top: 2px;">AI-powered caps</div>
+                                </div>
+                            </div>
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
+                                <div style="font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(244, 114, 182, 0.5));">❤️</div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: #f472b6;">Safe & Reliable</div>
+                                    <div style="font-size: 0.6rem; color: rgba(255,255,255,0.5); line-height: 1.2; margin-top: 2px;">Pediatric verified</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> 
 
                 <!-- LAYER 2: FULL CALCULATOR (Hidden by default) -->
                 <div id="layer2FullCalc" class="hero-layer-2 cortex-collapsed">
@@ -575,14 +645,60 @@
             <!-- 2. BENTO COMMAND GRID -->
             <div class="cortex-bento-grid">
 
-                <div class="bento-card card-growth" id="bentoGrowth">
-                    <div class="card-header"><div class="card-icon" style="background: rgba(0, 250, 154, 0.15); color: var(--success);">📈</div><div class="card-title-group"><h3>Growth Snapshot</h3><span class="card-subtitle">WHO Standards</span></div></div>
-                    <div class="card-body"><div id="hudGrowthOutput" class="hud-empty-state" style="border:none;">Enter Wt/Ht & Age to view triage.</div></div>
+                <div id="growthSnapshotCard" class="bento-card growth-state-normal" style="position: relative; overflow: hidden; padding: 20px;">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Weight for Age (WFA)</div>
+                            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 4px;">
+                                <span id="liveZScore" style="font-family: 'SF Mono', ui-monospace, monospace; font-size: 3.5rem; font-weight: 800; line-height: 1; letter-spacing: -2px; transition: color 0.3s ease;">-0.00</span>
+                                <span style="font-size: 1.2rem; font-weight: 800; color: var(--text-muted);">SD</span>
+                            </div>
+                        </div>
+                        
+                        <div style="width: 60px; height: 30px; opacity: 0.8;">
+                            <svg viewBox="0 0 100 40" style="width: 100%; height: 100%; overflow: visible;">
+                                <path class="sparkline-path" d="M0,35 L25,28 L50,25 L75,15 L100,5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle class="sparkline-dot" cx="100" cy="5" r="4" fill="currentColor" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <div id="liveSeverityBadge" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                            <span id="liveSeverityIcon" style="font-size: 0.9rem;">✅</span>
+                            <span id="liveSeverityText" style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Normal Growth</span>
+                        </div>
+                    </div>
+
+                    <div style="position: relative; width: 100%; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 800; margin-bottom: 6px;">
+                            <span>-6 SD</span>
+                            <span>-3</span>
+                            <span>-2</span>
+                            <span>-1</span>
+                            <span>+2</span>
+                            <span>+3 SD</span>
+                        </div>
+                        
+                        <div style="display: flex; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden;">
+                            <div style="width: 33.33%; background: var(--sev-severe); opacity: 0.4;"></div>  <div style="width: 11.11%; background: var(--sev-moderate); opacity: 0.4;"></div> <div style="width: 11.11%; background: var(--sev-mild); opacity: 0.4;"></div>     <div style="width: 33.33%; background: var(--sev-normal); opacity: 0.4;"></div>   <div style="width: 11.11%; background: var(--sev-high); opacity: 0.4;"></div>     </div>
+
+                        <div id="liveScaleMarker" style="position: absolute; top: 18px; left: 66.66%; width: 14px; height: 14px; background: var(--sev-normal); border: 2px solid #1e293b; border-radius: 50%; transform: translateX(-50%); transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px var(--sev-normal);"></div>
+                    </div>
                 </div>
 
-                <div class="bento-card card-nutrition" id="bentoNutrition">
-                    <div class="card-header"><div class="card-icon" style="background: rgba(255, 59, 59, 0.15); color: var(--danger);">🍎</div><div class="card-title-group"><h3>Nutrition Status</h3><span class="card-subtitle">Anthropometry</span></div></div>
-                    <div class="card-body"><div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Enter HC & MAC for alerts.</div></div>
+                <div class="bento-card card-nutrition" id="bentoNutrition" style="transition: all 0.4s ease;">
+                    <div class="card-header">
+                        <div id="nutriCardIcon" class="card-icon" style="background: rgba(255, 255, 255, 0.1); color: var(--text-muted); transition: all 0.4s ease;">🛡️</div>
+                        <div class="card-title-group">
+                            <h3>Nutrition Status</h3>
+                            <span class="card-subtitle">Acute Triage & Neurology</span>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 15px;">
+                        <div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Open top drawer (⌄) to enter HC & MAC.</div>
+                    </div>
                 </div>
 
                 <div class="bento-card card-vitals" id="bentoVitals">
@@ -1933,43 +2049,32 @@
 </script>
 
 <script>
-// 1. Fix the Frozen Dropdown Drawer
-window.toggleCortexDrawer = function() {
-    const drawer = document.getElementById('cortexDrawer');
-    const chevron = document.querySelector('.anchor-chevron');
-    if(drawer && drawer.classList.contains('cortex-collapsed')) {
-        drawer.classList.remove('cortex-collapsed');
-        if(chevron) chevron.style.transform = 'rotate(180deg)';
-    } else if (drawer) {
-        drawer.classList.add('cortex-collapsed');
-        if(chevron) chevron.style.transform = 'rotate(0deg)';
-    }
-};
-
 // ==========================================
 // KINETIC CORTEX: DIRECT SCRUB TELEMETRY
 // ==========================================
 
-// 🚀 THE FIX: Bulletproof inline drawer physics
-function toggleCortexDrawer() {
+// 🚀 THE FIX: Unified & Bulletproof Drawer Physics
+window.toggleCortexDrawer = function() {
     const drawer = document.getElementById('cortexDrawer');
     const chevron = document.querySelector('.anchor-chevron');
     if (!drawer) return;
     
     if (drawer.classList.contains('cortex-collapsed')) {
+        // Open Drawer (Overrides inline hidden styles)
         drawer.style.maxHeight = '200px';
         drawer.style.opacity = '1';
         drawer.style.padding = '0 20px 20px 20px';
         drawer.classList.remove('cortex-collapsed');
         if (chevron) chevron.style.transform = 'rotate(180deg)';
     } else {
+        // Close Drawer
         drawer.style.maxHeight = '0px';
         drawer.style.opacity = '0';
         drawer.style.padding = '0 20px';
         drawer.classList.add('cortex-collapsed');
         if (chevron) chevron.style.transform = 'rotate(0deg)';
     }
-}
+};
 
 // 🚀 CNS AUTO-APPROXIMATION ENGINE (Upgraded)
 function autoApproximateVitals(totalMonths) {
@@ -2248,8 +2353,10 @@ function runCortexTelemetry(totalMonths) {
     }
 }
 
-// 4. HERO DOSE ENGINE (Spatial Glass + Randomization)
+// 4. HERO DOSE ENGINE (Spatial Glass & Kinetic UI)
 function renderInstantDoses(weight) {
+    // Trigger the ignition check immediately every time weight is scrubbed
+    if (typeof checkLightningIgnition === 'function') checkLightningIgnition(weight);
     const container = document.getElementById('hudSmartDoseCards');
     const wt = parseFloat(weight);
 
@@ -2258,52 +2365,212 @@ function renderInstantDoses(weight) {
         return;
     }
 
-    // Master Pool of 10 High-Yield Pediatric OPD Drugs
-    const dosePool = [
-        { name: "Paracetamol", dose: "15 mg/kg", form: "250mg/5mL", calc: ((15 * wt * 5) / 250).toFixed(1), unit: "mL", freq: "Q6H PRN", color: "var(--brand-cyan)" },
-        { name: "Ibuprofen", dose: "10 mg/kg", form: "100mg/5mL", calc: ((10 * wt * 5) / 100).toFixed(1), unit: "mL", freq: "Q8H PRN", color: "var(--warning)" },
-        { name: "Amoxicillin", dose: "40 mg/kg/day", form: "200mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" },
-        { name: "Amox-Clav", dose: "40 mg/kg/day", form: "228mg/5mL", calc: ((40 * wt * 5 / 200) / 2).toFixed(1), unit: "mL", freq: "BD", color: "var(--success)" },
-        { name: "Azithromycin", dose: "10 mg/kg", form: "200mg/5mL", calc: ((10 * wt * 5) / 200).toFixed(1), unit: "mL", freq: "OD", color: "var(--brand-pink)" },
-        { name: "Ondansetron", dose: "0.15 mg/kg", form: "2mg/5mL", calc: ((0.15 * wt * 5) / 2).toFixed(1), unit: "mL", freq: "STAT", color: "#a855f7" }, 
-        { name: "Domperidone", dose: "0.2 mg/kg", form: "1mg/1mL", calc: (0.2 * wt).toFixed(1), unit: "mL", freq: "TDS", color: "#a855f7" },
-        { name: "Cetirizine", dose: "0.25 mg/kg", form: "5mg/5mL", calc: ((0.25 * wt * 5) / 5).toFixed(1), unit: "mL", freq: "OD HS", color: "var(--brand-blue)" },
-        { name: "Levosalbutamol", dose: "0.05 mg/kg", form: "1mg/5mL", calc: ((0.05 * wt * 5) / 1).toFixed(1), unit: "mL", freq: "TDS", color: "#f97316" },
-        { name: "Mefenamic Acid", dose: "8 mg/kg", form: "50mg/5mL", calc: ((8 * wt * 5) / 50).toFixed(1), unit: "mL", freq: "Q8H PRN", color: "var(--warning)" }
-    ];
+    let activeDB = [];
+    if (typeof window.getUnifiedDB === 'function') activeDB = window.getUnifiedDB();
+    else if (window.drugsDb) activeDB = window.drugsDb;
 
-    // Randomize the pool and slice out 4 cards
-    const shuffledPool = dosePool.sort(() => 0.5 - Math.random());
-    const selectedDoses = shuffledPool.slice(0, 4);
+    if (!activeDB || activeDB.length === 0) return;
 
-    // 🚀 THE FIX: Insert the scanning line immediately, then wait 400ms before rendering the cards
+    // 🚀 DYNAMIC GENERATION: Map data and identify ALL Categories
+    let mappedPool = activeDB.map(drug => {
+        let computed = { reqMg: 0, reqVol: 0 };
+        let unit = 'mL';
+        
+        if (typeof ClinicalMath !== 'undefined') {
+            computed = ClinicalMath.computeDose(drug, wt) || computed;
+            unit = ClinicalMath.getUnit(drug);
+        }
+
+        let color = "var(--text-main)";
+        let catName = "💊 Other";
+        let catId = drug.category || "other";
+
+        // 🚀 THE FIX 1: Restore all missing Database Categories & Colors
+        if (catId === 'antipyretics') { color = "var(--brand-cyan)"; catName = "🔥 Fever & Pain"; }
+        else if (catId === 'respiratory') { color = "#f97316"; catName = "🫁 Respiratory & Allergy"; }
+        else if (catId === 'antibiotics') { color = "var(--success)"; catName = "🦠 Antibiotics"; }
+        else if (catId === 'git') { color = "#a855f7"; catName = "🍎 GI & Antiemetics"; }
+        else if (catId === 'antihistamines') { color = "var(--brand-blue)"; catName = "🤧 Antihistamines"; }
+        else if (catId === 'emergency') { color = "var(--danger)"; catName = "🚨 Emergency"; }
+        else if (catId === 'neurology') { color = "#8b5cf6"; catName = "🧠 Neurology"; }
+        else if (catId === 'vitamins') { color = "#eab308"; catName = "💊 Vitamins & Minerals"; }
+        else if (catId === 'topical') { color = "#14b8a6"; catName = "🧴 Topical & Drops"; }
+        else if (catId === 'musclerelaxants') { color = "#64748b"; catName = "💉 Muscle Relaxants"; }
+
+        let doseStr = `${drug.doseMg} ${drug.doseType === 'perDay' ? 'mg/kg/day' : (drug.doseType === 'fixed' ? 'mg stat' : 'mg/kg')}`;
+        let formStr = drug.conc ? `${drug.conc}mg/${drug.vol}${unit.replace('s','')}` : `${drug.doseMg}mg`;
+
+        return {
+            name: drug.name, dose: doseStr, form: formStr, calc: computed.reqVol, targetMg: computed.reqMg.toFixed(1),
+            unit: unit, freq: drug.defaultFreq || "OD", color: color, catId: catId, catName: catName,
+            isCustom: drug.isCustom || false 
+        };
+    });
+
+    // 🚀 THE FIX 2: Smart Randomizer for the "Quick 10" Horizontal Scroll
+    const opdKeywords = ['paracetamol', 'ibuprofen', 'amox', 'azithromycin', 'ondansetron', 'domperidone', 'cetirizine', 'cefixime', 'salbutamol', 'mefenamic'];
+    let highYieldPool = mappedPool.filter(d => opdKeywords.some(k => d.name.toLowerCase().includes(k)));
+    
+    // Shuffle the high-yield drugs and slice out 10
+    highYieldPool = highYieldPool.sort(() => 0.5 - Math.random());
+    const quickDoseNames = new Set(highYieldPool.slice(0, 10).map(d => d.name));
+
+    if (!container.classList.contains('formulary-expanded')) container.classList.add('formulary-collapsed');
     container.innerHTML = '<div class="cortex-scan-line"></div>'; 
     
     setTimeout(() => {
         let html = '';
-        selectedDoses.forEach((d, index) => {
-            // 🚀 THE FIX: Dynamically add cortex-stagger-1, cortex-stagger-2, etc.
-            const staggerClass = `cortex-stagger-${index + 1}`; 
-            
-            html += `
-            <div class="${staggerClass}" style="min-width: 155px; background: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-top: 1px solid rgba(255,255,255,0.2) !important; border-radius: 14px !important; padding: 14px !important; border-left: 4px solid ${d.color} !important; flex-shrink: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.3) !important; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.transform='scale(1.03) translateY(-2px)'" onmouseout="this.style.transform='none'">
-                <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.2); letter-spacing: 0.5px;">${d.name}</div>
-                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6) !important; font-weight: 600; margin-bottom: 12px;">${d.dose} • ${d.form}</div>
-                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div>
-                        <span style="font-size: 1.9rem; font-weight: 900; color: ${d.color} !important; line-height: 1; text-shadow: 0 0 10px ${d.color};">${d.calc}</span>
-                        <span style="font-size: 0.8rem; color: rgba(255,255,255,0.8) !important; font-weight: 700;">${d.unit}</span>
-                    </div>
-                    <div style="font-size: 0.7rem; font-weight: 800; color: ${d.color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${d.freq}</div>
-                </div>
-            </div>`;
+        
+        // 🚀 THE FIX 3: Push ALL categories through the render engine
+        const categoryOrder = ['antipyretics', 'respiratory', 'antibiotics', 'git', 'antihistamines', 'neurology', 'vitamins', 'topical', 'emergency', 'musclerelaxants', 'other'];
+        
+        categoryOrder.forEach(catId => {
+            let catDrugs = mappedPool.filter(d => d.catId === catId);
+            if (catDrugs.length > 0) {
+                // Alphabetize the folders internally
+                catDrugs.sort((a,b) => a.name.localeCompare(b.name));
+                
+                let firstDrug = catDrugs[0];
+                html += `<div class="formulary-category-divider" data-cat="${catId}" onclick="toggleCategoryAccordion('${catId}')" style="border-bottom: 1px dashed ${firstDrug.color}; color: ${firstDrug.color}; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                    <span>${firstDrug.catName}</span>
+                    <span class="cat-chevron" id="chevron-${catId}" style="font-size: 1.2rem; font-weight: 900; transition: transform 0.3s ease;">+</span>
+                </div>`;
+                
+                catDrugs.forEach((d, index) => {
+                    const staggerClass = `cortex-stagger-${(index % 4) + 1}`;
+                    const displayFreq = typeof window.translateFreqToLocal === 'function' ? window.translateFreqToLocal(d.freq) : d.freq;
+                    let badgeHtml = d.isCustom ? `<div style="position: absolute; top: -10px; right: -10px; background: #e11d48; color: white; font-size: 0.55rem; font-weight: 900; padding: 4px 8px; border-radius: 10px; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(225, 29, 72, 0.4); z-index: 10; border: 1px solid rgba(255,255,255,0.2);">LOCAL</div>` : '';
+
+                    // 🚀 THE FIX 4: Tag the quick doses and scramble their visual scroll position using CSS Flex Order
+                    let isQuick = quickDoseNames.has(d.name);
+                    let quickClass = isQuick ? 'is-quick-dose' : 'not-quick-dose';
+                    let scrambleOrder = isQuick ? Math.floor(Math.random() * 10) : 0;
+
+                    html += `
+                    <div class="${staggerClass} instant-dose-card cat-card-${catId} hidden-by-accordion ${quickClass}" data-searchname="${d.name.toLowerCase()}" style="order: ${scrambleOrder}; --card-color: ${d.color}; position: relative; min-width: 155px; max-width: 175px; background: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-top: 1px solid rgba(255,255,255,0.2) !important; border-radius: 14px !important; padding: 14px !important; border-left: 4px solid ${d.color} !important; flex-shrink: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.3) !important;">
+                        
+                        ${badgeHtml}
+                        <div class="plasma-sweep-line" style="background: linear-gradient(90deg, transparent, ${d.color}, transparent); animation-delay: ${(index * 0.05) + 0.3}s;"></div>
+
+                        <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.2); letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${d.name}">${d.name}</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6) !important; font-weight: 600; margin-bottom: 12px;">${d.dose} • ${d.form}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div>
+                                <span class="breathing-digit" style="font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace; font-size: 2.1rem; font-weight: 700; color: #f8fafc !important; line-height: 1; letter-spacing: -1.5px; text-shadow: none;">${d.calc}</span>
+                                <span style="font-size: 0.85rem; color: ${d.color} !important; font-weight: 800; margin-left: 4px;">${d.unit}</span>
+                            </div>
+                            <div style="font-size: 0.7rem; font-weight: 800; color: ${d.color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${displayFreq}</div>
+                        </div>
+
+                        <div class="math-hud-layer">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: rgba(255,255,255,0.5); font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">
+                                <span>Target Mass</span><span>Formula</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #fff; font-weight: 800;">
+                                <span style="color: ${d.color};">${d.targetMg} mg</span><span>${wt} kg × ${parseFloat(d.dose)}</span>
+                            </div>
+                        </div>
+
+                    </div>`;
+                });
+            }
         });
         container.innerHTML = html;
     }, 400); 
 }
 
-// 🚀 MASTER OVERRIDE: Hijack the old flat-web app.js calls to use our new Spatial Engine!
-window.renderHudSmartCards = renderInstantDoses;
+// 🚀 NEW ACCORDION TOGGLE ENGINE
+window.toggleCategoryAccordion = function(catId) {
+    const container = document.getElementById('hudSmartDoseCards');
+    if(container.classList.contains('formulary-collapsed')) return;
+
+    const cards = document.querySelectorAll(`.cat-card-${catId}`);
+    const chevron = document.getElementById(`chevron-${catId}`);
+    let isOpening = false;
+
+    cards.forEach(card => {
+        if(card.classList.contains('hidden-by-accordion')) {
+            card.classList.remove('hidden-by-accordion');
+            isOpening = true;
+        } else {
+            card.classList.add('hidden-by-accordion');
+        }
+    });
+
+    if(chevron) {
+        chevron.innerText = isOpening ? '−' : '+';
+    }
+};
+
+// 🚀 UPGRADED SPOTLIGHT SEARCH (Auto-opens accordions)
+window.filterFormulary = function(query) {
+    let q = query.toLowerCase();
+    let cards = document.querySelectorAll('.instant-dose-card');
+    
+    cards.forEach(card => {
+        if (card.getAttribute('data-searchname').includes(q)) {
+            card.classList.remove('hidden-by-search');
+            // Auto-open accordion if user is actively searching
+            if(q !== '') card.classList.remove('hidden-by-accordion');
+        } else {
+            card.classList.add('hidden-by-search');
+        }
+    });
+
+    // Update chevrons to minus if searching, reset to plus if cleared
+    if(q !== '') {
+        document.querySelectorAll('.cat-chevron').forEach(chev => chev.innerText = '−');
+    } else {
+        document.querySelectorAll('.instant-dose-card').forEach(card => card.classList.add('hidden-by-accordion'));
+        document.querySelectorAll('.cat-chevron').forEach(chev => chev.innerText = '+');
+    }
+
+    // Hide Category Dividers if all their cards are filtered out
+    let dividers = document.querySelectorAll('.formulary-category-divider');
+    dividers.forEach(div => {
+        let catId = div.getAttribute('data-cat');
+        let visibleCards = document.querySelectorAll(`.cat-card-${catId}:not(.hidden-by-search)`);
+        if(visibleCards.length > 0) div.classList.remove('hidden-by-search');
+        else div.classList.add('hidden-by-search');
+    });
+};
+
+// 🚀 UPGRADED TOGGLE ENGINE (Now reveals the Search bar)
+window.toggleFormularyGrid = function() {
+    const container = document.getElementById('hudSmartDoseCards');
+    const btn = document.getElementById('formularyToggleBtn');
+    const searchInput = document.getElementById('formularySearch');
+    if(!container || !btn) return;
+    
+    if(container.classList.contains('formulary-collapsed')) {
+        container.classList.remove('formulary-collapsed');
+        container.classList.add('formulary-expanded');
+        btn.innerHTML = 'COLLAPSE GRID ✖';
+        btn.style.background = 'rgba(255, 51, 102, 0.15)'; 
+        btn.style.borderColor = 'rgba(255, 51, 102, 0.4)';
+        btn.style.color = '#ff3366';
+        
+        // Show Search Bar
+        if(searchInput) {
+            searchInput.style.display = 'block';
+            setTimeout(() => searchInput.focus(), 300);
+        }
+    } else {
+        container.classList.remove('formulary-expanded');
+        container.classList.add('formulary-collapsed');
+        btn.innerHTML = 'EXPAND GRID ⛶';
+        btn.style.background = 'rgba(0, 229, 255, 0.15)'; 
+        btn.style.borderColor = 'rgba(0, 229, 255, 0.4)';
+        btn.style.color = 'var(--brand-cyan)';
+        
+        // Hide & Reset Search Bar
+        if(searchInput) {
+            searchInput.style.display = 'none';
+            searchInput.value = '';
+            filterFormulary(''); 
+        }
+    }
+};
 
 // 5. NIS VACCINE TELEMETRY (3-Layer Architecture)
 function renderVaccinesDue(totalMonths) {
@@ -2383,77 +2650,40 @@ function renderVaccinesDue(totalMonths) {
     vaxContainer.innerHTML = html;
 }
 
-// 6. GROWTH SNAPSHOT TELEMETRY (WFA Z-Score UI)
-function renderGrowthSnapshot(totalMonths, weightInKg) {
-    const container = document.getElementById('hudGrowthOutput');
-    if (!container) return;
-
+// 6. GROWTH SNAPSHOT TELEMETRY (Bridge to Dynamic UI)
+window.renderGrowthSnapshot = function(totalMonths, weightInKg) {
     const wt = parseFloat(weightInKg) || 0;
     
-    // Empty state if no weight is entered
+    // 1. Empty state if no weight is entered
     if (wt <= 0) {
-        container.innerHTML = `<div class="hud-empty-state" style="border:none;">Enter Wt & Age to view triage.</div>`;
+        if (typeof updateGrowthSnapshot === 'function') updateGrowthSnapshot(0);
+        const badge = document.getElementById('liveSeverityText');
+        const icon = document.getElementById('liveSeverityIcon');
+        if(badge) badge.innerText = "AWAITING WEIGHT";
+        if(icon) icon.innerText = "⏳";
+        
+        const card = document.getElementById('growthSnapshotCard');
+        if(card) {
+            card.className = 'bento-card'; // Strip colored states
+            card.style.borderColor = 'rgba(255,255,255,0.1)';
+        }
         return;
     }
 
-    // --- STRUCTURAL PLACEHOLDER FOR WHO Z-SCORES ---
-    // (Replace this math with your actual WHO datasets from clinical-math.js later)
-    // For now, we simulate a Z-Score based on a rough 50th percentile estimate.
+    // 2. SIMULATE WHO Z-SCORE MATH 
+    // (Note: Replace this math with your actual clinical-math.js WHO datasets later)
     const estimated50th = (totalMonths < 12) ? (totalMonths * 0.5 + 3.3) : (totalMonths * 0.2 + 8);
     let simulatedZScore = ((wt - estimated50th) / (estimated50th * 0.1)); 
     
-    // Cap it for the UI display
-    if (simulatedZScore > 4) simulatedZScore = 4.0;
-    if (simulatedZScore < -4) simulatedZScore = -4.0;
+    // Cap for visual scale bounds
+    if (simulatedZScore > 3.0) simulatedZScore = 3.0;
+    if (simulatedZScore < -6.0) simulatedZScore = -6.0;
 
-    let zStr = (simulatedZScore > 0 ? "+" : "") + simulatedZScore.toFixed(2);
-    
-    let status = "Normal";
-    let color = "var(--success)";
-    let bgTint = "rgba(0, 250, 154, 0.1)";
-
-    if (simulatedZScore <= -2 && simulatedZScore > -3) {
-        status = "Moderate (MAM)";
-        color = "var(--warning)";
-        bgTint = "rgba(255, 176, 32, 0.1)";
-    } else if (simulatedZScore <= -3) {
-        status = "Severe (SAM)";
-        color = "var(--danger)";
-        bgTint = "rgba(255, 59, 59, 0.1)";
-    } else if (simulatedZScore >= 2) {
-        status = "Overweight";
-        color = "var(--brand-blue)";
-        bgTint = "rgba(106, 112, 255, 0.1)";
+    // 3. Fire the new dynamic UI engine
+    if (typeof updateGrowthSnapshot === 'function') {
+        updateGrowthSnapshot(simulatedZScore);
     }
-
-    // The UI Render matching your Mockup
-    container.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-            <div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-bottom: 2px;">WFA (Weight for Age)</div>
-                <div style="font-size: 2.2rem; font-weight: 800; color: ${color}; line-height: 1; letter-spacing: -1px;">
-                    ${zStr} <span style="font-size: 1rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0;">SD</span>
-                </div>
-            </div>
-            <div style="background: ${bgTint}; color: ${color}; padding: 6px 12px; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 800; box-shadow: 0 0 10px ${bgTint};">
-                ${status}
-            </div>
-        </div>
-        
-        <!-- Animated Mock Trendline -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 35px; margin-top: 10px; border-bottom: 1px dashed var(--border-soft); padding-bottom: 4px;">
-            <div style="width: 15%; height: 30%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
-            <div style="width: 15%; height: 50%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
-            <div style="width: 15%; height: 60%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
-            <div style="width: 15%; height: 75%; background: var(--border-soft); border-radius: 4px 4px 0 0;"></div>
-            <div style="width: 15%; height: ${Math.max(20, 100 + (simulatedZScore * 15))}%; background: ${color}; border-radius: 4px 4px 0 0; box-shadow: 0 -2px 10px ${bgTint}; transition: height 0.3s ease, background 0.3s ease;"></div>
-        </div>
-        <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; margin-top: 6px; display: flex; justify-content: space-between;">
-            <span>Trend ↗</span>
-            <span style="color: ${color};">Current</span>
-        </div>
-    `;
-}
+};
 
 // 🚀 NEW: Hardware-Accelerated Number Counter Engine
 function animateValue(obj, start, end, duration) {
@@ -2475,6 +2705,58 @@ function animateValue(obj, start, end, duration) {
     };
     window.requestAnimationFrame(step);
 }
+
+// 🚀 GROWTH SNAPSHOT TELEMETRY ENGINE
+window.updateGrowthSnapshot = function(zScore) {
+    const card = document.getElementById('growthSnapshotCard');
+    const zText = document.getElementById('liveZScore');
+    const badgeText = document.getElementById('liveSeverityText');
+    const badgeIcon = document.getElementById('liveSeverityIcon');
+    const marker = document.getElementById('liveScaleMarker');
+
+    if (!card || !zText) return;
+
+    // 1. Format Score (Always show 2 decimals and sign)
+    const formattedZ = (zScore > 0 ? '+' : '') + parseFloat(zScore).toFixed(2);
+    zText.innerText = formattedZ;
+
+    // 2. Clear old states
+    card.classList.remove('growth-state-severe', 'growth-state-moderate', 'growth-state-mild', 'growth-state-normal', 'growth-state-high');
+
+    // 3. Determine WHO Classification & Apply Styles
+    let cssVarColor = "";
+    if (zScore <= -3.0) {
+        card.classList.add('growth-state-severe');
+        badgeIcon.innerText = '🚨'; badgeText.innerText = 'Severe (SAM)';
+        cssVarColor = "var(--sev-severe)";
+    } else if (zScore <= -2.0) {
+        card.classList.add('growth-state-moderate');
+        badgeIcon.innerText = '⚠️'; badgeText.innerText = 'Moderate (MAM)';
+        cssVarColor = "var(--sev-moderate)";
+    } else if (zScore <= -1.0) {
+        card.classList.add('growth-state-mild');
+        badgeIcon.innerText = '🔔'; badgeText.innerText = 'Mild Risk';
+        cssVarColor = "var(--sev-mild)";
+    } else if (zScore <= 2.0) {
+        card.classList.add('growth-state-normal');
+        badgeIcon.innerText = '✅'; badgeText.innerText = 'Normal';
+        cssVarColor = "var(--sev-normal)";
+    } else {
+        card.classList.add('growth-state-high');
+        badgeIcon.innerText = '📈'; badgeText.innerText = 'High (> +2 SD)';
+        cssVarColor = "var(--sev-high)";
+    }
+
+    // 4. Calculate Marker Position on the Horizontal Spectrum
+    // Math: Range is -6 to +3 (total span of 9). 
+    let clampedZ = Math.max(-6, Math.min(zScore, 3)); // Keep it within visual bounds
+    let percentage = ((clampedZ - (-6)) / 9) * 100;
+    
+    // Animate marker
+    marker.style.left = `${percentage}%`;
+    marker.style.background = cssVarColor;
+    marker.style.boxShadow = `0 0 10px ${cssVarColor}`;
+};
 
 // 7. VITALS & FLUIDS TELEMETRY
 function renderVitalsAndFluids(totalMonths, weightInKg) {
@@ -2549,12 +2831,14 @@ function renderVitalsAndFluids(totalMonths, weightInKg) {
     }, 50);
 }
 
-// 8. ANTHROPOMETRY & NUTRITION TELEMETRY
-function renderAnthropometry() {
+// 8. ANTHROPOMETRY & NUTRITION TELEMETRY (Digital MUAC Tape)
+window.renderAnthropometry = function() {
     const container = document.getElementById('hudAnthroOutput');
-    if (!container) return;
+    const card = document.getElementById('bentoNutrition');
+    const icon = document.getElementById('nutriCardIcon');
+    if (!container || !card || !icon) return;
 
-    // 🚀 THE FIX: Pull values directly from the DOM safely (prevents null crashes)
+    // Safely pull values from the DOM
     const ageYrsEl = document.getElementById('hudAgeYrs');
     const ageMosEl = document.getElementById('hudAgeMos');
     const totalMonths = (parseInt(ageYrsEl ? ageYrsEl.value : 0) || 0) * 12 + (parseInt(ageMosEl ? ageMosEl.value : 0) || 0);
@@ -2564,66 +2848,117 @@ function renderAnthropometry() {
     const hc = hcEl ? parseFloat(hcEl.value) || 0 : 0;
     const mac = macEl ? parseFloat(macEl.value) || 0 : 0;
 
-    // Empty state if nothing is entered
+    // Empty State Reset
     if (hc <= 0 && mac <= 0) {
         container.innerHTML = `<div class="hud-empty-state" style="border:none;">Open top drawer (⌄) to enter HC & MAC.</div>`;
+        card.style.borderColor = 'rgba(255,255,255,0.08)';
+        card.style.boxShadow = 'inset 0 2px 15px rgba(0,0,0,0.2), 0 8px 25px rgba(0,0,0,0.4)';
+        icon.style.background = 'rgba(255,255,255,0.1)';
+        icon.style.color = 'var(--text-muted)';
+        icon.innerText = '🛡️';
         return;
     }
 
-    // --- MUAC LOGIC (Standard WHO Triage for 6-59 months) ---
-    let macStatus = "Normal";
-    let macColor = "var(--success)";
-    let macBg = "rgba(0, 250, 154, 0.1)";
+    let html = `<div style="display: flex; flex-direction: column; gap: 15px;">`;
 
+    // --- 1. DIGITAL MUAC TAPE (ACUTE TRIAGE) ---
     if (mac > 0) {
-        if (mac < 11.5) {
-            macStatus = "SAM (Severe)";
-            macColor = "var(--danger)";
-            macBg = "rgba(255, 59, 59, 0.1)";
-        } else if (mac >= 11.5 && mac <= 12.5) {
-            macStatus = "MAM (Moderate)";
-            macColor = "var(--warning)";
-            macBg = "rgba(255, 176, 32, 0.1)";
-        }
-    }
-
-    let html = `<div style="display: flex; flex-direction: column; gap: 10px;">`;
-
-    // Render MAC/MUAC Block
-    if (mac > 0) {
-        const isStandardAge = (totalMonths >= 6 && totalMonths <= 59);
-        const ageWarning = !isStandardAge ? `<div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">(Age outside 6-59mo WHO standard)</div>` : '';
+        let status = "NORMAL NUTRITION";
+        let colorHex = "#10b981"; // Emerald Green
+        let bgTint = "rgba(16, 185, 129, 0.15)";
+        let badgeTxt = "Well nourished";
         
+        if (mac < 11.5) {
+            status = "SEVERE ACUTE MALNUTRITION";
+            colorHex = "#ef4444"; // Red
+            bgTint = "rgba(239, 68, 68, 0.15)";
+            badgeTxt = "SAM ALERT";
+            icon.innerText = '🚨';
+        } else if (mac >= 11.5 && mac < 12.5) {
+            status = "MODERATE MALNUTRITION";
+            colorHex = "#f97316"; // Orange
+            bgTint = "rgba(249, 115, 22, 0.15)";
+            badgeTxt = "MAM ALERT";
+            icon.innerText = '⚠️';
+        } else if (mac >= 12.5 && mac < 13.5) {
+            status = "NUTRITIONALLY AT RISK";
+            colorHex = "#eab308"; // Yellow
+            bgTint = "rgba(234, 179, 8, 0.15)";
+            badgeTxt = "MONITOR";
+            icon.innerText = '🛡️';
+        } else {
+            icon.innerText = '✅';
+        }
+
+        // Apply Clinical Aura to the Card
+        card.style.borderColor = `rgba(${colorHex.match(/\w\w/g).map(x=>parseInt(x,16)).join(',')}, 0.4)`;
+        card.style.boxShadow = `inset 0 0 20px ${bgTint}, 0 8px 25px rgba(0,0,0,0.4)`;
+        icon.style.background = bgTint;
+        icon.style.color = colorHex;
+
+        // Calculate Scale Marker (Bounds: 9.0cm to 16.0cm)
+        let clampedMac = Math.max(9.0, Math.min(mac, 16.0));
+        let percentage = ((clampedMac - 9.0) / (16.0 - 9.0)) * 100;
+
+        const isStandardAge = (totalMonths >= 6 && totalMonths <= 59);
+        const ageWarning = !isStandardAge ? `<div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 5px;">(Age outside 6-59mo WHO standard)</div>` : '';
+
         html += `
-        <div style="display: flex; justify-content: space-between; align-items: center; background: ${macBg}; padding: 10px 12px; border-radius: 12px; border-left: 4px solid ${macColor}; transition: all 0.3s ease;">
-            <div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">MUAC</div>
-                <div style="font-size: 1.2rem; font-weight: 800; color: ${macColor};">${mac} <span style="font-size: 0.75rem;">cm</span></div>
+        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Diagnostic Triage</div>
+                    <div style="font-size: 1.1rem; font-weight: 900; color: ${colorHex}; letter-spacing: -0.5px; margin-top: 2px;">${status}</div>
+                </div>
+                <div style="background: ${bgTint}; border: 1px solid ${colorHex}; color: ${colorHex}; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                    ${badgeTxt}
+                </div>
             </div>
-            <div style="text-align: right;">
-                <div style="font-size: 0.85rem; font-weight: 800; color: ${macColor};">${macStatus}</div>
-                ${ageWarning}
+
+            <div style="position: relative; width: 100%; margin-top: 10px; margin-bottom: 5px;">
+                <div style="display: flex; width: 100%; height: 8px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.1);">
+                    <div style="width: 35.7%; background: var(--sev-severe);"></div>   <div style="width: 14.3%; background: var(--sev-moderate);"></div> <div style="width: 14.3%; background: var(--sev-mild);"></div>     <div style="width: 35.7%; background: var(--sev-normal);"></div>   </div>
+                <div style="position: absolute; top: -4px; left: ${percentage}%; width: 16px; height: 16px; background: #fff; border: 3px solid ${colorHex}; border-radius: 50%; transform: translateX(-50%); box-shadow: 0 0 10px ${colorHex}; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
             </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: rgba(255,255,255,0.5); font-weight: 700; margin-top: 8px;">
+                <span><span style="color: ${colorHex}; font-size: 0.9rem;">${mac}</span> cm</span>
+                <span>WHO Scale</span>
+            </div>
+            ${ageWarning}
         </div>`;
     }
 
-    // Render HC (Head Circumference) Block
+    // --- 2. HEAD CIRCUMFERENCE (NEUROLOGY) ---
     if (hc > 0) {
+        // (Placeholder Logic: Replace with real clinical curves later)
+        let hcStatus = "Appropriate for Age";
+        let hcColor = "var(--brand-cyan)";
+        let hcBg = "rgba(0, 229, 255, 0.1)";
+        let hcIcon = "✓";
+        
+        // Demo logic: If HC is unusually small for older infant, or large for newborn
+        if (hc < 42 && totalMonths > 6) { hcStatus = "⚠ Microcephaly Risk"; hcColor = "var(--sev-severe)"; hcBg = "rgba(239, 68, 68, 0.15)"; hcIcon = "⚠"; }
+        if (hc > 50 && totalMonths < 6) { hcStatus = "⚠ Macrocephaly Risk"; hcColor = "var(--sev-moderate)"; hcBg = "rgba(249, 115, 22, 0.15)"; hcIcon = "⚠"; }
+
         html += `
-        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-soft);">
+        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Head Circ.</div>
-                <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">${hc} <span style="font-size: 0.75rem;">cm</span></div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Head Circumference</div>
+                <div style="font-size: 1.4rem; font-weight: 900; color: #fff; margin-top: 2px;">${hc} <span style="font-size: 0.8rem; color: var(--text-muted);">cm</span></div>
             </div>
-            <div style="font-size: 0.7rem; font-weight: 600; color: var(--brand-cyan); text-align: right; background: rgba(0, 229, 255, 0.1); padding: 4px 8px; border-radius: 6px;">
-                Recorded
+            <div style="text-align: right;">
+                <div style="background: ${hcBg}; border: 1px solid ${hcColor}; color: ${hcColor}; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                    ${hcIcon} ${hcStatus}
+                </div>
+                <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 6px;">Neurological Tracker</div>
             </div>
         </div>`;
     }
 
     html += `</div>`;
     container.innerHTML = html;
-}
+};
 
 // 9. MILESTONES & RED FLAGS TELEMETRY (3-Layer Architecture)
 function renderMilestonesAndRedFlags(totalMonths) {
@@ -2746,94 +3081,203 @@ const pediatricDrugDB = {
     ]
 };
 
-function populateHudDrugs() {
-    const cat = document.getElementById('hudQuickCat').value;
+// 🚀 THE FIX: Force-refresh the database and map all categories dynamically
+window.populateHudDrugs = function() {
+    const catSelect = document.getElementById('hudQuickCat');
     const formSelect = document.getElementById('hudQuickForm');
+    const resDiv = document.getElementById('hudQuickDoseRes');
     
-    formSelect.innerHTML = '<option value="">-- Choose Formulation --</option>';
-    document.getElementById('hudQuickDoseRes').innerHTML = '';
-
-    // Check against your global drugsDb array
-    if (cat && window.drugsDb) {
-        const filteredDrugs = window.drugsDb.filter(d => d.category === cat);
-        filteredDrugs.forEach(drug => {
-            let opt = document.createElement('option');
-            opt.value = drug.id;
-            opt.innerText = drug.name; // Pulls directly from your array e.g., "Amoxicillin 125mg/5ml [Novamox]"
-            formSelect.appendChild(opt);
+    // 1. Get full database
+    let db = (typeof window.getUnifiedDB === 'function') ? window.getUnifiedDB() : window.drugsDb;
+    
+    // 2. Build Category List Dynamically
+    if (catSelect.options.length <= 1) { // Only build if empty
+        const categories = [...new Set(db.map(d => d.category))]; // Get unique categories
+        catSelect.innerHTML = '<option value="">-- Select Category --</option>';
+        categories.sort().forEach(cat => {
+            catSelect.innerHTML += `<option value="${cat}">${cat.toUpperCase()}</option>`;
         });
     }
-}
 
-function runHudQuickDose() {
+    // 3. Filter Drugs based on selection
+    const selectedCat = catSelect.value;
+    formSelect.innerHTML = '<option value="">-- Select Drug --</option>';
+    if (resDiv) resDiv.innerHTML = '';
+    
+    if (selectedCat) {
+        db.filter(d => d.category === selectedCat)
+          .sort((a,b) => a.name.localeCompare(b.name))
+          .forEach(drug => {
+              let opt = document.createElement('option');
+              opt.value = drug.id;
+              opt.innerText = drug.name;
+              formSelect.appendChild(opt);
+          });
+    }
+};
+
+// ==========================================
+// 🚀 STEP 4: PROGRESSIVE DISCLOSURE ENGINE
+// ==========================================
+
+// 1. THE EXPLORER TOGGLE (Cross-fades Zone A and Zone B)
+window.toggleFormularyExplorer = function() {
+    const zoneA = document.getElementById('zoneAQuickMode');
+    const zoneB = document.getElementById('zoneBExplorerMode');
+    const card = document.getElementById('layer1InstantDoses');
+    
+    if (!zoneA || !zoneB || !card) return;
+
+    if (zoneB.style.display === 'none') {
+        // Morph to Explorer Mode (Show Zone B)
+        zoneA.style.opacity = '0';
+        setTimeout(() => {
+            zoneA.style.display = 'none';
+            zoneB.style.display = 'block';
+            card.classList.add('explorer-active'); // Add purple glow
+            setTimeout(() => zoneB.style.opacity = '1', 50); 
+        }, 300); // 300ms wait for fade out
+    } else {
+        // Morph back to Quick Mode (Show Zone A)
+        zoneB.style.opacity = '0';
+        setTimeout(() => {
+            zoneB.style.display = 'none';
+            zoneA.style.display = 'block';
+            card.classList.remove('explorer-active'); // Remove purple glow
+            setTimeout(() => zoneA.style.opacity = '1', 50);
+        }, 300);
+    }
+};
+
+// 🚀 THE FIX: Bulletproof Ignition Logic
+window.checkLightningIgnition = function(forcedWeight = null) {
+    const wtInput = document.getElementById('hudWeight');
+    const btn = document.getElementById('lightningToggleBtn');
+    const sub = document.getElementById('instantDoseSubtitle');
+    
+    if (!btn || !sub) return;
+    
+    // Check passed weight first, fallback to input, fallback to 0
+    const wt = parseFloat(forcedWeight) || parseFloat(wtInput?.value) || 0;
+    
+    if (wt > 0) {
+        btn.classList.add('is-ignited');
+        // Matches the glowing yellow theme
+        sub.innerHTML = `<span style="color: #facc15; font-weight: 800; text-shadow: 0 0 8px rgba(250,204,21,0.3);">✓ Weight: ${wt} kg</span>`;
+    } else {
+        btn.classList.remove('is-ignited');
+        sub.innerHTML = 'Awaiting Weight...';
+    }
+};
+
+// 🚀 GLOBAL SPOTLIGHT SEARCH ENGINE (Live Card Generator)
+window.runGlobalSearch = function(query) {
+    const q = query.toLowerCase();
+    const container = document.getElementById('hudSmartDoseCards');
+    const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
+
+    // 1. Safety Check: Need weight to generate cards
+    if (wt <= 0) {
+        container.innerHTML = `<div class="hud-empty-state" style="width: 100%; border: 1px dashed rgba(0, 229, 255, 0.3) !important; background: rgba(0,0,0,0.2) !important; border-radius: 12px !important; text-align: left; padding: 15px !important; color: rgba(255,255,255,0.6) !important;">⚠️ Scrub Weight at the top to unlock searches...</div>`;
+        return;
+    }
+
+    // 2. If search is cleared, restore the default "Quick 10" scroll
+    if (!q || q.length < 2) {
+        if (typeof renderInstantDoses === 'function') {
+            renderInstantDoses(wt);
+        }
+        return;
+    }
+
+    // 3. Fetch DB and find matches
+    let db = (typeof window.getUnifiedDB === 'function') ? window.getUnifiedDB() : window.drugsDb;
+    const matches = db.filter(d => d.name.toLowerCase().includes(q));
+
+    if (matches.length === 0) {
+        container.innerHTML = `<div class="hud-empty-state" style="width: 100%; border: 1px dashed var(--danger); text-align: left; padding: 15px; color: var(--danger); border-radius: 12px; background: rgba(255,0,0,0.1);">No drugs found matching "${query}"</div>`;
+        return;
+    }
+
+    // 4. Inject scan line for visual feedback
+    container.innerHTML = '<div class="cortex-scan-line"></div>';
+
+    // 5. Generate fully calculated 3D Cards for the search results
+    setTimeout(() => {
+        let html = '';
+        matches.sort((a,b) => a.name.localeCompare(b.name)).forEach((drug, index) => {
+            let math = ClinicalMath.computeDose(drug, wt) || { reqMg: 0, reqVol: 0 };
+            let unit = ClinicalMath.getUnit(drug);
+            
+            // Map Neon UI Colors based on category
+            let color = "var(--brand-cyan)";
+            if (drug.category === 'antibiotics') color = "var(--success)";
+            else if (drug.category === 'respiratory') color = "#f97316";
+            else if (drug.category === 'git') color = "#a855f7";
+            else if (drug.category === 'antihistamines') color = "var(--brand-blue)";
+            else if (drug.category === 'emergency') color = "var(--danger)";
+            else if (drug.category === 'neurology') color = "#8b5cf6";
+            else if (drug.category === 'vitamins') color = "#eab308";
+            else if (drug.category === 'topical') color = "#14b8a6";
+
+            const displayFreq = typeof window.translateFreqToLocal === 'function' ? window.translateFreqToLocal(drug.defaultFreq) : drug.defaultFreq;
+            let doseStr = `${drug.doseMg} ${drug.doseType === 'perDay' ? 'mg/kg/day' : (drug.doseType === 'fixed' ? 'mg stat' : 'mg/kg')}`;
+            let formStr = drug.conc ? `${drug.conc}mg/${drug.vol}${unit.replace('s','')}` : `${drug.doseMg}mg`;
+            let badgeHtml = drug.isCustom ? `<div style="position: absolute; top: -10px; right: -10px; background: #e11d48; color: white; font-size: 0.55rem; font-weight: 900; padding: 4px 8px; border-radius: 10px; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(225, 29, 72, 0.4); z-index: 10; border: 1px solid rgba(255,255,255,0.2);">LOCAL</div>` : '';
+
+            html += `
+            <div class="cortex-stagger-${(index % 4) + 1} instant-dose-card" style="--card-color: ${color}; position: relative; min-width: 155px; max-width: 175px; background: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-top: 1px solid rgba(255,255,255,0.2) !important; border-radius: 14px !important; padding: 14px !important; border-left: 4px solid ${color} !important; flex-shrink: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.3) !important;">
+                ${badgeHtml}
+                <div class="plasma-sweep-line" style="background: linear-gradient(90deg, transparent, ${color}, transparent); animation-delay: ${(index * 0.05) + 0.3}s;"></div>
+
+                <div style="font-size: 1.05rem; font-weight: 800; color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.2); letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${drug.name}">${drug.name}</div>
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6) !important; font-weight: 600; margin-bottom: 12px;">${doseStr} • ${formStr}</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <span class="breathing-digit" style="font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace; font-size: 2.1rem; font-weight: 700; color: #f8fafc !important; line-height: 1; letter-spacing: -1.5px; text-shadow: none;">${math.reqVol.toFixed(1)}</span>
+                        <span style="font-size: 0.85rem; color: ${color} !important; font-weight: 800; margin-left: 4px;">${unit}</span>
+                    </div>
+                    <div style="font-size: 0.7rem; font-weight: 800; color: ${color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${displayFreq}</div>
+                </div>
+            </div>`;
+        });
+        
+        container.innerHTML = html;
+    }, 150); // Lightning fast 150ms render
+};
+
+// 🚀 UPDATED CALCULATOR (Button Removed)
+window.runHudQuickDose = function() {
     const drugId = document.getElementById('hudQuickForm').value;
     const resDiv = document.getElementById('hudQuickDoseRes');
     const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
 
-    if (!drugId) {
-        resDiv.innerHTML = '';
-        return;
-    }
-
+    if (!drugId) { resDiv.innerHTML = ''; return; }
     if (wt <= 0) {
-        resDiv.innerHTML = `<div style="padding: 10px; background: rgba(255, 176, 32, 0.1); color: var(--warning); border-radius: 8px; font-size: 0.85rem; font-weight: bold; margin-top: 10px;">⚠️ Please scrub the Weight at the top of the screen first.</div>`;
+        resDiv.innerHTML = `<div style="padding: 15px; background: rgba(255, 176, 32, 0.1); color: var(--warning); border-radius: 12px; font-size: 0.85rem; font-weight: bold; margin-top: 15px; border: 1px dashed var(--warning);">⚠️ Please scrub the Weight at the top first.</div>`;
         return;
     }
 
-    const drug = window.drugsDb.find(d => d.id === drugId);
+    let db = (typeof window.getUnifiedDB === 'function') ? window.getUnifiedDB() : window.drugsDb;
+    const drug = db.find(d => d.id === drugId);
     if (!drug) return;
 
-    // The Logic Engine based on your specific doseType schema
-    let singleDoseMg = 0;
-    
-    if (drug.doseType === "perDay") {
-        // e.g., 40mg/kg/day divided by 3 (TID)
-        let totalDailyMg = wt * drug.doseMg;
-        singleDoseMg = totalDailyMg / (drug.div || 1);
-    } else if (drug.doseType === "perDose") {
-        // e.g., 15mg/kg/dose
-        singleDoseMg = wt * drug.doseMg;
-    } else if (drug.doseType === "fixed") {
-        // e.g., Mebendazole 100mg stat
-        singleDoseMg = drug.doseMg;
-    }
+    let math = ClinicalMath.computeDose(drug, wt);
+    let unit = ClinicalMath.getUnit(drug);
+    const displayFreq = typeof window.translateFreqToLocal === 'function' ? window.translateFreqToLocal(drug.defaultFreq) : drug.defaultFreq;
 
-    // Convert mg to mL using your conc and vol keys
-    let singleDoseML = 0;
-    if (drug.conc && drug.conc > 0) {
-        singleDoseML = (singleDoseMg / drug.conc) * (drug.vol || 1);
-    }
-
-    // Generate any clinical warnings you logged
-    let warningsHtml = '';
-    if (drug.warnings && drug.warnings.length > 0) {
-        warningsHtml = `<div style="font-size: 0.75rem; color: var(--danger); font-weight: 600; border-top: 1px dashed var(--border-soft); padding-top: 8px; margin-top: 8px;">
-            ${drug.warnings.join('<br>')}
-        </div>`;
-    }
-
-    // Light-mode rendering
     resDiv.innerHTML = `
-        <div style="margin-top: 15px; padding: 15px; background: var(--bg-surface); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-sm);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                <div style="flex: 1;">
-                    <div style="font-size: 1.05rem; font-weight: 800; color: var(--text-main);">${drug.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Dose Target: ${drug.doseMg} ${drug.doseType === 'perDay' ? 'mg/kg/day' : 'mg/kg/dose'}</div>
-                </div>
-                <div style="font-size: 0.75rem; font-weight: 700; color: var(--brand-blue); background: rgba(106, 112, 255, 0.1); padding: 4px 8px; border-radius: 8px; margin-left: 10px; text-align: center; white-space: nowrap;">
-                    ${drug.defaultFreq}
-                </div>
+        <div class="calc-result-box">
+            <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Give Patient</div>
+            <div class="calc-digit-display">
+                ${math.reqVol.toFixed(1)} <span class="calc-unit-label">${unit}</span>
             </div>
-            
-            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px;">
-                <span style="font-size: 2.2rem; font-weight: 900; color: var(--brand-cyan); line-height: 1;">${singleDoseML > 0 ? singleDoseML.toFixed(1) : singleDoseMg.toFixed(0)}</span>
-                <span style="font-size: 0.9rem; color: var(--text-main); font-weight: 700;">${singleDoseML > 0 ? 'mL' : 'mg'}</span>
-            </div>
-            
-            ${warningsHtml}
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Target: ${math.reqMg.toFixed(0)} mg/dose</div>
+            <div style="font-size: 0.9rem; font-weight: 800; color: var(--brand-cyan); background: rgba(0, 229, 255, 0.15); padding: 5px 15px; border-radius: 20px; display: inline-block; border: 1px solid rgba(0, 229, 255, 0.2);">${displayFreq}</div>
+            ${drug.warnings && drug.warnings.length > 0 ? `<div style="font-size: 0.75rem; color: var(--danger); font-weight: 600; border-top: 1px dashed var(--border-soft); padding-top: 8px; margin-top: 12px;">${drug.warnings.join('<br>')}</div>` : ''}
         </div>
     `;
-}
+};
 
 // ==========================================
 // 11. CORE NAVIGATION & DYNAMIC TOOLS ENGINE
@@ -3261,10 +3705,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if(typeof renderMilestonesAndRedFlags === 'function') renderMilestonesAndRedFlags(0);
     if(typeof updateDashboardContext === 'function') updateDashboardContext();
 
+    // 🚀 BOOT SEQUENCE: Auto-load the Categories Dropdown on startup
+    setTimeout(() => {
+        const catSelect = document.getElementById('hudQuickCat');
+        if (catSelect && typeof window.getUnifiedDB === 'function') {
+            let db = window.getUnifiedDB();
+            if (db && db.length > 0) {
+                // Find all unique categories
+                const categories = [...new Set(db.map(d => d.category))].filter(Boolean);
+                
+                // Clear "Loading..." and inject actual categories
+                catSelect.innerHTML = '<option value="">-- Select Category --</option>';
+                categories.sort().forEach(cat => {
+                    catSelect.innerHTML += `<option value="${cat}">${cat.toUpperCase()}</option>`;
+                });
+            }
+        }
+    }, 600);
 
-    // ---------------------------------------------------------
-    // 3. KINETIC UI ENGINE (Velocity & Smart Sleep)
-    // ---------------------------------------------------------
+
+    // =========================================================
+    // 🛑 CRITICAL CORTEX ENGINE: PHYSICS & TELEMETRY 🛑
+    // DO NOT DELETE OR OVERWRITE FUNCTIONS IN THIS BLOCK.
+    // DOM IDs ARE STRICTLY BOUND TO THESE AUTO-APPROXIMATORS.
+    // =========================================================
     // Velocity Mode Initialization
     window.isVelocityMode = localStorage.getItem('kiddoq_velocity') === 'true';
     const velocityToggle = document.getElementById('velocityModeToggle');
