@@ -225,6 +225,38 @@ const ClinicalMath = (function() {
         return { uacLow, uacHigh, uvc };
     }
 
+    // 11. Core Pediatric Predictive Vitals (Extracted from UI logic)
+    function predictExpectedVitals(yrs, mos) {
+        let totalMos = (yrs * 12) + mos;
+        let expected = { wt: "", ht: "", hc: "", mac: "" };
+
+        if (totalMos > 0) {
+            if (totalMos < 12) expected.wt = ((totalMos + 9) / 2).toFixed(1);
+            else if (yrs <= 6) expected.wt = ((yrs * 2) + 8).toFixed(1);
+            else if (yrs <= 12) expected.wt = (((yrs * 7) - 5) / 2).toFixed(1);
+
+            if (totalMos < 3) expected.ht = 60;
+            else if (totalMos < 6) expected.ht = 65;
+            else if (totalMos < 9) expected.ht = 70;
+            else if (totalMos < 12) expected.ht = 75;
+            else if (yrs <= 12) expected.ht = (yrs * 6) + 77;
+
+            if (totalMos <= 1) expected.hc = 35;
+            else if (totalMos <= 3) expected.hc = 40;
+            else if (totalMos <= 6) expected.hc = 43;
+            else if (totalMos <= 12) expected.hc = 46;
+            else if (yrs === 2) expected.hc = 48;
+            else if (yrs === 3) expected.hc = 49;
+            else if (yrs === 4) expected.hc = 50;
+            else if (yrs >= 5 && yrs <= 12) expected.hc = 51;
+
+            if (totalMos >= 6 && yrs <= 5) expected.mac = 15.5;
+            else if (yrs > 5 && yrs <= 10) expected.mac = 17.0;
+            else if (yrs > 10) expected.mac = 20.0;
+        }
+        return expected;
+    }
+
     // Expose the pure functions
     return {
         computeDose,
@@ -240,5 +272,6 @@ const ClinicalMath = (function() {
         calcParkland,
         calcUmbilicalLines,
         calcSodiumCorrection,
+        predictExpectedVitals
     };
 })();

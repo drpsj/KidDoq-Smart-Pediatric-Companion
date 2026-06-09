@@ -1346,3 +1346,73 @@ header {
     z-index: -1;
     border-radius: inherit;
 }
+
+/* ==========================================
+   MILESTONES: NEURAL CORE SVG & PHYSICS
+   ========================================== */
+
+.neural-core-wrapper {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px auto;
+    cursor: pointer;
+    transform-style: preserve-3d;
+}
+
+.neural-core-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: neuralGlow 12s ease-in-out infinite;
+    will-change: filter;
+}
+
+.neural-base { fill: rgba(147, 51, 234, 0.1); stroke: rgba(192, 132, 252, 0.3); stroke-width: 0.5; }
+
+.neural-synapse { 
+    fill: none; 
+    stroke: rgba(192, 132, 252, 0.8); 
+    stroke-width: 0.7; 
+    stroke-linecap: round; 
+    opacity: 0; 
+    animation: synapseFire 15s ease-in-out infinite; 
+}
+.neural-synapse:nth-child(2) { animation-delay: -5s; }
+.neural-synapse:nth-child(3) { animation-delay: -10s; }
+
+.neural-pulse-node { 
+    fill: #f0abfc; 
+    animation: nodePulse 12s ease-in-out infinite; /* Renamed to avoid conflicts */
+}
+.neural-pulse-node:nth-child(2) { animation-delay: -4s; }
+.neural-pulse-node:nth-child(3) { animation-delay: -8s; }
+
+.brain-pulse { 
+    animation: neuralPulse 4s ease-in-out infinite; 
+    display: inline-block; 
+}
+
+/* --- Keyframes --- */
+@keyframes neuralGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.4)); }
+    50% { filter: drop-shadow(0 0 16px rgba(192, 132, 252, 0.7)); }
+}
+
+@keyframes synapseFire {
+    0%, 90%, 100% { opacity: 0; stroke-dashoffset: 20; }
+    92% { opacity: 1; stroke-dashoffset: 0; }
+    95% { opacity: 0; stroke-dashoffset: -20; }
+}
+
+/* For the SVG Nodes */
+@keyframes nodePulse {
+    0%, 100% { r: 1; opacity: 0.7; }
+    50% { r: 1.5; opacity: 1; }
+}
+
+/* For the Phosphor Icon Brain */
+@keyframes neuralPulse {
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.4)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.8)); transform: scale(1.05); }
+}

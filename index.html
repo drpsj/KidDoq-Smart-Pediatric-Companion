@@ -14,6 +14,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <script>
+        (() => {
         const manifestJSON = {
             "name": "KidDoq | Smart Pediatric Companion",
             "short_name": "KidDoq",
@@ -24,8 +25,9 @@
             "icons": [{ "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235B61F6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='white' font-family='sans-serif' font-weight='bold'>K</text></svg>", "sizes": "192x192", "type": "image/svg+xml" }]
         };
         const blob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
-        const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
-        document.addEventListener('DOMContentLoaded', () => document.head.appendChild(link));
+        const manifestLink = document.createElement('link'); manifestLink.rel = 'manifest'; manifestLink.href = URL.createObjectURL(blob);
+        document.addEventListener('DOMContentLoaded', () => document.head.appendChild(manifestLink));
+        })();
     </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -742,15 +744,17 @@
 </div>
                 </div>
                 
-                <div class="bento-card" style="box-shadow: inset 0 40px 60px -30px rgba(147, 51, 234, 0.12), var(--shadow-sm); border-top: 1px solid rgba(147, 51, 234, 0.2);">
-                    <div class="card-header"><div class="card-icon" style="background: rgba(147, 51, 234, 0.15); color: #9333EA;">🧠</div><div class="card-title-group"><h3>Milestones</h3><span class="card-subtitle">Developmental Progress</span></div></div>
-                    <div class="card-body"><div id="hudMilestonesOutput" class="hud-empty-state" style="border:none;">Enter Age</div></div>
-                </div>
+                <div class="bento-card" id="bentoMilestones" style="box-shadow: inset 0 40px 60px -30px rgba(147, 51, 234, 0.12), var(--shadow-sm); border-top: 1px solid rgba(147, 51, 234, 0.2);">
+    <div class="card-header" style="position: relative; z-index: 5;"><div class="card-icon" style="background: rgba(147, 51, 234, 0.15); color: #9333EA; transform: translateZ(30px);">🧠</div><div class="card-title-group" style="transform: translateZ(20px);"><h3>Milestones</h3><span class="card-subtitle">Developmental Progress</span></div></div>
+    <div class="card-body" id="hudMilestonesOutput" style="padding: 15px; display: flex; flex-direction: column;">
+        <div class="hud-empty-state" style="border:none;">Enter Age</div>
+    </div>
+</div>
 
                 <div class="bento-card" style="box-shadow: inset 0 40px 60px -30px rgba(239, 68, 68, 0.12), var(--shadow-sm); border-top: 1px solid rgba(239, 68, 68, 0.2);">
-                    <div class="card-header"><div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--danger);">🚨</div><div class="card-title-group"><h3>Red Flags</h3><span class="card-subtitle">Anticipatory Warnings</span></div></div>
-                    <div class="card-body"><div id="hudRedFlagsOutput" class="hud-empty-state" style="border:none;">Enter Age</div></div>
-                </div>
+    <div class="card-header"><div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--danger);">🚨</div><div class="card-title-group"><h3>Red Flags</h3><span class="card-subtitle">Anticipatory Warnings</span></div></div>
+    <div class="card-body" id="hudRedFlagsOutput"><div class="hud-empty-state" style="border:none;">Integrated into Milestones card.</div></div>
+</div>
                 
                 <div class="bento-card card-tools">
                     <div class="card-header"><div class="card-icon" style="background: rgba(255, 176, 32, 0.15); color: var(--warning);">🧰</div><div class="card-title-group"><h3>Clinical Tools</h3><span class="card-subtitle">Quick access</span></div></div>
@@ -3111,96 +3115,156 @@ window.renderAnthropometry = function() {
     container.innerHTML = html;
 };
 
-// 9. MILESTONES & RED FLAGS TELEMETRY (3-Layer Architecture)
-function renderMilestonesAndRedFlags(totalMonths) {
+// ==========================================
+// 6. HIGH-FIDELITY MILESTONES ENGINE (Independent & Bulletproof)
+// ==========================================
+window.renderMilestonesAndRedFlags = function(totalMonths) {
     const msContainer = document.getElementById('hudMilestonesOutput');
-    const rfContainer = document.getElementById('hudRedFlagsOutput');
-    
-    if (!msContainer || !rfContainer) return;
+    if (!msContainer) return;
 
-    let milestones = [];
-    let redFlags = [];
-
-    // --- DEVELOPMENTAL LOGIC ENGINE ---
-    if (totalMonths < 2) {
-        milestones = ["Fixes & follows moving face", "Alert to sound", "Startles to loud noise", "Flexed posture"];
-        redFlags = ["Fever >38°C is a medical emergency", "Strict Back-to-Sleep (SIDS prevention)", "Evaluate poor suck/feeding"];
-    } else if (totalMonths >= 2 && totalMonths < 4) {
-        milestones = ["Social smile", "Coos / Gurgles", "Lifts head 45° prone", "Opens hands partially"];
-        redFlags = ["No visual tracking", "No response to loud noise", "Extreme floppiness or stiffness"];
-    } else if (totalMonths >= 4 && totalMonths < 6) {
-        milestones = ["Laughs out loud", "Reaches for objects", "Rolls front to back", "Holds head steady"];
-        redFlags = ["Not tracking crossing midline", "Head lag when pulled to sit", "Introduce safe solid foods (choking risks)"];
-    } else if (totalMonths >= 6 && totalMonths < 9) {
-        milestones = ["Babbles (da-da, ba-ba)", "Sits without support", "Transfers objects hand-to-hand"];
-        redFlags = ["Not reaching for objects", "Does not roll over in either direction", "Baby-proof home (stairs, outlets)"];
-    } else if (totalMonths >= 9 && totalMonths < 12) {
-        milestones = ["Pincer grasp", "Crawls or cruises", "Understands 'No'", "Responds to name"];
-        redFlags = ["Unable to sit independently", "No babbling", "Avoid honey (Botulism risk)"];
-    } else if (totalMonths >= 12 && totalMonths < 18) {
-        milestones = ["Says 1-2 words", "Stands alone", "Takes first steps", "Points to objects"];
-        redFlags = ["No single words", "Does not crawl or stand", "Transition to whole cow's milk"];
-    } else if (totalMonths >= 18 && totalMonths < 24) {
-        milestones = ["Walks well / Runs", "Uses cup / spoon", "Says 10+ words", "Points to body parts"];
-        redFlags = ["Not walking independently", "No pointing or gestures", "Limit screen time to zero"];
-    } else if (totalMonths >= 24 && totalMonths < 36) {
-        milestones = ["2-3 word sentences", "Jumps with both feet", "Copies a circle", "Follows 2-step commands"];
-        redFlags = ["Avoid OTC cough/cold syrups", "Monitor for febrile seizures", "Assess for Autism risk (M-CHAT)"];
-    } else if (totalMonths >= 36 && totalMonths < 48) {
-        milestones = ["Tells stories", "Rides tricycle", "Uses toilet", "Speech 75% intelligible"];
-        redFlags = ["Unintelligible speech", "No pretend play", "Cannot throw a ball overhand"];
-    } else if (totalMonths >= 48 && totalMonths < 60) {
-        milestones = ["Hops on one foot", "Copies a cross", "Plays with other children"];
-        redFlags = ["Cannot jump in place", "Ignores other children", "Review booster seat safety"];
-    } else {
-        milestones = ["School-aged performance", "Rides bicycle", "Reads/Writes basic words"];
-        redFlags = ["Monitor BMI & Screen Time", "Assess vision/hearing", "Review bullying & school performance"];
+    // 1. Telemetry Sync Engine
+    let tm = parseFloat(totalMonths);
+    if (isNaN(tm) || tm === 0) {
+        const ageDisplay = document.getElementById('anchorAgeDisplay');
+        if (ageDisplay) {
+            let ageText = ageDisplay.textContent || "0Y 0M";
+            tm = ((parseInt((ageText.match(/(\d+)Y/) || [])[1]) || 0) * 12) + (parseInt((ageText.match(/(\d+)M/) || [])[1]) || 0);
+        }
+    }
+    if (isNaN(tm)) {
+        tm = ((parseInt(document.getElementById('hudAgeYrs')?.value) || 0) * 12) + (parseInt(document.getElementById('hudAgeMos')?.value) || 0);
     }
 
-    // --- MILESTONES RENDER ---
-    // Layer 1: Visual Domain Summary
-    let msHtml = `
-    <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-        <div style="background: rgba(0, 250, 154, 0.1); color: var(--success); padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(0, 250, 154, 0.2);">Motor ✓</div>
-        <div style="background: rgba(0, 250, 154, 0.1); color: var(--success); padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(0, 250, 154, 0.2);">Speech ✓</div>
-        <div style="background: rgba(0, 250, 154, 0.1); color: var(--success); padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(0, 250, 154, 0.2);">Social ✓</div>
+    // 2. The Independent Clinical Database (Failsafe)
+    const localMsDb = {
+        2: [ { id: "m2_1", domain: "Social", text: "Social smile.", sig: "Vision/Attachment." }, { id: "m2_2", domain: "Motor", text: "Holds head up briefly.", sig: "Hypotonia." } ],
+        4: [ { id: "m4_1", domain: "Motor", text: "Rolls front to back.", sig: "Motor delay." }, { id: "m4_2", domain: "Lang", text: "Babbles/Coos.", sig: "Hearing loss." } ],
+        6: [ { id: "m6_1", domain: "Motor", text: "Sits with support.", sig: "Hypotonia." }, { id: "m6_2", domain: "Lang", text: "Responds to sounds.", sig: "Hearing/Neuro." } ],
+        9: [ { id: "m9_1", domain: "Motor", text: "Pincer grasp.", sig: "Fine motor delay." }, { id: "m9_2", domain: "Motor", text: "Pulls to stand.", sig: "Hypotonia." }, { id: "m9_3", domain: "Lang", text: "Responds to name.", sig: "Hearing/ASD." } ],
+        12: [ { id: "m12_1", domain: "Lang", text: "1-2 words.", sig: "Speech delay." }, { id: "m12_2", domain: "Motor", text: "Cruises/Walks.", sig: "Pathology." }, { id: "m12_3", domain: "Social", text: "Points to objects.", sig: "ASD risk." } ],
+        18: [ { id: "m18_1", domain: "Motor", text: "Walks alone.", sig: "Neuro eval." }, { id: "m18_2", domain: "Lang", text: "10-15 words.", sig: "Speech delay." } ],
+        24: [ { id: "m24_1", domain: "Lang", text: "2-word sentences.", sig: "Speech delay." }, { id: "m24_2", domain: "Motor", text: "Runs well.", sig: "Motor delay." } ]
+    };
+
+    // Safely merge with your external database if it exists
+    const msDb = window.milestonesDb || localMsDb;
+
+    // 3. Find Current Target Bracket
+    let targetMonth = 0;
+    // Safely parse available months
+    const availableMonths = [2, 4, 6, 9, 12, 15, 18, 24, 30, 36, 48, 60];
+    availableMonths.forEach(month => {
+        if (month <= tm && msDb[month]) targetMonth = month;
+    });
+
+    // 4. Generate Front Face Targets
+    let currentTargetsHTML = "";
+    if (tm === 0) {
+        currentTargetsHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:10px; text-align:center;">Scrub age to view expected milestones...</div>`;
+    } else if (targetMonth === 0) {
+        currentTargetsHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:10px; text-align:center;">No specific milestones for this early age.</div>`;
+    } else {
+        // Failsafe array check
+        let targets = Array.isArray(msDb[targetMonth]) ? msDb[targetMonth] : [];
+        currentTargetsHTML = targets.slice(0, 3).map(ms => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px; margin-bottom:8px;">
+                <div style="font-size:0.85rem; font-weight:700; color:#fff;">${ms.text}</div>
+                <div style="font-size:0.65rem; color:var(--brand-cyan); border:1px solid var(--brand-cyan); padding:2px 6px; border-radius:4px; font-weight:bold;">${ms.domain}</div>
+            </div>
+        `).join('');
+    }
+
+    // 5. SVG & Front Face HTML
+    const neuralCoreSVG = `
+    <div class="neural-core-wrapper" onclick="document.getElementById('milesFlipCard').classList.add('is-flipped')">
+        <svg class="neural-core-svg" viewBox="0 0 100 100">
+            <path class="neural-base" d="M50,15 C20,15 20,85 50,85 S80,85 80,50 C80,15 50,15 50,15 Z M50,15 C50,40 30,40 30,50 C30,60 50,60 50,85 M50,15 C60,20 80,30 80,50 C80,70 60,80 50,85" />
+            <path class="neural-synapse" stroke-dasharray="4 8" d="M35 50 Q 50 30 65 50" />
+            <path class="neural-synapse" stroke-dasharray="4 8" d="M35 50 Q 20 70 50 85" />
+            <path class="neural-synapse" stroke-dasharray="4 8" d="M65 50 Q 80 70 50 85" />
+            <circle class="neural-pulse-node" cx="35" cy="50" r="2" />
+            <circle class="neural-pulse-node" cx="65" cy="50" r="2" />
+            <circle class="neural-pulse-node" cx="50" cy="85" r="2" />
+        </svg>
     </div>`;
+
+    const frontFaceHTML = `
+        <div class="vax-face-front" style="display: flex; flex-direction: column; min-height: 250px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="transform: scale(0.6); transform-origin: left center; width: 50px;">${neuralCoreSVG}</div>
+                    <div>
+                        <div style="font-size: 0.95rem; font-weight: 900; color: var(--brand-cyan); text-transform: uppercase;">Development</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${tm > 0 ? `Targets for ${tm} Months` : 'Awaiting Age'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                ${currentTargetsHTML}
+            </div>
+            
+            <div onclick="document.getElementById('milesFlipCard').classList.add('is-flipped')" style="margin-top: 15px; cursor:pointer; background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 229, 255, 0.2); padding: 12px; border-radius: 10px; text-align: center; font-size: 0.75rem; font-weight: 800; color: var(--brand-cyan); text-transform: uppercase; transition: background 0.2s;">
+                View Red Flags & Full Checklist ➔
+            </div>
+        </div>`;
+
+    // 6. Back Face HTML (Forced 3D Hardware Acceleration)
+    let backFaceHTML = `
+        <div class="vax-face-back" style="transform: rotateY(180deg) translateZ(1px); -webkit-transform: rotateY(180deg) translateZ(1px); backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); padding-bottom: 12px; margin-bottom: 15px; flex-shrink: 0;">
+                <h4 style="margin:0; color:var(--brand-pink); font-size:0.95rem;">Review & Red Flags</h4>
+                <button onclick="document.getElementById('milesFlipCard').classList.remove('is-flipped')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">✕ Close</button>
+            </div>
+            <div style="flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 5px; padding-bottom: 20px;">`;
+
+    if (tm === 0) {
+        backFaceHTML += `<div style="color:var(--text-muted); text-align:center; padding: 20px;">Scrub age to load assessment.</div>`;
+    } else {
+        let itemsAdded = 0;
+        
+        // Explicit explicit loop to prevent crashing on missing keys
+        availableMonths.forEach(month => {
+            if (month <= tm && Array.isArray(msDb[month]) && msDb[month].length > 0) {
+                itemsAdded++;
+                backFaceHTML += `
+                <div style="border:1px solid var(--border-soft); border-radius:10px; overflow:hidden; background:var(--bg-surface); margin-bottom: 12px;">
+                    <div style="background:rgba(255, 51, 102, 0.15); border-bottom:1px solid rgba(255, 51, 102, 0.2); padding:8px 12px; font-weight:800; color:var(--brand-pink); font-size:0.85rem;">Expected at ${month} Months</div>
+                    <div style="padding:12px; display:flex; flex-direction:column; gap:10px;">`;
+
+                msDb[month].forEach(ms => {
+                    backFaceHTML += `
+                        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
+                            <input type="checkbox" style="margin-top:4px; width:18px; height:18px; accent-color:var(--brand-pink);">
+                            <div>
+                                <div style="font-weight:600; color:var(--text-main); font-size:0.9rem;">${ms.text} <span style="font-size:0.65rem; color:var(--brand-cyan); border:1px solid var(--brand-cyan); padding:2px 6px; border-radius:4px; margin-left:6px;">${ms.domain}</span></div>
+                                <div style="font-size:0.75rem; color:var(--danger); margin-top:2px; font-weight:bold;">🚨 Red Flag: ${ms.sig}</div>
+                            </div>
+                        </label>`;
+                });
+                backFaceHTML += `</div></div>`;
+            }
+        });
+        
+        if (itemsAdded === 0) {
+            backFaceHTML += `<div style="color:var(--text-muted); text-align:center; padding: 20px;">No specific milestone data found for this age.</div>`;
+        }
+    }
     
-    // Layer 2: Clinical Details
-    msHtml += `<div style="margin-bottom: 12px;">`;
-    milestones.forEach(m => {
-        msHtml += `
-        <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
-            <span style="color: #9333EA; font-size: 1rem; line-height: 1;">✓</span> ${m}
+    backFaceHTML += `</div></div>`;
+
+    // 7. Final Assembly
+    msContainer.innerHTML = `
+        <div class="vax-flip-container">
+            <div class="vax-flip-card" id="milesFlipCard">
+                ${frontFaceHTML}
+                ${backFaceHTML}
+            </div>
         </div>`;
-    });
-    msHtml += `</div>`;
-
-    // Layer 3: Actionable Intelligence
-    msHtml += `
-    <div style="margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--border-soft); display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; color: var(--success);">
-        <span>✓</span> No missed domains detected
-    </div>`;
-    msContainer.innerHTML = msHtml;
-
-    // --- RED FLAGS RENDER ---
-    let rfHtml = `<div style="margin-bottom: 12px;">`;
-    redFlags.forEach(r => {
-        rfHtml += `
-        <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
-            <span style="color: var(--danger); font-size: 1rem; line-height: 1;">⚠</span> ${r}
-        </div>`;
-    });
-    rfHtml += `</div>`;
-
-    rfHtml += `
-    <div style="margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--border-soft); display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; color: var(--danger);">
-        <span>🚨</span> Monitor closely for listed flags
-    </div>`;
-    rfContainer.innerHTML = rfHtml;
-}
+};
 
 // 10. LAYER 2: FULL FORMULARY ENGINE
+(() => {
 const pediatricDrugDB = {
     antibiotics: [
         { id: "amox_200", name: "Amoxicillin", form: "200mg/5mL", doseCalc: (wt) => `${((40 * wt * 5 / 200) / 2).toFixed(1)} mL`, freq: "BD", notes: "Standard 40mg/kg/day" },
@@ -3231,6 +3295,7 @@ const pediatricDrugDB = {
         { id: "loraz_2", name: "Lorazepam IV", form: "2mg/mL", doseCalc: (wt) => `${((0.1 * wt) / 2).toFixed(2)} mL`, freq: "STAT IV", notes: "0.1mg/kg (Status Epilepticus)" }
     ]
 };
+})();
 
 // 🚀 THE FIX: Force-refresh the database and map all categories dynamically
 window.populateHudDrugs = function() {
@@ -3437,6 +3502,7 @@ window.runHudQuickDose = function() {
 // Navigation is now securely handled by view-controller.js
 
 // --- DYNAMIC TOOL CUSTOMIZER ---
+(() => {
 const availableTools = [
     { id: 'erFeatureView', icon: '💧', name: 'Fluids Calc' },
     { id: 'prescriptionFeatureView', icon: '📝', name: 'Case File' },
@@ -3511,6 +3577,7 @@ window.saveToolSettings = function() {
     
     renderFavoriteTools(); // Instantly update the dashboard
 };
+})();
 
 // 12. DYNAMIC CONTEXT ENGINE (Time, Name, Encounters)
 function updateDashboardContext() {

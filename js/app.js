@@ -80,46 +80,9 @@ window.ViewLoader = {
 };
 
 // ==========================================
-// 🚀 MAGIC HUD ENGINE (Cockpit Dashboard)
-// ==========================================
-
-// ==========================================
 // 📈 PEDIATRIC PREDICTIVE VITALS ENGINE
 // ==========================================
-window.predictExpectedVitals = function(yrs, mos) {
-    let totalMos = (yrs * 12) + mos;
-    let expected = { wt: "", ht: "", hc: "", mac: "" };
-
-    if (totalMos > 0) {
-        // Weight (Weech's Formula)
-        if (totalMos < 12) expected.wt = ((totalMos + 9) / 2).toFixed(1);
-        else if (yrs <= 6) expected.wt = ((yrs * 2) + 8).toFixed(1);
-        else if (yrs <= 12) expected.wt = (((yrs * 7) - 5) / 2).toFixed(1);
-
-        // Height
-        if (totalMos < 3) expected.ht = 60;
-        else if (totalMos < 6) expected.ht = 65;
-        else if (totalMos < 9) expected.ht = 70;
-        else if (totalMos < 12) expected.ht = 75;
-        else if (yrs <= 12) expected.ht = (yrs * 6) + 77;
-
-        // Head Circumference
-        if (totalMos <= 1) expected.hc = 35;
-        else if (totalMos <= 3) expected.hc = 40;
-        else if (totalMos <= 6) expected.hc = 43;
-        else if (totalMos <= 12) expected.hc = 46;
-        else if (yrs === 2) expected.hc = 48;
-        else if (yrs === 3) expected.hc = 49;
-        else if (yrs === 4) expected.hc = 50;
-        else if (yrs >= 5 && yrs <= 12) expected.hc = 51;
-
-        // MAC / MUAC
-        if (totalMos >= 6 && yrs <= 5) expected.mac = 15.5;
-        else if (yrs > 5 && yrs <= 10) expected.mac = 17.0;
-        else if (yrs > 10) expected.mac = 20.0;
-    }
-    return expected;
-};
+window.predictExpectedVitals = ClinicalMath.predictExpectedVitals;
 
 // 1. Intercept Registry Modal Inputs
 window.estimateWeightFromAge = function() {
@@ -203,8 +166,7 @@ window.broadcastGlobalParameters = function() {
     if(typeof renderHudVitals === 'function') renderHudVitals(ageMos);
     if(typeof renderHudFluids === 'function') renderHudFluids(wt, ageMos);
     if(typeof renderHudRedFlags === 'function') renderHudRedFlags(ageMos);
-    if(typeof renderHudVax === 'function') renderHudVax(ageMos);
-    if(typeof renderHudMilestones === 'function') renderHudMilestones(ageMos);
+    if(typeof window.renderMilestonesAndRedFlags === 'function') window.renderMilestonesAndRedFlags(ageMos);
     if(typeof renderHudCrash === 'function') renderHudCrash(wt, ageMos);
     if(typeof renderHudSmartCards === 'function') renderHudSmartCards(wt);
     
@@ -371,13 +333,6 @@ function renderHudRedFlags(ageMos) {
     out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--danger); font-size:0.85rem; line-height:1.6;">${flags.map(f=>`<li style="margin-bottom:6px;"><b>${f}</b></li>`).join('')}</ul>`;
 }
 
-window.renderHudVax = function(ageMos) {
-    // 🚀 SURGICAL PATCH: Stop the overwrite and route to the High-Fidelity UI
-    if (typeof window.renderVaccinesDue === 'function') {
-        window.renderVaccinesDue(ageMos);
-    }
-};
-
 // --- NEW: Teleport function from HUD to Tracker ---
 window.launchVaxToolFromHud = function() {
     const pId = AppStore.getActivePatientId();
@@ -393,23 +348,6 @@ window.launchVaxToolFromHud = function() {
         if(typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
     }, 100);
 };
-
-function renderHudMilestones(ageMos) {
-    const out = document.getElementById('hudMilestonesOutput');
-    if(!out) return;
-    if(!ageMos && ageMos !== 0) { out.innerHTML = 'Enter Age for expected milestones.'; out.className = 'hud-empty-state'; return; }
-    let ms = ["Observe general development."];
-    if(ageMos >= 2 && ageMos < 4) ms = ["Social smile", "Coos", "Holds head steady"];
-    else if(ageMos >= 4 && ageMos < 6) ms = ["Rolls over", "Laughs out loud", "Reaches for objects"];
-    else if(ageMos >= 6 && ageMos < 9) ms = ["Sits without support", "Babbles", "Transfers objects"];
-    else if(ageMos >= 9 && ageMos < 12) ms = ["Stands holding on", "Pincer grasp", "Waves bye-bye"];
-    else if(ageMos >= 12 && ageMos < 18) ms = ["Walks alone", "1-2 words with meaning", "Points to objects"];
-    else if(ageMos >= 18 && ageMos < 24) ms = ["Runs", "10+ words", "Eats with spoon"];
-    else if(ageMos >= 24) ms = ["Kicks ball", "2-word phrases", "Copies others"];
-
-    out.className = '';
-    out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--brand-pink); font-size:0.9rem; line-height:1.6; font-weight:600;">${ms.map(m=>`<li style="margin-bottom:4px;">${m}</li>`).join('')}</ul>`;
-}
 
 function renderHudCrash(wt, ageMos) {
     const out = document.getElementById('hudCrashOutput');
@@ -732,36 +670,6 @@ document.addEventListener('click', function(e) {
 // ==========================================
 // 🚀 MAGIC HUD ENGINE & PREDICTIVE VITALS
 // ==========================================
-window.predictExpectedVitals = function(yrs, mos) {
-    let totalMos = (yrs * 12) + mos;
-    let expected = { wt: "", ht: "", hc: "", mac: "" };
-
-    if (totalMos > 0) {
-        if (totalMos < 12) expected.wt = ((totalMos + 9) / 2).toFixed(1);
-        else if (yrs <= 6) expected.wt = ((yrs * 2) + 8).toFixed(1);
-        else if (yrs <= 12) expected.wt = (((yrs * 7) - 5) / 2).toFixed(1);
-
-        if (totalMos < 3) expected.ht = 60;
-        else if (totalMos < 6) expected.ht = 65;
-        else if (totalMos < 9) expected.ht = 70;
-        else if (totalMos < 12) expected.ht = 75;
-        else if (yrs <= 12) expected.ht = (yrs * 6) + 77;
-
-        if (totalMos <= 1) expected.hc = 35;
-        else if (totalMos <= 3) expected.hc = 40;
-        else if (totalMos <= 6) expected.hc = 43;
-        else if (totalMos <= 12) expected.hc = 46;
-        else if (yrs === 2) expected.hc = 48;
-        else if (yrs === 3) expected.hc = 49;
-        else if (yrs === 4) expected.hc = 50;
-        else if (yrs >= 5 && yrs <= 12) expected.hc = 51;
-
-        if (totalMos >= 6 && yrs <= 5) expected.mac = 15.5;
-        else if (yrs > 5 && yrs <= 10) expected.mac = 17.0;
-        else if (yrs > 10) expected.mac = 20.0;
-    }
-    return expected;
-};
 
 window.estimateWeightFromAge = function() {
     let yrs = parseInt(document.getElementById('ageYrs').value) || 0;
@@ -835,9 +743,8 @@ window.broadcastGlobalParameters = function() {
     renderHudAnthro(hc, mac, ageMos);
     renderHudVitals(ageMos);
     renderHudFluids(wt, ageMos);
-    renderHudRedFlags(ageMos);
-    renderHudVax(ageMos);
-    renderHudMilestones(ageMos);
+    if(typeof window.renderMilestonesAndRedFlags === 'function') window.renderMilestonesAndRedFlags(ageMos);
+    if(typeof window.renderVaccinesDue === 'function') window.renderVaccinesDue(ageMos);
     renderHudSmartCards(wt);
     
     if(typeof runHudQuickDose === 'function') runHudQuickDose();
@@ -998,30 +905,6 @@ function renderHudRedFlags(ageMos) {
 
     out.className = '';
     out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--danger); font-size:0.85rem; line-height:1.6;">${flags.map(f=>`<li style="margin-bottom:6px;"><b>${f}</b></li>`).join('')}</ul>`;
-}
-
-window.renderHudVax = function(ageMos) {
-    // 🚀 SURGICAL PATCH: Exorcism complete. Routing to High-Fidelity UI.
-    if (typeof window.renderVaccinesDue === 'function') {
-        window.renderVaccinesDue(ageMos);
-    }
-};
-
-function renderHudMilestones(ageMos) {
-    const out = document.getElementById('hudMilestonesOutput');
-    if(!out) return;
-    if(!ageMos && ageMos !== 0) { out.innerHTML = 'Enter Age for expected milestones.'; out.className = 'hud-empty-state'; return; }
-    let ms = ["Observe general development."];
-    if(ageMos >= 2 && ageMos < 4) ms = ["Social smile", "Coos", "Holds head steady"];
-    else if(ageMos >= 4 && ageMos < 6) ms = ["Rolls over", "Laughs out loud", "Reaches for objects"];
-    else if(ageMos >= 6 && ageMos < 9) ms = ["Sits without support", "Babbles", "Transfers objects"];
-    else if(ageMos >= 9 && ageMos < 12) ms = ["Stands holding on", "Pincer grasp", "Waves bye-bye"];
-    else if(ageMos >= 12 && ageMos < 18) ms = ["Walks alone", "1-2 words with meaning", "Points to objects"];
-    else if(ageMos >= 18 && ageMos < 24) ms = ["Runs", "10+ words", "Eats with spoon"];
-    else if(ageMos >= 24) ms = ["Kicks ball", "2-word phrases", "Copies others"];
-
-    out.className = '';
-    out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--brand-pink); font-size:0.9rem; line-height:1.6; font-weight:600;">${ms.map(m=>`<li style="margin-bottom:4px;">${m}</li>`).join('')}</ul>`;
 }
 
 function renderHudSmartCards(wt) {
