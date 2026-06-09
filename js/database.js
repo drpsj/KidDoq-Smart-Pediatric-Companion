@@ -252,3 +252,11 @@ const drugsDb = [
         36: [ { id: "m36_1", domain: "Lang", text: "3-4 word sentences.", sig: "Articulation." }, { id: "m36_2", domain: "Motor", text: "Pedals tricycle.", sig: "Coordination." }, { id: "m36_3", domain: "Motor", text: "Copies a circle.", sig: "Visual-motor." } ]
     };
     window.milestonesDb = milestonesDb;
+
+    // --- NAMESPACED EXPORT (Prevents global pollution while keeping fallbacks active) ---
+    window.ClinicalDB = {
+        drugs: drugsDb,
+        foods: foodsDb,
+        vaccines: baseVaccineSchema,
+        milestones: milestonesDb
+    };

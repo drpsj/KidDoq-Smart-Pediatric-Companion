@@ -1,0 +1,44 @@
+<div style="display:flex; align-items:center; margin-bottom:1.5rem; gap:15px;">
+    <button class="secondary" onclick="switchNavTab('toolsTab')" style="margin:0; padding:8px 12px; width:auto; border:none; background:var(--bg-body);">🔙 Back</button>
+    <h2 class="section-title" style="margin:0; border:none; color:var(--brand-pink);">🔬 Dermatology Hub</h2>
+</div>
+
+<div class="sub-tabs-nav">
+    <button class="sub-tab-btn active" onclick="switchSubTab('dermHemangiomaTab', this)">🩸 Hemangiomas</button>
+    <button class="sub-tab-btn" onclick="switchSubTab('dermWartTab', this); if(typeof renderWartTherapy === 'function') renderWartTherapy();">🦠 Wart (HPV) Therapy</button>
+</div>
+
+<!-- HEMANGIOMA TAB -->
+<div id="dermHemangiomaTab" class="sub-tab-content active">
+    <div class="timeline-section tool-grid" style="grid-template-columns: 1fr 2fr;">
+        <div>
+            <h3 style="color:var(--danger); margin-top:0;">Risk Assessment</h3>
+            <label>Select Lesion Location / Type</label>
+            <select id="hemangiomaSelect" onchange="if(typeof calcHemangioma === 'function') calcHemangioma()" style="font-weight:bold;">
+                <option value="">-- Select Location --</option>
+                <option value="beard">Beard Distribution (Chin, Lips, Neck)</option>
+                <option value="periorbital">Periorbital Region</option>
+                <option value="lumbosacral">Lumbosacral (Midline)</option>
+                <option value="multiple">Multiple Cutaneous / Large Facial</option>
+                <option value="kasabach">Deep Red-Blue / Firm / Rapidly Enlarging</option>
+                <option value="uncomplicated">Uncomplicated Cutaneous</option>
+            </select>
+            <div class="formula-box" style="margin-top:15px; font-size:0.8rem;">
+                <b>Steroid Intervention:</b><br>
+                Prednisone/Prednisolone at 2 - 3 mg/kg/day for lesions requiring intervention.
+            </div>
+        </div>
+        <div id="hemangiomaOutputArea" class="tool-result neutral" style="display:flex; align-items:center; justify-content:center; text-align:center;">
+            Select a location to view Harriet Lane complication risks and management.
+        </div>
+    </div>
+</div>
+
+<!-- WART THERAPY TAB -->
+<div id="dermWartTab" class="sub-tab-content">
+    <div class="timeline-section">
+        <h3 style="color:var(--primary); margin-top:0;">Wart Therapy Protocols</h3>
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Note: Spontaneous resolution occurs in over 75% of warts in otherwise healthy individuals within 3 years.</div>
+        <div id="wartTherapyArea" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;"></div>
+    </div>
+</div>

@@ -51,6 +51,35 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // ==========================================
+// 🌐 DYNAMIC VIEW LOADER (Combats HTML Bloat)
+// ==========================================
+window.ViewLoader = {
+    loadedViews: new Set(),
+    async loadAndOpen(viewId) {
+        const container = document.getElementById(viewId);
+        
+        // Fetch external HTML if not loaded yet
+        if (container && container.dataset.external && !this.loadedViews.has(viewId)) {
+            try {
+                const response = await fetch(container.dataset.external);
+                if (!response.ok) throw new Error("Network response was not ok");
+                const html = await response.text();
+                container.innerHTML = html;
+                this.loadedViews.add(viewId);
+            } catch (err) {
+                console.error("Failed to load view:", viewId, err);
+                container.innerHTML = `<div class="tool-result danger" style="margin:20px;">Failed to load module. Ensure you are running a local server (e.g., Live Server) for fetch() to work.</div>`;
+            }
+        }
+        
+        // Route to original open function safely
+        if (typeof window.openClinicalTool === 'function') {
+            window.openClinicalTool(viewId);
+        }
+    }
+};
+
+// ==========================================
 // 🚀 MAGIC HUD ENGINE (Cockpit Dashboard)
 // ==========================================
 
@@ -342,32 +371,12 @@ function renderHudRedFlags(ageMos) {
     out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--danger); font-size:0.85rem; line-height:1.6;">${flags.map(f=>`<li style="margin-bottom:6px;"><b>${f}</b></li>`).join('')}</ul>`;
 }
 
-function renderHudVax(ageMos) {
-    const out = document.getElementById('hudVaxOutput');
-    if(!out) return;
-    if(!ageMos && ageMos !== 0) { out.innerHTML = 'Enter Age to see due vaccines.'; out.className = 'hud-empty-state'; return; }
-    
-    let due = "Annual Flu / Catch-up Check";
-    let color = "var(--success)"; let bg = "rgba(16,185,129,0.1)";
-
-    if(ageMos < 1.0) { due = "Birth: BCG, OPV 0, Hep B 0"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 1.0 && ageMos < 2.0) { due = "6 Wks: Penta 1, OPV 1, Rota 1, fIPV 1"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 2.0 && ageMos < 3.0) { due = "10 Wks: Penta 2, OPV 2, Rota 2"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 3.0 && ageMos < 8.0) { due = "14 Wks: Penta 3, OPV 3, Rota 3, fIPV 2"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 8.0 && ageMos <= 12.0) { due = "9 Mos: MR 1, JE 1, fIPV 3, Vit A"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos > 12.0 && ageMos <= 24.0) { due = "16-24 Mos: MR 2, JE 2, DPT B1, OPV B"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    else if(ageMos >= 54 && ageMos <= 72) { due = "5-6 Yrs: DPT Booster 2"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    else if(ageMos >= 114 && ageMos <= 126) { due = "10 Yrs: Td (Tetanus & Diphtheria)"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    else if(ageMos >= 186 && ageMos <= 198) { due = "16 Yrs: Td (Tetanus & Diphtheria)"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    
-    out.className = '';
-    // Turned into a clickable trigger to launch the deep tool
-    out.innerHTML = `
-        <div onclick="launchVaxToolFromHud()" style="cursor:pointer; font-weight:700; color:${color}; font-size:0.95rem; padding:12px; background:${bg}; border-radius:6px; border:1px solid ${color}40; text-align:center; line-height:1.4; transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-            ${due}
-            <div style="font-size:0.75rem; margin-top:4px; opacity:0.8;">Tap to open full tracker ➔</div>
-        </div>`;
-}
+window.renderHudVax = function(ageMos) {
+    // 🚀 SURGICAL PATCH: Stop the overwrite and route to the High-Fidelity UI
+    if (typeof window.renderVaccinesDue === 'function') {
+        window.renderVaccinesDue(ageMos);
+    }
+};
 
 // --- NEW: Teleport function from HUD to Tracker ---
 window.launchVaxToolFromHud = function() {
@@ -991,27 +1000,12 @@ function renderHudRedFlags(ageMos) {
     out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--danger); font-size:0.85rem; line-height:1.6;">${flags.map(f=>`<li style="margin-bottom:6px;"><b>${f}</b></li>`).join('')}</ul>`;
 }
 
-function renderHudVax(ageMos) {
-    const out = document.getElementById('hudVaxOutput');
-    if(!out) return;
-    if(!ageMos && ageMos !== 0) { out.innerHTML = 'Enter Age to see due vaccines.'; out.className = 'hud-empty-state'; return; }
-    
-    let due = "Annual Flu / Catch-up Check";
-    let color = "var(--success)"; let bg = "rgba(16,185,129,0.1)";
-
-    if(ageMos < 1.0) { due = "Birth: BCG, OPV 0, Hep B 0"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 1.0 && ageMos < 2.0) { due = "6 Wks: Penta 1, OPV 1, Rota 1, fIPV 1"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 2.0 && ageMos < 3.0) { due = "10 Wks: Penta 2, OPV 2, Rota 2"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 3.0 && ageMos < 8.0) { due = "14 Wks: Penta 3, OPV 3, Rota 3, fIPV 2"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos >= 8.0 && ageMos <= 12.0) { due = "9 Mos: MR 1, JE 1, fIPV 3, Vit A"; color = "#e11d48"; bg = "rgba(225,29,72,0.1)"; }
-    else if(ageMos > 12.0 && ageMos <= 24.0) { due = "16-24 Mos: MR 2, JE 2, DPT B1, OPV B"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    else if(ageMos >= 54 && ageMos <= 72) { due = "5-6 Yrs: DPT Booster 2"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    else if(ageMos >= 114 && ageMos <= 126) { due = "10 Yrs: Td (Tetanus & Diphtheria)"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    else if(ageMos >= 186 && ageMos <= 198) { due = "16 Yrs: Td (Tetanus & Diphtheria)"; color = "#0ea5e9"; bg = "rgba(14,165,233,0.1)"; }
-    
-    out.className = '';
-    out.innerHTML = `<div style="font-weight:700; color:${color}; font-size:0.95rem; padding:12px; background:${bg}; border-radius:6px; border:1px solid ${color}40; text-align:center; line-height:1.4;">${due}</div>`;
-}
+window.renderHudVax = function(ageMos) {
+    // 🚀 SURGICAL PATCH: Exorcism complete. Routing to High-Fidelity UI.
+    if (typeof window.renderVaccinesDue === 'function') {
+        window.renderVaccinesDue(ageMos);
+    }
+};
 
 function renderHudMilestones(ageMos) {
     const out = document.getElementById('hudMilestonesOutput');
