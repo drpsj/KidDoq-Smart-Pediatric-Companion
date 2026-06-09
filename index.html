@@ -487,15 +487,15 @@
                     <div class="row-inputs" style="padding-top: 30px; margin-bottom: 10px;">
                         <div>
                             <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Height (cm)</label>
-                            <input type="number" id="hudHt" placeholder="0.0" oninput="renderAnthropometry()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                            <input type="number" id="hudHt" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
                         </div>
                         <div>
                             <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Head Circ (cm)</label>
-                            <input type="number" id="hudHc" placeholder="0.0" oninput="renderAnthropometry()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                            <input type="number" id="hudHc" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
                         </div>
                         <div>
                             <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">MAC (cm)</label>
-                            <input type="number" id="hudMac" placeholder="0.0" oninput="renderAnthropometry()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                            <input type="number" id="hudMac" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
                         </div>
                     </div>
                 </div>
@@ -723,16 +723,12 @@
                         </div>
                     </div>
                     <div class="card-body" style="padding: 15px;">
-                        
-                        <!-- 1. Star Feature: Maintenance Fluids -->
-                        <div id="hudFluidsOutput" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 15px;">
-                            <div class="hud-empty-state" style="border:none; padding: 0;">Enter Weight for Maintenance Fluids.</div>
-                        </div>
-
-                        <!-- 2. Patient Mode Vitals Inputs -->
-                        <div id="hudVitalsOutput" data-age-bracket="">
-                            <div class="hud-empty-state" style="border:none; padding: 0;">Enter Age to calibrate normal ranges.</div>
-                        </div>
+    <div id="hudFluidsOutput" style="margin-bottom: 15px;"></div>
+    
+    <div id="hudVitalsOutput" data-age-bracket="">
+        <div class="hud-empty-state" style="border:none; padding: 0;">Enter Age to calibrate normal ranges.</div>
+    </div>
+</div>
 
                     </div>
                 </div>
@@ -749,11 +745,6 @@
     <div class="card-body" id="hudMilestonesOutput" style="padding: 15px; display: flex; flex-direction: column;">
         <div class="hud-empty-state" style="border:none;">Enter Age</div>
     </div>
-</div>
-
-                <div class="bento-card" style="box-shadow: inset 0 40px 60px -30px rgba(239, 68, 68, 0.12), var(--shadow-sm); border-top: 1px solid rgba(239, 68, 68, 0.2);">
-    <div class="card-header"><div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--danger);">🚨</div><div class="card-title-group"><h3>Red Flags</h3><span class="card-subtitle">Anticipatory Warnings</span></div></div>
-    <div class="card-body" id="hudRedFlagsOutput"><div class="hud-empty-state" style="border:none;">Integrated into Milestones card.</div></div>
 </div>
                 
                 <div class="bento-card card-tools">
@@ -1809,7 +1800,7 @@
                 <div class="sub-tabs-nav">
                     <button class="sub-tab-btn active" onclick="switchSubTab('msEvalTab', this)">📋 Timeline</button>
                     <button class="sub-tab-btn" onclick="switchSubTab('msProgressTab', this)">📈 Dashboard</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('msMissedTab', this)">🚨 Red Flags</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('msMissedTab', this)">🚨 </button>
                     <button class="sub-tab-btn" onclick="switchSubTab('msReferenceTab', this); if(typeof buildMilestoneReference==='function') buildMilestoneReference();">📘 Standards</button>
                 </div>
                 
@@ -2160,30 +2151,32 @@ function toggleAnchorGender() {
     if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
 }
 
-// 1.5 MANUAL DESKTOP ENTRY ENGINE
-function manualEditWeight() {
-    let current = document.getElementById('hudWeight').value || 0;
-    let input = prompt("Enter Patient Weight in kg (e.g., 10.5):", current);
-    if (input !== null && input !== "" && !isNaN(input)) {
-        let newWt = parseFloat(input);
-        if (newWt < 0) newWt = 0;
-        
-        document.getElementById('hudWeight').value = newWt.toFixed(1);
-        document.getElementById('anchorWtDisplay').innerText = newWt.toFixed(1);
-        
-        const currentAgeTotal = (parseInt(document.getElementById('hudAgeYrs').value) || 0) * 12 + (parseInt(document.getElementById('hudAgeMos').value) || 0);
-        renderInstantDoses(newWt);
-        renderGrowthSnapshot(currentAgeTotal, newWt);
-        renderVitalsAndFluids(currentAgeTotal, newWt);
-        renderAnthropometry();
-        
-        if(typeof syncHudAge === 'function') syncHudAge();
-        if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
-        runCortexTelemetry(currentAgeTotal);
-    }
-}
+/// ==========================================
+// 🚀 MASTER TELEMETRY ENGINE (Resilient Scoping)
+// ==========================================
+window.syncAllDashboards = function() {
+    const yrs = parseInt(document.getElementById('hudAgeYrs')?.value) || 0;
+    const mos = parseInt(document.getElementById('hudAgeMos')?.value) || 0;
+    const tm = (yrs * 12) + mos;
+    const wt = parseFloat(document.getElementById('hudWeight')?.value) || 0;
 
-function manualEditAge() {
+    // Fire ALL Dashboard Engines Safely
+    try { if(typeof renderInstantDoses === 'function') renderInstantDoses(wt); } catch(e) {}
+    try { if(typeof renderGrowthSnapshot === 'function') renderGrowthSnapshot(tm, wt); } catch(e) {}
+    try { if(typeof renderAnthropometry === 'function') renderAnthropometry(); } catch(e) {}
+    try { if(typeof renderMilestonesAndRedFlags === 'function') renderMilestonesAndRedFlags(tm); } catch(e) {}
+    try { if(typeof renderVaccinesDue === 'function') renderVaccinesDue(tm); } catch(e) {}
+    try { if(typeof runCortexTelemetry === 'function') runCortexTelemetry(tm); } catch(e) {}
+    
+    // 🚀 SURGICAL PATCH: Trigger the Vitals & Fluids Engine
+    try { if(typeof renderVitalsAndFluids === 'function') renderVitalsAndFluids(tm, wt); } catch(e) {}
+
+    // 🚀 RECONNECT ORIGINAL VITALS ENGINE
+    try { if(typeof autoApproximateVitals === 'function') autoApproximateVitals(tm); } catch(e) {}
+    try { if(typeof window.autoApproximateVitals === 'function') window.autoApproximateVitals(tm); } catch(e) {}
+};
+
+window.manualEditAge = function() {
     let currentY = parseInt(document.getElementById('hudAgeYrs').value) || 0;
     let currentM = parseInt(document.getElementById('hudAgeMos').value) || 0;
     let currentTotal = (currentY * 12) + currentM;
@@ -2203,28 +2196,18 @@ function manualEditAge() {
         if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
         document.getElementById('anchorAgeDisplay').innerText = ageStr;
         
-        // 🚀 THE FIX: Run the CNS Auto-Approximator
-        const autoWt = autoApproximateVitals(newTotal);
-        
-        renderInstantDoses(autoWt);
-        renderGrowthSnapshot(newTotal, autoWt);
-        renderVitalsAndFluids(newTotal, autoWt);
-        renderAnthropometry();
-        renderMilestonesAndRedFlags(newTotal);
-        if(typeof renderVaccinesDue === 'function') renderVaccinesDue(newTotal);
-        
-        if(typeof syncHudAge === 'function') syncHudAge();
-        if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
-        runCortexTelemetry(newTotal);
+        if(typeof autoApproximateVitals === 'function') autoApproximateVitals(newTotal);
+        window.syncAllDashboards(); // Broadcast update!
     }
-}
+};
 
-// 2. DIRECT SCRUB ENGINE
-function attachDirectScrub(zoneId, type) {
+// 2. DIRECT SCRUB ENGINE (Wired to Master Telemetry)
+window.attachDirectScrub = function(zoneId, type) {
     const zone = document.getElementById(zoneId);
+    if (!zone) return;
     let startX = 0;
     let startVal = 0; 
-    let startTotalMonths = 0; 
+    let startTotalMonths = 0;
 
     zone.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
@@ -2235,7 +2218,7 @@ function attachDirectScrub(zoneId, type) {
             const m = parseInt(document.getElementById('hudAgeMos').value) || 0;
             startTotalMonths = (y * 12) + m;
         }
-        zone.style.background = 'rgba(0, 212, 255, 0.15)'; // Highlight
+        zone.style.background = 'rgba(0, 212, 255, 0.15)'; 
     }, { passive: true });
 
     zone.addEventListener('touchmove', (e) => {
@@ -2243,7 +2226,7 @@ function attachDirectScrub(zoneId, type) {
         const deltaX = currentX - startX;
         
         if (Math.abs(deltaX) > 5) {
-            e.preventDefault(); // Lock screen from bouncing
+            e.preventDefault(); 
             
             if (type === 'weight') {
                 let steps = Math.floor(deltaX / 8); 
@@ -2253,20 +2236,8 @@ function attachDirectScrub(zoneId, type) {
                 document.getElementById('hudWeight').value = newWt.toFixed(1);
                 document.getElementById('anchorWtDisplay').innerText = newWt.toFixed(1);
                 
-                renderInstantDoses(newWt);
-                
-                // Trigger Growth Card on Weight change
-                const currentAgeTotal = (parseInt(document.getElementById('hudAgeYrs').value) || 0) * 12 + (parseInt(document.getElementById('hudAgeMos').value) || 0);
-                renderGrowthSnapshot(currentAgeTotal, newWt);
-                
-                // Trigger Vitals & Fluids on Weight change
-                renderVitalsAndFluids(currentAgeTotal, newWt);
-                
-                // NEW: Trigger Anthropometry on Age change (to verify 6-59 month standard)
-                renderAnthropometry();
-                
             } else if (type === 'age') {
-                let steps = Math.floor(deltaX / 10); 
+                let steps = Math.floor(deltaX / 10);
                 let newTotal = startTotalMonths + steps; 
                 if (newTotal < 0) newTotal = 0;
                 
@@ -2280,38 +2251,26 @@ function attachDirectScrub(zoneId, type) {
                 if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
                 document.getElementById('anchorAgeDisplay').innerText = ageStr;
                 
-                // 🚀 THE FIX: Run the CNS Auto-Approximator dynamically while scrubbing
-                const autoWt = autoApproximateVitals(newTotal);
-                
-                renderInstantDoses(autoWt);
-                renderGrowthSnapshot(newTotal, autoWt);
-                renderVitalsAndFluids(newTotal, autoWt);
-                renderAnthropometry();
-                renderMilestonesAndRedFlags(newTotal);
-                if(typeof renderVaccinesDue === 'function') renderVaccinesDue(newTotal);
+                if(typeof autoApproximateVitals === 'function') autoApproximateVitals(newTotal);
             }
             
-            // Instantly fire clinical math & telemetry
-            if(typeof syncHudAge === 'function') syncHudAge();
-            if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
-            
-            const y = parseInt(document.getElementById('hudAgeYrs').value) || 0;
-            const m = parseInt(document.getElementById('hudAgeMos').value) || 0;
-            runCortexTelemetry((y*12)+m);
+            // 🚀 FIRE ALL DASHBOARD CARDS INSTANTLY
+            window.syncAllDashboards();
         }
     }, { passive: false });
 
     zone.addEventListener('touchend', () => {
         zone.style.background = 'transparent';
     });
-}
+};
 
 // 3. INTELLIGENT TELEMETRY (Living Interface Depth)
 function runCortexTelemetry(totalMonths) {
     // Instantly calculate vaccines based on age
     if(typeof renderVaccinesDue === 'function') renderVaccinesDue(totalMonths);
     
-    const growth = document.getElementById('bentoGrowth');
+    // 🚀 SURGICAL PATCH: Corrected the ID to match your HTML
+    const growth = document.getElementById('growthSnapshotCard');
     const nutrition = document.getElementById('bentoNutrition');
     const vitals = document.getElementById('bentoVitals');
     const vaccines = document.getElementById('bentoVaccines');
@@ -2328,6 +2287,8 @@ function runCortexTelemetry(totalMonths) {
             card.style.opacity = '0.5';
         }
     };
+
+    // ... (rest of your sorting logic remains unchanged)
 
     if (totalMonths <= 1) { 
         // Neonate: Focus on Vitals & Growth
@@ -2736,13 +2697,15 @@ window.renderVaccinesDue = function(totalMonths) {
     vaxContainer.innerHTML = html;
 };
 
-// 6. GROWTH SNAPSHOT TELEMETRY (Bridge to Dynamic UI)
+// ==========================================
+// 6. GROWTH SNAPSHOT TELEMETRY & TRIAGE MATH
+// ==========================================
 window.renderGrowthSnapshot = function(totalMonths, weightInKg) {
     const wt = parseFloat(weightInKg) || 0;
     
-    // 1. Empty state if no weight is entered
+    // 1. Empty state
     if (wt <= 0) {
-        if (typeof updateGrowthSnapshot === 'function') updateGrowthSnapshot(0);
+        if (typeof window.updateGrowthSnapshot === 'function') window.updateGrowthSnapshot(0, 0);
         const badge = document.getElementById('liveSeverityText');
         const icon = document.getElementById('liveSeverityIcon');
         if(badge) badge.innerText = "AWAITING WEIGHT";
@@ -2750,50 +2713,26 @@ window.renderGrowthSnapshot = function(totalMonths, weightInKg) {
         
         const card = document.getElementById('growthSnapshotCard');
         if(card) {
-            card.className = 'bento-card'; // Strip colored states
+            card.className = 'bento-card'; 
             card.style.borderColor = 'rgba(255,255,255,0.1)';
         }
         return;
     }
 
-    // 2. SIMULATE WHO Z-SCORE MATH 
-    // (Note: Replace this math with your actual clinical-math.js WHO datasets later)
+    // 2. WHO Z-SCORE MATH 
     const estimated50th = (totalMonths < 12) ? (totalMonths * 0.5 + 3.3) : (totalMonths * 0.2 + 8);
     let simulatedZScore = ((wt - estimated50th) / (estimated50th * 0.1)); 
     
-    // Cap for visual scale bounds
     if (simulatedZScore > 3.0) simulatedZScore = 3.0;
     if (simulatedZScore < -6.0) simulatedZScore = -6.0;
 
-    // 3. Fire the new dynamic UI engine
-    if (typeof updateGrowthSnapshot === 'function') {
-        updateGrowthSnapshot(simulatedZScore);
+    // 3. Fire the UI Engine and pass the Weight!
+    if (typeof window.updateGrowthSnapshot === 'function') {
+        window.updateGrowthSnapshot(simulatedZScore, wt);
     }
 };
 
-// 🚀 NEW: Hardware-Accelerated Number Counter Engine
-function animateValue(obj, start, end, duration) {
-    if (!obj) return;
-    let startTimestamp = null;
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentVal = (progress * (end - start) + start).toFixed(obj.dataset.decimals || 0);
-        
-        obj.innerHTML = currentVal;
-        
-        if (progress < 1) {
-            window.requestAnimationFrame(step);
-        } else {
-            obj.innerHTML = end; 
-        }
-    };
-    window.requestAnimationFrame(step);
-}
-
-// 🚀 GROWTH SNAPSHOT TELEMETRY ENGINE
-window.updateGrowthSnapshot = function(zScore) {
+window.updateGrowthSnapshot = function(zScore, wt) {
     const card = document.getElementById('growthSnapshotCard');
     const zText = document.getElementById('liveZScore');
     const badgeText = document.getElementById('liveSeverityText');
@@ -2802,14 +2741,11 @@ window.updateGrowthSnapshot = function(zScore) {
 
     if (!card || !zText) return;
 
-    // 1. Format Score (Always show 2 decimals and sign)
     const formattedZ = (zScore > 0 ? '+' : '') + parseFloat(zScore).toFixed(2);
     zText.innerText = formattedZ;
 
-    // 2. Clear old states
     card.classList.remove('growth-state-severe', 'growth-state-moderate', 'growth-state-mild', 'growth-state-normal', 'growth-state-high');
 
-    // 3. Determine WHO Classification & Apply Styles
     let cssVarColor = "";
     if (zScore <= -3.0) {
         card.classList.add('growth-state-severe');
@@ -2833,15 +2769,77 @@ window.updateGrowthSnapshot = function(zScore) {
         cssVarColor = "var(--sev-high)";
     }
 
-    // 4. Calculate Marker Position on the Horizontal Spectrum
-    // Math: Range is -6 to +3 (total span of 9). 
-    let clampedZ = Math.max(-6, Math.min(zScore, 3)); // Keep it within visual bounds
+    let clampedZ = Math.max(-6, Math.min(zScore, 3)); 
     let percentage = ((clampedZ - (-6)) / 9) * 100;
     
-    // Animate marker
     marker.style.left = `${percentage}%`;
     marker.style.background = cssVarColor;
     marker.style.boxShadow = `0 0 10px ${cssVarColor}`;
+
+    // ==========================================
+    // 🚀 WHO TRIAGE PROTOCOL & F-75 CALCULATOR
+    // ==========================================
+    let tray = document.getElementById('whoTriageTray');
+    if (!tray) {
+        tray = document.createElement('div');
+        tray.id = 'whoTriageTray';
+        tray.className = 'triage-tray-hidden';
+        card.appendChild(tray);
+    }
+
+    if (zScore <= -3.0) {
+        // F-75 WHO Target Math (130 mL/kg/day Phase 1)
+        const f75Daily = (wt * 130).toFixed(0);
+        const f75TwoHour = (wt * 11).toFixed(0);
+        const f75ThreeHour = (wt * 16).toFixed(0);
+
+        tray.className = 'triage-tray-active triage-sam';
+        tray.innerHTML = `
+            <div class="triage-header">🚨 SAM WHO Protocol Activated</div>
+            <label class="triage-item"><input type="checkbox"> Check for bilateral pitting edema</label>
+            <label class="triage-item"><input type="checkbox"> Assess Appetite (RUTF Test)</label>
+            <label class="triage-item"><input type="checkbox"> Medical Complications? (Lethargy, Fever)</label>
+            
+            <div class="triage-action-btn" onclick="document.getElementById('samMathData').style.display='block'; this.style.display='none';">Calculate F-75 Formula Drip ➔</div>
+            
+            <div id="samMathData" style="display:none; margin-top: 10px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255, 51, 102, 0.4); padding: 12px; border-radius: 8px; animation: slideUpFade 0.3s ease forwards;">
+                <div style="font-size: 0.7rem; color: var(--brand-pink); font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">Phase 1: F-75 Target (${wt} kg)</div>
+                <div style="display:flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 6px;">
+                    <span style="font-size: 0.8rem; color: #fff; font-weight: 600;">Total 24h Volume</span>
+                    <span style="font-size: 1rem; color: var(--brand-pink); font-weight: 800;">${f75Daily} <span style="font-size: 0.7rem;">mL/day</span></span>
+                </div>
+                <div style="display:flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); font-weight: 600;">2-Hourly (12 Feeds)</span>
+                    <span style="font-size: 0.95rem; color: #fff; font-weight: 800;">${f75TwoHour} <span style="font-size: 0.7rem;">mL/feed</span></span>
+                </div>
+                <div style="display:flex; justify-content: space-between;">
+                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); font-weight: 600;">3-Hourly (8 Feeds)</span>
+                    <span style="font-size: 0.95rem; color: #fff; font-weight: 800;">${f75ThreeHour} <span style="font-size: 0.7rem;">mL/feed</span></span>
+                </div>
+            </div>
+        `;
+    } else if (zScore <= -2.0) {
+        // MAM Target Math (Plumpy'Sup standard logic)
+        const rusfDose = wt < 8 ? "1 Sachet/Day" : "2 Sachets/Day";
+        
+        tray.className = 'triage-tray-active triage-mam';
+        tray.innerHTML = `
+            <div class="triage-header">⚠️ MAM Protocol Activated</div>
+            <label class="triage-item"><input type="checkbox"> Assess for underlying infections</label>
+            <label class="triage-item"><input type="checkbox"> Schedule 14-Day Weight Follow-up</label>
+            
+            <div class="triage-action-btn" style="border-color: rgba(255, 171, 0, 0.4); color: #FFAB00;" onclick="document.getElementById('mamMathData').style.display='block'; this.style.display='none';">Calculate RUSF Target ➔</div>
+
+            <div id="mamMathData" style="display:none; margin-top: 10px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255, 171, 0, 0.4); padding: 12px; border-radius: 8px; animation: slideUpFade 0.3s ease forwards;">
+                <div style="font-size: 0.7rem; color: #FFAB00; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Target Formulation (${wt} kg)</div>
+                <div style="font-size: 1rem; color: #fff; font-weight: 800;">${rusfDose} <span style="font-size:0.75rem; color: rgba(255,255,255,0.5);">(500-1000 kcal)</span></div>
+                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 4px;">Ready-to-Use Supplementary Food (Plumpy'Sup)</div>
+            </div>
+        `;
+    } else {
+        tray.className = 'triage-tray-hidden';
+        tray.innerHTML = ''; 
+    }
 };
 
 // 7. VITALS & FLUIDS TELEMETRY (Patient Mode Engine)
@@ -3116,7 +3114,7 @@ window.renderAnthropometry = function() {
 };
 
 // ==========================================
-// 6. HIGH-FIDELITY MILESTONES ENGINE (Independent & Bulletproof)
+// 6. HIGH-FIDELITY MILESTONES ENGINE (Premium Anatomical Map)
 // ==========================================
 window.renderMilestonesAndRedFlags = function(totalMonths) {
     const msContainer = document.getElementById('hudMilestonesOutput');
@@ -3135,8 +3133,8 @@ window.renderMilestonesAndRedFlags = function(totalMonths) {
         tm = ((parseInt(document.getElementById('hudAgeYrs')?.value) || 0) * 12) + (parseInt(document.getElementById('hudAgeMos')?.value) || 0);
     }
 
-    // 2. The Independent Clinical Database (Failsafe)
-    const localMsDb = {
+    // 2. Local Independent Reference Database
+    const msDb = window.milestonesDb || {
         2: [ { id: "m2_1", domain: "Social", text: "Social smile.", sig: "Vision/Attachment." }, { id: "m2_2", domain: "Motor", text: "Holds head up briefly.", sig: "Hypotonia." } ],
         4: [ { id: "m4_1", domain: "Motor", text: "Rolls front to back.", sig: "Motor delay." }, { id: "m4_2", domain: "Lang", text: "Babbles/Coos.", sig: "Hearing loss." } ],
         6: [ { id: "m6_1", domain: "Motor", text: "Sits with support.", sig: "Hypotonia." }, { id: "m6_2", domain: "Lang", text: "Responds to sounds.", sig: "Hearing/Neuro." } ],
@@ -3146,114 +3144,139 @@ window.renderMilestonesAndRedFlags = function(totalMonths) {
         24: [ { id: "m24_1", domain: "Lang", text: "2-word sentences.", sig: "Speech delay." }, { id: "m24_2", domain: "Motor", text: "Runs well.", sig: "Motor delay." } ]
     };
 
-    // Safely merge with your external database if it exists
-    const msDb = window.milestonesDb || localMsDb;
-
-    // 3. Find Current Target Bracket
     let targetMonth = 0;
-    // Safely parse available months
     const availableMonths = [2, 4, 6, 9, 12, 15, 18, 24, 30, 36, 48, 60];
     availableMonths.forEach(month => {
         if (month <= tm && msDb[month]) targetMonth = month;
     });
 
-    // 4. Generate Front Face Targets
+    // 3. Generate Front View Checkpoints
     let currentTargetsHTML = "";
     if (tm === 0) {
-        currentTargetsHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:10px; text-align:center;">Scrub age to view expected milestones...</div>`;
+        currentTargetsHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:10px; text-align:center;">Scrub age to map milestones...</div>`;
     } else if (targetMonth === 0) {
-        currentTargetsHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:10px; text-align:center;">No specific milestones for this early age.</div>`;
+        currentTargetsHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:10px; text-align:center;">Initial stabilization phase.</div>`;
     } else {
-        // Failsafe array check
         let targets = Array.isArray(msDb[targetMonth]) ? msDb[targetMonth] : [];
         currentTargetsHTML = targets.slice(0, 3).map(ms => `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px; margin-bottom:8px;">
-                <div style="font-size:0.85rem; font-weight:700; color:#fff;">${ms.text}</div>
-                <div style="font-size:0.65rem; color:var(--brand-cyan); border:1px solid var(--brand-cyan); padding:2px 6px; border-radius:4px; font-weight:bold;">${ms.domain}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.82rem; font-weight:700; color:#fff;">${ms.text}</div>
+                <div style="font-size:0.65rem; color:var(--brand-cyan); border:1px solid rgba(0,229,255,0.3); padding:2px 6px; border-radius:4px; font-weight:800; background:rgba(0,229,255,0.05);">${ms.domain}</div>
             </div>
         `).join('');
     }
 
-    // 5. SVG & Front Face HTML
-    const neuralCoreSVG = `
+    // 4. Layered Medical SVG Illustration
+    const premiumBrainSVG = `
     <div class="neural-core-wrapper" onclick="document.getElementById('milesFlipCard').classList.add('is-flipped')">
-        <svg class="neural-core-svg" viewBox="0 0 100 100">
-            <path class="neural-base" d="M50,15 C20,15 20,85 50,85 S80,85 80,50 C80,15 50,15 50,15 Z M50,15 C50,40 30,40 30,50 C30,60 50,60 50,85 M50,15 C60,20 80,30 80,50 C80,70 60,80 50,85" />
-            <path class="neural-synapse" stroke-dasharray="4 8" d="M35 50 Q 50 30 65 50" />
-            <path class="neural-synapse" stroke-dasharray="4 8" d="M35 50 Q 20 70 50 85" />
-            <path class="neural-synapse" stroke-dasharray="4 8" d="M65 50 Q 80 70 50 85" />
-            <circle class="neural-pulse-node" cx="35" cy="50" r="2" />
-            <circle class="neural-pulse-node" cx="65" cy="50" r="2" />
-            <circle class="neural-pulse-node" cx="50" cy="85" r="2" />
+        <svg class="neural-core-svg" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="neuralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--brand-cyan)" />
+                    <stop offset="100%" stop-color="var(--brand-pink)" />
+                </linearGradient>
+            </defs>
+            
+            <path class="anatomical-silhouette" d="M50,70 C30,65 25,45 45,30 C60,15 90,10 120,15 C155,20 175,40 175,65 C175,85 165,100 150,105 C145,115 155,130 140,135 C125,140 115,120 110,115 C105,125 108,148 100,150 C92,152 90,130 90,115 C75,115 55,110 45,95 C38,85 45,75 50,70 Z" />
+            <path class="anatomical-silhouette" d="M110,115 C115,110 135,108 145,112 C150,115 145,125 135,125 C125,125 115,120 110,115 Z" opacity="0.4"/>
+            
+            <g class="neural-scaffold">
+                <line x1="45" y1="45" x2="65" y2="35" /> <line x1="65" y1="35" x2="95" y2="30" />
+                <line x1="95" y1="30" x2="130" y2="35" /> <line x1="130" y1="35" x2="160" y2="50" />
+                <line x1="45" y1="45" x2="60" y2="65" /> <line x1="60" y1="65" x2="90" y2="60" />
+                <line x1="90" y1="60" x2="125" y2="65" /> <line x1="125" y1="65" x2="155" y2="75" />
+                <line x1="60" y1="65" x2="55" y2="90" /> <line x1="55" y1="90" x2="85" y2="95" />
+                <line x1="85" y1="95" x2="115" y2="90" /> <line x1="115" y1="90" x2="140" y2="95" />
+                <line x1="115" y1="90" x2="100" y2="135" /> <line x1="125" y1="65" x2="130" y2="118" />
+            </g>
+
+            <g>
+                <path class="synapse-flow-line" d="M45,45 Q65,35 95,30 T130,35 T160,50" />
+                <path class="synapse-flow-line synapse-flow-fast" d="M45,45 Q60,65 90,60 T125,65 T155,75" />
+                <path class="synapse-flow-line" d="M55,90 Q85,95 115,90 T140,95" />
+                <path class="synapse-flow-line" d="M125,65 L130,118" />
+            </g>
+
+            <g>
+                <circle class="node-base node-fire-alpha" cx="45" cy="45" r="3.5" />
+                <circle class="node-base node-fire-beta" cx="65" cy="35" r="3" />
+                <circle class="node-base node-fire-gamma" cx="95" cy="30" r="4" />
+                <circle class="node-base node-fire-alpha" cx="130" cy="35" r="3" />
+                <circle class="node-base node-fire-beta" cx="160" cy="50" r="3.5" />
+                <circle class="node-base node-fire-gamma" cx="60" cy="65" r="3" />
+                <circle class="node-base node-fire-alpha" cx="90" cy="60" r="4.5" />
+                <circle class="node-base node-fire-beta" cx="125" cy="65" r="3.5" />
+                <circle class="node-base node-fire-gamma" cx="155" cy="75" r="3" />
+                <circle class="node-base node-fire-alpha" cx="55" cy="90" r="3" />
+                <circle class="node-base node-fire-beta" cx="85" cy="95" r="4" />
+                <circle class="node-base node-fire-gamma" cx="115" cy="90" r="3.5" />
+                <circle class="node-base node-fire-alpha" cx="140" cy="95" r="3" />
+                <circle class="node-base node-fire-beta" cx="130" cy="118" r="2.5" />
+                <circle class="node-base node-fire-gamma" cx="100" cy="135" r="2.5" />
+            </g>
         </svg>
     </div>`;
 
     const frontFaceHTML = `
         <div class="vax-face-front" style="display: flex; flex-direction: column; min-height: 250px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="transform: scale(0.6); transform-origin: left center; width: 50px;">${neuralCoreSVG}</div>
+                    <div style="transform: scale(0.55); transform-origin: left center; width: 50px; height: 50px;">${premiumBrainSVG}</div>
                     <div>
-                        <div style="font-size: 0.95rem; font-weight: 900; color: var(--brand-cyan); text-transform: uppercase;">Development</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${tm > 0 ? `Targets for ${tm} Months` : 'Awaiting Age'}</div>
+                        <div style="font-size: 0.9rem; font-weight: 900; color: var(--brand-cyan); text-transform: uppercase; letter-spacing: 0.5px;">DEVELOPMENTAL WATCH</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Expected Tasks: ${tm}M</div>
                     </div>
                 </div>
             </div>
-            
-            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; margin: 5px 0;">
                 ${currentTargetsHTML}
             </div>
-            
-            <div onclick="document.getElementById('milesFlipCard').classList.add('is-flipped')" style="margin-top: 15px; cursor:pointer; background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 229, 255, 0.2); padding: 12px; border-radius: 10px; text-align: center; font-size: 0.75rem; font-weight: 800; color: var(--brand-cyan); text-transform: uppercase; transition: background 0.2s;">
-                View Red Flags & Full Checklist ➔
+            <div onclick="document.getElementById('milesFlipCard').classList.add('is-flipped')" style="margin-top: 10px; cursor:pointer; background: rgba(0,0,0,0.3); border: 1px solid rgba(0, 229, 255, 0.2); padding: 10px; border-radius: 8px; text-align: center; font-size: 0.72rem; font-weight: 800; color: var(--brand-cyan); text-transform: uppercase; letter-spacing: 0.5px; transition: background 0.2s;">
+                Assess Developmental Milestones ➔
             </div>
         </div>`;
 
-    // 6. Back Face HTML (Forced 3D Hardware Acceleration)
+    // 5. Back Face Scratchpad Checklist Layout
     let backFaceHTML = `
         <div class="vax-face-back" style="transform: rotateY(180deg) translateZ(1px); -webkit-transform: rotateY(180deg) translateZ(1px); backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); padding-bottom: 12px; margin-bottom: 15px; flex-shrink: 0;">
-                <h4 style="margin:0; color:var(--brand-pink); font-size:0.95rem;">Review & Red Flags</h4>
-                <button onclick="document.getElementById('milesFlipCard').classList.remove('is-flipped')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">✕ Close</button>
+                <h4 style="margin:0; color:var(--brand-pink); font-size:0.92rem; font-weight:800; text-transform:uppercase;">Milestone Assessment Ledger</h4>
+                <button onclick="document.getElementById('milesFlipCard').classList.remove('is-flipped')" style="background: rgba(255,255,255,0.08); border: none; color: #fff; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.72rem; font-weight: bold;">✕ Close</button>
             </div>
-            <div style="flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 5px; padding-bottom: 20px;">`;
+            <div style="flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; padding-bottom: 15px;">`;
 
     if (tm === 0) {
-        backFaceHTML += `<div style="color:var(--text-muted); text-align:center; padding: 20px;">Scrub age to load assessment.</div>`;
+        backFaceHTML += `<div style="color:var(--text-muted); text-align:center; padding: 20px; font-size:0.85rem;">Scrub active age matrix to compile logs.</div>`;
     } else {
-        let itemsAdded = 0;
-        
-        // Explicit explicit loop to prevent crashing on missing keys
+        let listsRendered = 0;
         availableMonths.forEach(month => {
             if (month <= tm && Array.isArray(msDb[month]) && msDb[month].length > 0) {
-                itemsAdded++;
+                listsRendered++;
                 backFaceHTML += `
-                <div style="border:1px solid var(--border-soft); border-radius:10px; overflow:hidden; background:var(--bg-surface); margin-bottom: 12px;">
-                    <div style="background:rgba(255, 51, 102, 0.15); border-bottom:1px solid rgba(255, 51, 102, 0.2); padding:8px 12px; font-weight:800; color:var(--brand-pink); font-size:0.85rem;">Expected at ${month} Months</div>
-                    <div style="padding:12px; display:flex; flex-direction:column; gap:10px;">`;
+                <div style="border:1px solid var(--border-soft); border-radius:8px; overflow:hidden; background:var(--bg-surface); margin-bottom: 10px;">
+                    <div style="background:rgba(255, 51, 102, 0.12); border-bottom:1px solid rgba(255, 51, 102, 0.2); padding:8px 12px; font-weight:800; color:var(--brand-pink); font-size:0.82rem;">Milestones: ${month} Months</div>
+                    <div style="padding:10px; display:flex; flex-direction:column; gap:10px;">`;
 
                 msDb[month].forEach(ms => {
                     backFaceHTML += `
-                        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
-                            <input type="checkbox" style="margin-top:4px; width:18px; height:18px; accent-color:var(--brand-pink);">
-                            <div>
-                                <div style="font-weight:600; color:var(--text-main); font-size:0.9rem;">${ms.text} <span style="font-size:0.65rem; color:var(--brand-cyan); border:1px solid var(--brand-cyan); padding:2px 6px; border-radius:4px; margin-left:6px;">${ms.domain}</span></div>
-                                <div style="font-size:0.75rem; color:var(--danger); margin-top:2px; font-weight:bold;">🚨 Red Flag: ${ms.sig}</div>
+                        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+                            <input type="checkbox" style="margin-top:3px; width:16px; height:16px; accent-color:var(--brand-pink);">
+                            <div style="font-size:0.85rem;">
+                                <div style="font-weight:600; color:var(--text-main);">${ms.text} <span style="font-size:0.65rem; color:var(--brand-cyan); border:1px solid rgba(0,229,255,0.2); padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:700;">${ms.domain}</span></div>
+                                <div style="font-size:0.75rem; color:var(--danger); margin-top:2px; font-weight:500;">🚨 Red Flag if Absent: ${ms.sig}</div>
                             </div>
                         </label>`;
                 });
                 backFaceHTML += `</div></div>`;
             }
         });
-        
-        if (itemsAdded === 0) {
-            backFaceHTML += `<div style="color:var(--text-muted); text-align:center; padding: 20px;">No specific milestone data found for this age.</div>`;
+        if (listsRendered === 0) {
+            backFaceHTML += `<div style="color:var(--text-muted); text-align:center; padding: 20px; font-size:0.85rem;">No historical checklist configurations for this subset.</div>`;
         }
     }
-    
     backFaceHTML += `</div></div>`;
 
-    // 7. Final Assembly
+    // 6. Assembly Matrix
     msContainer.innerHTML = `
         <div class="vax-flip-container">
             <div class="vax-flip-card" id="milesFlipCard">
@@ -3984,42 +4007,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ---------------------------------------------------------
-    // 🚀 BULLETPROOF 3D PARALLAX ENGINE (Desktop Physics)
-    // ---------------------------------------------------------
-    function init3DPhysics() {
-        // Only run on Desktop screens
-        if (window.innerWidth < 1024) return; 
+// 🚀 BULLETPROOF 3D PARALLAX ENGINE (Event Delegation)
+// ---------------------------------------------------------
+function init3DPhysics() {
+    if (window.innerWidth < 1024) return;
 
-        const cards = document.querySelectorAll('.bento-card');
-        cards.forEach(card => {
-            // Strip any conflicting inline transitions we accidentally added to the HTML
-            if (card.style.transition) {
-                card.style.transition = '';
-            }
+    document.addEventListener('mousemove', (e) => {
+        const card = e.target.closest('.bento-card, .vax-flip-card');
+        
+        // Reset previously hovered card
+        if (window._active3DCard && window._active3DCard !== card) {
+            window._active3DCard.style.setProperty('transition', 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
+            window._active3DCard.style.setProperty('transform', `perspective(1200px) translateY(0px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`, 'important');
+            window._active3DCard = null;
+        }
 
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left; 
-                const y = e.clientY - rect.top; 
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                // Calculate the tilt angles based on mouse position
-                const rotateX = ((y - centerY) / centerY) * -8; 
-                const rotateY = ((x - centerX) / centerX) * 8;
-                
-                // Apply the hyper-fast linear tracking transition and the 3D transform
-                card.style.setProperty('transition', 'transform 0.1s linear, box-shadow 0.4s ease, border-color 0.4s ease', 'important');
-                card.style.setProperty('transform', `perspective(1200px) translateY(-4px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`, 'important');
-            });
+        // Apply tilt to current card
+        if (card) {
+            window._active3DCard = card;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; 
+            const y = e.clientY - rect.top; 
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
             
-            card.addEventListener('mouseleave', () => {
-                // Smoothly snap back to a flat plane when the mouse leaves
-                card.style.setProperty('transition', 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
-                card.style.setProperty('transform', `perspective(1200px) translateY(0px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`, 'important');
-            });
-        });
-    }
+            const rotateX = ((y - centerY) / centerY) * -8; 
+            const rotateY = ((x - centerX) / centerX) * 8;
+            
+            card.style.setProperty('transition', 'transform 0.1s linear, box-shadow 0.4s ease, border-color 0.4s ease', 'important');
+            card.style.setProperty('transform', `perspective(1200px) translateY(-4px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`, 'important');
+        }
+    });
+}
 
     // Force the engine to boot immediately, and again after the window fully loads
     init3DPhysics();

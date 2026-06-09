@@ -138,201 +138,6 @@ window.openPrefilledRegistry = function() {
     if(typeof showSystemToast === 'function') showSystemToast("✨ Vitals Copied. Enter Name to save to database.");
 };
 
-window.broadcastGlobalParameters = function() {
-    const ageMos = parseInt(document.getElementById('hudAge').value) || 0;
-    const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
-    const ht = parseFloat(document.getElementById('hudHeight').value) || 0;
-    
-    let hcInput = document.getElementById('hudHc');
-    let macInput = document.getElementById('hudMac');
-    const hc = hcInput ? parseFloat(hcInput.value) || 0 : 0;
-    const mac = macInput ? parseFloat(macInput.value) || 0 : 0;
-    
-    const gender = document.getElementById('hudGender').value || 'male';
-
-    // Context Shifting
-    const neoView = document.getElementById('hudNeonatalContext');
-    const pedView = document.getElementById('hudPediatricContext');
-    if (neoView && pedView) {
-        if (ageMos > 0 && ageMos < 1) { 
-            neoView.style.display = 'flex'; pedView.style.display = 'none'; 
-        } else { 
-            neoView.style.display = 'none'; pedView.style.display = 'flex'; 
-        }
-    }
-
-    if(typeof renderHudGrowth === 'function') renderHudGrowth(wt, ht, ageMos, gender);
-    if(typeof renderHudAnthro === 'function') renderHudAnthro(hc, mac, ageMos);
-    if(typeof renderHudVitals === 'function') renderHudVitals(ageMos);
-    if(typeof renderHudFluids === 'function') renderHudFluids(wt, ageMos);
-    if(typeof renderHudRedFlags === 'function') renderHudRedFlags(ageMos);
-    if(typeof window.renderMilestonesAndRedFlags === 'function') window.renderMilestonesAndRedFlags(ageMos);
-    if(typeof renderHudCrash === 'function') renderHudCrash(wt, ageMos);
-    if(typeof renderHudSmartCards === 'function') renderHudSmartCards(wt);
-    
-    if(typeof runHudQuickDose === 'function') runHudQuickDose();
-};
-
-function renderHudGrowth(wt, ht, ageMos, gender) {
-    const out = document.getElementById('hudGrowthOutput');
-    if(!out) return;
-    if(!wt || !ht || !ageMos) { out.innerHTML = 'Enter Wt, Ht & Age to view triage.'; out.className = 'hud-empty-state'; return; }
-    
-    let expectedWt = 0; let ageYrs = ageMos/12;
-    if(ageYrs < 1) expectedWt = (ageMos + 9) / 2;
-    else if (ageYrs <= 6) expectedWt = (ageYrs * 2) + 8;
-    else if (ageYrs <= 12) expectedWt = (ageYrs * 7 - 5) / 2;
-    else expectedWt = wt; 
-
-    let wfaPercent = (wt / expectedWt) * 100;
-    let wfaLight = "🟢 Normal"; let wfaColor = "var(--success)";
-    if(wfaPercent < 60) { wfaLight = "🔴 Severe (SAM)"; wfaColor = "var(--danger)"; }
-    else if(wfaPercent < 80) { wfaLight = "🟡 Mod (MAM)"; wfaColor = "var(--warning)"; }
-
-    const htM = ht / 100;
-    const bmi = wt / (htM * htM);
-    
-    let bmiLight = "🟢 Normal"; let bmiColor = "var(--success)";
-    if (bmi < 14) { bmiLight = "🔴 SAM/Severe Wasting"; bmiColor = "var(--danger)"; }
-    else if (bmi < 15.5) { bmiLight = "🟡 MAM/Wasting"; bmiColor = "var(--warning)"; }
-    else if (bmi > 25) { bmiLight = "🔴 Overweight/Obese"; bmiColor = "var(--danger)"; }
-
-    out.className = '';
-    out.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;">
-            <span>Weight-for-Age:</span> <b style="color:${wfaColor};">${wfaLight}</b>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;">
-            <span>Height-for-Age:</span> <b style="color:var(--success);">🟢 Normal</b>
-        </div>
-        <div style="display:flex; justify-content:space-between;">
-            <span>BMI Classification:</span> <b style="color:${bmiColor};">${bmiLight}</b>
-        </div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px; text-align:center;">
-            Raw BMI: ${bmi.toFixed(1)} | Expected Wt: ~${expectedWt.toFixed(1)}kg
-        </div>
-    `;
-}
-
-window.renderHudAnthro = function(hc, mac, ageMos) {
-    const out = document.getElementById('hudAnthroOutput');
-    if(!out) return;
-    if(!hc && !mac) { out.innerHTML = 'Enter HC & MAC for alerts.'; out.className = 'hud-empty-state'; return; }
-    
-    let expected = typeof predictExpectedVitals === 'function' ? predictExpectedVitals(Math.floor(ageMos/12), ageMos % 12) : {};
-    
-    let hcHtml = "";
-    if (hc) {
-        let hcStat = "Normal"; let hcCol = "var(--success)";
-        if (expected.hc) {
-            let diff = hc - expected.hc;
-            if (diff <= -2.5) { hcStat = "Microcephaly Risk"; hcCol = "var(--danger)"; }
-            else if (diff >= 2.5) { hcStat = "Macrocephaly Risk"; hcCol = "var(--warning)"; }
-        }
-        hcHtml = `<div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;"><span>HC (${hc} cm):</span> <b style="color:${hcCol};">${hcStat}</b></div>`;
-    }
-
-    let macHtml = "";
-    if (mac) {
-        let macStat = "Normal (>12.5)"; let macCol = "var(--success)";
-        if (ageMos >= 6 && ageMos <= 60) {
-            if (mac < 11.5) { macStat = "SAM (< 11.5)"; macCol = "var(--danger)"; }
-            else if (mac >= 11.5 && mac <= 12.5) { macStat = "MAM (11.5 - 12.5)"; macCol = "var(--warning)"; }
-        } else {
-            macStat = "Evaluated"; macCol = "var(--text-main)";
-        }
-        macHtml = `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>MAC (${mac} cm):</span> <b style="color:${macCol};">${macStat}</b></div>`;
-    }
-
-    out.className = '';
-    out.innerHTML = `
-        ${hcHtml}
-        ${macHtml}
-    `;
-};
-
-function renderHudVitals(ageMos) {
-    const out = document.getElementById('hudVitalsOutput');
-    if(!out) return;
-    if(!ageMos) { out.innerHTML = 'Enter Age for normal ranges.'; out.className = 'hud-empty-state'; return; }
-    let hr = "80 - 120"; let rr = "20 - 30"; let sbp = "90 - 110";
-    let ageYrs = ageMos / 12;
-    
-    if(ageMos < 1) { hr = "100 - 160"; rr = "40 - 60"; sbp = "60 - 80"; }
-    else if(ageMos < 12) { hr = "90 - 150"; rr = "30 - 40"; sbp = "70 - 90"; }
-    else if(ageYrs <= 5) { hr = "80 - 140"; rr = "22 - 34"; sbp = "80 - 100"; }
-    else if(ageYrs <= 12) { hr = "70 - 120"; rr = "18 - 30"; sbp = "90 - 110"; }
-    else { hr = "60 - 100"; rr = "12 - 20"; sbp = "100 - 120"; }
-
-    let bp95 = "";
-    if (ageYrs >= 1 && ageYrs <= 17) {
-        let sys95 = 90 + (2 * Math.floor(ageYrs));
-        let dia95 = 60 + (2 * Math.floor(ageYrs));
-        bp95 = `<div style="margin-top:8px; font-size:0.8rem; color:var(--danger); border-top:1px dashed var(--border-soft); padding-top:5px;"><b>95th %ile (Stage 1 HTN):</b> &ge; ${sys95}/${dia95}</div>`;
-    } else if (ageMos < 12) {
-        bp95 = `<div style="margin-top:8px; font-size:0.8rem; color:var(--danger); border-top:1px dashed var(--border-soft); padding-top:5px;"><b>95th %ile:</b> &ge; 105/70</div>`;
-    }
-
-    out.className = '';
-    out.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;"><span>Heart Rate:</span> <b>${hr} bpm</b></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-soft); padding-bottom:5px;"><span>Resp Rate:</span> <b>${rr} /min</b></div>
-        <div style="display:flex; justify-content:space-between;"><span>Typical Systolic:</span> <b>${sbp} mmHg</b></div>
-        ${bp95}
-    `;
-}
-
-function renderHudFluids(wt, ageMos) {
-    const out = document.getElementById('hudFluidsOutput');
-    if(!out) return;
-    if(!wt) { out.innerHTML = 'Enter Wt & Age for targets.'; out.className = 'hud-empty-state'; return; }
-    
-    let fluid = 0;
-    if(wt <= 10) fluid = wt * 100;
-    else if(wt <= 20) fluid = 1000 + ((wt-10)*50);
-    else fluid = 1500 + ((wt-20)*20);
-    let hrRate = fluid / 24;
-
-    let cals = 0; let pro = 0;
-    if (ageMos < 6) { cals = wt * 92; pro = wt * 1.16; }
-    else if (ageMos < 12) { cals = wt * 80; pro = wt * 1.69; }
-    else if (ageMos < 48) { cals = 1060; pro = 16.7; }
-    else if (ageMos < 84) { cals = 1350; pro = 20.1; }
-    else if (ageMos < 120) { cals = 1690; pro = 29.5; }
-    else { cals = wt * 60; pro = wt * 1.0; }
-
-    out.className = '';
-    out.innerHTML = `
-        <div style="font-size:1.6rem; font-weight:900; color:#0ea5e9; text-align:center; margin-bottom:5px;">${fluid.toFixed(0)} <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">mL/day (or ${hrRate.toFixed(1)} mL/hr)</span></div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; border-top:1px dashed var(--border-soft); padding-top:10px; text-align:center;">
-            <div style="background:#fef3c7; padding:8px; border-radius:6px; border:1px solid #fde68a;">
-                <div style="font-size:0.75rem; color:#b45309; font-weight:bold; text-transform:uppercase;">Energy</div>
-                <div style="color:#92400e; font-weight:800; font-size:1.1rem;">${cals.toFixed(0)} <span style="font-size:0.75rem;">kcal</span></div>
-            </div>
-            <div style="background:#e0e7ff; padding:8px; border-radius:6px; border:1px solid #bfdbfe;">
-                <div style="font-size:0.75rem; color:#1d4ed8; font-weight:bold; text-transform:uppercase;">Protein</div>
-                <div style="color:#1e3a8a; font-weight:800; font-size:1.1rem;">${pro.toFixed(1)} <span style="font-size:0.75rem;">g</span></div>
-            </div>
-        </div>
-    `;
-}
-
-function renderHudRedFlags(ageMos) {
-    const out = document.getElementById('hudRedFlagsOutput');
-    if(!out) return;
-    if(!ageMos && ageMos !== 0) { out.innerHTML = 'Enter Age for clinical warnings.'; out.className = 'hud-empty-state'; return; }
-    let flags = [];
-    if(ageMos < 3) flags.push("Fever >38°C (100.4°F) requires urgent evaluation.");
-    if(ageMos < 12) flags.push("Strictly avoid Honey (Botulism risk).");
-    if(ageMos < 48) flags.push("Avoid OTC cough/cold syrups.");
-    if(ageMos >= 6 && ageMos <= 60) flags.push("Monitor for febrile seizures during spikes.");
-
-    if(flags.length === 0) flags.push("No specific high-risk age alerts active.");
-
-    out.className = '';
-    out.innerHTML = `<ul style="margin:0; padding-left:18px; color:var(--danger); font-size:0.85rem; line-height:1.6;">${flags.map(f=>`<li style="margin-bottom:6px;"><b>${f}</b></li>`).join('')}</ul>`;
-}
-
 // --- NEW: Teleport function from HUD to Tracker ---
 window.launchVaxToolFromHud = function() {
     const pId = AppStore.getActivePatientId();
@@ -348,79 +153,6 @@ window.launchVaxToolFromHud = function() {
         if(typeof calculateAndRenderTimeline === 'function') calculateAndRenderTimeline(pId);
     }, 100);
 };
-
-function renderHudCrash(wt, ageMos) {
-    const out = document.getElementById('hudCrashOutput');
-    if(!out) return;
-    if(!wt) { out.innerHTML = 'Enter Wt for emergency dosing.'; out.className = 'hud-empty-state'; return; }
-    
-    let epi = (wt * 0.1).toFixed(1);
-    let fluid = (wt * 20).toFixed(0);
-    let midaz = (wt * 0.1).toFixed(2);
-    let diazepam = (wt * 0.3).toFixed(1);
-    
-    let dextrose = "";
-    if (ageMos < 12) dextrose = `<span style="color:#d97706; font-weight:900;">${(wt * 5).toFixed(0)} mL (D10W)</span>`;
-    else dextrose = `<span style="color:#d97706; font-weight:900;">${(wt * 2).toFixed(0)} mL (D25W)</span>`;
-
-    out.className = '';
-    out.innerHTML = `
-        <div style="font-size:0.85rem; line-height:1.5;">
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #fee2e2; padding-bottom:4px; margin-bottom:4px;"><b>Adren (1:10k):</b> <span style="color:var(--danger); font-weight:900;">${epi} mL IV/IO</span></div>
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #fee2e2; padding-bottom:4px; margin-bottom:4px;"><b>NS/RL Bolus:</b> <span style="color:#0ea5e9; font-weight:900;">${fluid} mL</span></div>
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #fee2e2; padding-bottom:4px; margin-bottom:4px;"><b>Dextrose:</b> ${dextrose}</div>
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #fee2e2; padding-bottom:4px; margin-bottom:4px;"><b>Midazolam:</b> <span style="color:var(--primary); font-weight:900;">${midaz} mg</span></div>
-            <div style="display:flex; justify-content:space-between;"><b>Diazepam:</b> <span style="color:var(--primary); font-weight:900;">${diazepam} mg (IV)</span></div>
-        </div>
-    `;
-}
-
-function renderHudSmartCards(wt) {
-    const out = document.getElementById('hudSmartDoseCards');
-    if(!out) return;
-    if(!wt) { out.innerHTML = '<div class="hud-empty-state" style="width:100%;">Enter Wt to unlock Quick Cards.</div>'; return; }
-
-    let pcm120 = (wt * 15) / (120/5);
-    let pcm250 = (wt * 15) / (250/5);
-    let ibu = (wt * 10) / (100/5);
-    let amox228 = (wt * 40) / (200/5);
-    let amox457 = (wt * 40) / (400/5);
-
-    const cardStyle = `scroll-snap-align: start; flex: 0 0 130px; background: rgba(91,97,246,0.05); border: 1px solid var(--primary-light); padding: 10px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);`;
-    
-    out.innerHTML = `
-        <div style="${cardStyle} border-color:#fca5a5; background:rgba(254,226,226,0.3);">
-            <div style="font-size:0.75rem; color:#e11d48; font-weight:800;">Paracetamol</div>
-            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">120mg/5mL</div>
-            <div style="font-size:1.6rem; font-weight:900; color:#9f1239;">${pcm120.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
-            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">SOS (Q6H)</div>
-        </div>
-        <div style="${cardStyle} border-color:#fca5a5; background:rgba(254,226,226,0.3);">
-            <div style="font-size:0.75rem; color:#e11d48; font-weight:800;">Paracetamol</div>
-            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">250mg/5mL</div>
-            <div style="font-size:1.6rem; font-weight:900; color:#9f1239;">${pcm250.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
-            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">SOS (Q6H)</div>
-        </div>
-        <div style="${cardStyle} border-color:#fdba74; background:rgba(254,243,199,0.4);">
-            <div style="font-size:0.75rem; color:#d97706; font-weight:800;">Ibuprofen</div>
-            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">100mg/5mL</div>
-            <div style="font-size:1.6rem; font-weight:900; color:#b45309;">${ibu.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
-            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">SOS (Q8H)</div>
-        </div>
-        <div style="${cardStyle}">
-            <div style="font-size:0.75rem; color:var(--primary); font-weight:800;">Co-Amoxiclav</div>
-            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">228mg/5mL</div>
-            <div style="font-size:1.6rem; font-weight:900; color:var(--primary-dark);">${amox228.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
-            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">BID</div>
-        </div>
-        <div style="${cardStyle}">
-            <div style="font-size:0.75rem; color:var(--primary); font-weight:800;">Co-Amoxiclav</div>
-            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">457mg/5mL</div>
-            <div style="font-size:1.6rem; font-weight:900; color:var(--primary-dark);">${amox457.toFixed(1)} <span style="font-size:0.8rem;">mL</span></div>
-            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-top:2px;">BID</div>
-        </div>
-    `;
-}
 
 window.populateHudDrugs = function() {
     const cat = document.getElementById('hudQuickCat').value;
@@ -1246,3 +978,22 @@ function setCircadianLighting() {
 // Run immediately and check every hour
 setCircadianLighting();
 setInterval(setCircadianLighting, 3600000);
+
+// ==========================================
+// 🚀 CENTRAL TELEMETRY BROADCASTER & LISTENERS
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const ageYrsInput = document.getElementById('hudAgeYrs');
+    const ageMosInput = document.getElementById('hudAgeMos');
+    const weightInput = document.getElementById('hudWeight');
+
+    // Listen for any immediate value changes ('input' is faster than 'change')
+    if (ageYrsInput) ageYrsInput.addEventListener('input', window.syncAllDashboards);
+    if (ageMosInput) ageMosInput.addEventListener('input', window.syncAllDashboards);
+    if (weightInput) weightInput.addEventListener('input', window.syncAllDashboards);
+    
+    // Fire once automatically on page load to initialize the "Awaiting Input" states
+    setTimeout(() => {
+        if(typeof window.syncAllDashboards === 'function') window.syncAllDashboards();
+    }, 500); 
+});
