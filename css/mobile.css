@@ -165,7 +165,8 @@ input, select, textarea {
    STRICT MOBILE LAYOUT ENFORCEMENT
    ========================================= */
 
-/* 1. Force the HUD Dashboard to stack neatly on mobile */
+
+/* 1. Force the Dashboard to stack neatly on mobile */
 .hud-grid {
     display: flex !important;
     flex-direction: column !important;
@@ -416,5 +417,117 @@ input, select, textarea {
     }
     nav.main-nav button.nav-item.active svg {
         filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6)) !important;
+    }
+}
+
+/* =========================================================
+   THE CORTEX SPATIAL DECK (STRICT MOBILE SANDBOX)
+   ========================================================= */
+@media screen and (max-width: 1023px) {
+    
+    /* 🚀 THE ACID: Melts away desktop columns so cards can join the deck */
+    .cortex-bento-grid > div:not(.bento-card),
+    .cortex-bento-grid .hud-col {
+        display: contents !important;
+    }
+
+    /* 1. The Holographic Stage */
+    .cortex-bento-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        scroll-snap-type: x mandatory !important;
+        scroll-behavior: smooth !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 15px !important;
+        width: 100vw !important;
+        margin-left: -20px !important; 
+        padding: 20px 10vw 40px 10vw !important; 
+        perspective: 1200px !important; 
+        align-items: center !important;
+    }
+
+    .cortex-bento-grid::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    /* 2. The Inactive Background Cards (Targets ALL cards safely) */
+    .cortex-bento-grid .bento-card {
+        width: 80vw !important; 
+        min-width: 80vw !important;
+        height: max-content !important;
+        min-height: 0 !important; 
+        scroll-snap-align: center !important; 
+        flex-shrink: 0 !important;
+        margin: 0 !important;
+        
+        /* Spatial Physics */
+        transform-style: preserve-3d !important;
+        transform: scale(0.85) translateZ(-80px) rotateY(12deg) !important;
+        opacity: 0.4 !important;
+        filter: blur(2px) !important;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    }
+
+    /* 3. The Active Card */
+    .cortex-bento-grid .bento-card.holo-active {
+        transform: scale(1) translateZ(0px) rotateY(0deg) !important; 
+        opacity: 1 !important;
+        filter: blur(0px) !important;
+        box-shadow: 0 20px 40px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05) !important;
+        border-color: rgba(0, 229, 255, 0.4) !important;
+    }
+    
+    .bento-card .card-body {
+        flex-grow: 0 !important; 
+        justify-content: flex-start !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* =========================================================
+       HOLOGRAPHIC SWIPE INDICATOR 
+       ========================================================= */
+    .holo-swipe-hint {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 15px !important;
+        margin-top: 5px !important;
+        margin-bottom: 15px !important;
+        color: var(--brand-cyan) !important;
+        font-size: 0.65rem !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 2px !important;
+        opacity: 0.8 !important;
+        cursor: pointer !important; 
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .hint-arrow {
+        width: 14px !important;
+        height: 14px !important;
+        filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.6)) !important;
+        transition: transform 0.2s ease !important;
+    }
+    
+    .holo-swipe-hint:active {
+        transform: scale(0.95) !important;
+        opacity: 1 !important;
+    }
+
+    .arrow-left { animation: pulseLeft 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
+    .arrow-right { animation: pulseRight 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
+
+    @keyframes pulseLeft {
+        0%, 100% { transform: translateX(2px); opacity: 0.3; }
+        50% { transform: translateX(-4px); opacity: 1; }
+    }
+    @keyframes pulseRight {
+        0%, 100% { transform: translateX(-2px); opacity: 0.3; }
+        50% { transform: translateX(4px); opacity: 1; }
     }
 }

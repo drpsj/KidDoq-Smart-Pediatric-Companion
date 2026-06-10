@@ -504,11 +504,8 @@ header {
 .queue-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
 .queue-count { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
 
-/* 2. The Bento Command Grid */
+/* 2. The Bento Command Grid (Structural logic moved to mobile/desktop files) */
 .cortex-bento-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
     padding-bottom: 20px;
 }
 
@@ -538,7 +535,8 @@ header {
 .card-title-group { display: flex; flex-direction: column; }
 .card-title-group h3 { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
 .card-subtitle { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
-.card-body { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+.card-body { display: flex; flex-direction: column; justify-content: flex-start;
+}
 
 /* 3. The Bottom Action Bar */
 .cortex-action-container {
@@ -1496,4 +1494,28 @@ header {
 @keyframes samPulse {
     0% { box-shadow: 0 0 10px rgba(255, 51, 102, 0.2); }
     100% { box-shadow: 0 0 25px rgba(255, 51, 102, 0.6), inset 0 0 10px rgba(255, 51, 102, 0.1); }
+}
+
+/* 🚀 PRO-MODE GRID FIX v3: Dynamic Shrink-Wrap Cards */
+.cortex-bento-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)) !important;
+    gap: 20px !important;
+    align-items: start !important; /* Forces cards to respect their own heights instead of neighbor-stretching */
+}
+
+/* Ensures cards behave properly without stubborn 200px stretching */
+.bento-card {
+    min-height: auto !important; /* The 200px lock is destroyed */
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important; 
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+}
+
+/* Pushes text/buttons to the top of the card instead of awkwardly centering them */
+.bento-card .card-body {
+    justify-content: flex-start !important;
 }

@@ -160,13 +160,11 @@
    Widescreen 2-Column Layout
    ========================================= */
 
-/* Only apply the heavy grid if the dashboard is actively selected */
+/* Stack dashboard elements vertically to keep Dose Calc on top */
 #homeDashboardView.active-view {
-    display: grid !important;
-    grid-template-columns: 340px 1fr !important; 
-    grid-template-rows: auto 1fr !important;
-    gap: 30px !important;
-    align-items: start !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
 }
 
 #homeDashboardView:not(.active-view) {
@@ -220,32 +218,24 @@
     width: 400px !important;
 }
 
-/* Left Column: Sticky Hero Dose Engine */
-#heroDoseEngine {
-    grid-column: 1 / 2 !important;
-    position: sticky !important;
-    top: 20px !important;
-    margin-bottom: 0 !important;
-    max-height: calc(100vh - 40px) !important;
-    overflow-y: auto !important;
-    scrollbar-width: none; 
-}
-#heroDoseEngine::-webkit-scrollbar {
-    display: none;
+/* Hero Dose Engine spans full width on top */
+#heroDoseEngine { 
+    width: 100% !important;
+    position: relative !important;
+    margin-bottom: 10px !important;
+    z-index: 50 !important;
 }
 
-/* 🚀 THE FIX: Removed the forced vertical column lock to allow the Spatial Expansion Grid to morph freely */
 #hudSmartDoseCards {
     padding-right: 5px !important;
 }
 
-/* Right Column: Expanded Bento Grid (Now a 3D Space) */
+/* Expanded Bento Grid flows normally below */
 .cortex-bento-grid {
-    grid-column: 2 / 3 !important;
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
     gap: 20px !important;
-    perspective: 1200px !important; /* THE 3D CAMERA: Gives the grid depth */
+    width: 100% !important;
 }
 
 /* =========================================
@@ -438,4 +428,20 @@
 @keyframes gentleFloat {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
     50% { transform: translateY(-4px) rotate(8deg); }
+}
+
+/* =========================================
+   DESKTOP-EXCLUSIVE BENTO GRID
+   ========================================= */
+.cortex-bento-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+    gap: 20px !important;
+    align-items: start !important; /* Forces shrink-wrap on desktop */
+    width: 100% !important;
+}
+
+.cortex-bento-grid > .bento-card {
+    height: max-content !important;
+    min-height: auto !important;
 }

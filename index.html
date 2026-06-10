@@ -647,7 +647,6 @@
 
             <!-- 2. BENTO COMMAND GRID -->
             <div class="cortex-bento-grid">
-
                 <div id="growthSnapshotCard" class="bento-card growth-state-normal" style="position: relative; overflow: hidden; padding: 20px;">
                     
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
@@ -732,6 +731,12 @@
 
                     </div>
                 </div>
+
+                </div> <div class="holo-swipe-hint">
+                <svg class="hint-arrow arrow-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>
+                <span>Swipe Deck</span>
+                <svg class="hint-arrow arrow-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>
+            </div>
 
                 <div class="bento-card card-vaccines" id="bentoVaccines">
                     <div class="card-header"><div class="card-icon" style="background: rgba(255, 51, 102, 0.15); color: var(--brand-pink);">💉</div><div class="card-title-group"><h3>Vaccines Due</h3><span class="card-subtitle">Based on age</span></div></div>
@@ -4005,6 +4010,73 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.bento-card, .hero-icon, .card-icon').forEach(el => {
         sleepObserver.observe(el);
     });
+
+   /* =========================================
+   CORTEX SPATIAL DECK ENGINE (MOBILE) v2
+   ========================================= */
+function initHoloDeck() {
+    // Only run this logic if we are on a mobile screen
+    if (window.innerWidth > 1023) return;
+
+    const grid = document.querySelector('.cortex-bento-grid');
+    // We convert the NodeList to an Array so we can find the index easily
+    const cards = Array.from(document.querySelectorAll('.cortex-bento-grid .bento-card'));
+    const swipeHintContainer = document.querySelector('.holo-swipe-hint');
+    
+    if(!grid || cards.length === 0) return;
+
+    // 1. The 3D Sensor (Observes which card is in the center)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Remove the active glow from all cards
+                cards.forEach(c => c.classList.remove('holo-active'));
+                // Blast the card currently in the center with the active glow
+                entry.target.classList.add('holo-active');
+            }
+        });
+    }, {
+        root: grid,
+        threshold: 0.6 // Card must be 60% inside the center zone to trigger the pop
+    });
+
+    // Attach the sensor to every card in the deck
+    cards.forEach(card => observer.observe(card));
+
+    // 2. The Bulletproof Click-to-Rotate Engine
+    if (swipeHintContainer) {
+        swipeHintContainer.addEventListener('click', (e) => {
+            // Find exactly which card is currently active
+            const activeIndex = cards.findIndex(card => card.classList.contains('holo-active'));
+            
+            // Fallback just in case
+            if (activeIndex === -1) return; 
+
+            let targetIndex;
+
+            if (e.target.closest('.arrow-left')) {
+                // Go backwards, but don't go past the first card (index 0)
+                targetIndex = Math.max(0, activeIndex - 1);
+            } else {
+                // Go forwards, but don't go past the last card
+                targetIndex = Math.min(cards.length - 1, activeIndex + 1);
+            }
+
+            // Command the browser to perfectly center the target card
+            cards[targetIndex].scrollIntoView({ 
+                behavior: 'smooth', 
+                inline: 'center', 
+                block: 'nearest' 
+            });
+        });
+    }
+}
+
+// Fire the engine when the app loads
+document.addEventListener('DOMContentLoaded', initHoloDeck);
+
+// NOTE: If your app switches views without reloading the page, 
+// call `initHoloDeck();` whenever the Home Dashboard becomes active.
 
     // ---------------------------------------------------------
 // 🚀 BULLETPROOF 3D PARALLAX ENGINE (Event Delegation)
