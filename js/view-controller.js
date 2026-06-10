@@ -380,58 +380,35 @@ window.closePatientFile = function() {
 };
 
 // =========================================================
-// THE SPATIAL COMMAND CENTER ENGINE (Diagnostic Telemetry)
+// THE SPATIAL COMMAND CENTER ENGINE (Production Grade)
 // =========================================================
 window.initSpatialCommandCenter = function() {
-    console.log(`[SPATIAL-DIAGNOSTIC] 1. initSpatialCommandCenter() triggered at ${performance.now().toFixed(1)}ms`);
-    
-    if (window.innerWidth > 1023) {
-        console.log("[SPATIAL-DIAGNOSTIC] Desktop view detected. Aborting spatial engine.");
-        return; 
-    }
+    if (window.innerWidth > 1023) return; // Only runs on mobile
 
     const deck = document.querySelector('.cortex-bento-grid');
-    if (!deck) {
-        console.error("[SPATIAL-DIAGNOSTIC] Deck container NOT FOUND in DOM.");
-        return;
-    }
+    if (!deck) return;
 
     function bootEngine() {
-        console.log(`[SPATIAL-DIAGNOSTIC] 2. bootEngine() started at ${performance.now().toFixed(1)}ms`);
-        
         const cards = Array.from(deck.querySelectorAll('.bento-card'));
-        console.log(`[SPATIAL-DIAGNOSTIC] 3. Detected cards length: ${cards.length}`);
-        
         if (cards.length === 0) return false;
 
-        const deckRect = deck.getBoundingClientRect();
-        console.log(`[SPATIAL-DIAGNOSTIC] 4. Deck Dimensions at Boot: Width=${deckRect.width}px, Height=${deckRect.height}px, Top=${deckRect.top}px`);
-        
-        if (deckRect.width === 0 || deckRect.height === 0) {
-            console.warn("[SPATIAL-DIAGNOSTIC] ⚠️ WARNING: Deck has ZERO dimensions. The browser GPU will likely refuse to paint 3D transforms!");
-        }
-
-        if (deck.dataset.spatialEngineActive === "true") {
-            console.log("[SPATIAL-DIAGNOSTIC] Engine already active. Bypassing duplicate boot.");
-            return true;
-        }
+        // Prevent double-booting
+        if (deck.dataset.spatialEngineActive === "true") return true;
         deck.dataset.spatialEngineActive = "true";
 
         let currentIndex = 0; 
 
         function updateSlots(instant = false) {
-            console.log(`[SPATIAL-DIAGNOSTIC] 5. updateSlots() executing. Instant mode: ${instant}. Active Index: ${currentIndex}`);
-            
             cards.forEach((card, i) => {
-                if (instant) card.style.transition = 'none';
+                // THE FIX: Aggressively overpower the CSS !important rule to guarantee an instant snap
+                if (instant) {
+                    card.style.setProperty('transition', 'none', 'important');
+                }
 
                 card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'holo-active');
                 let diff = i - currentIndex;
                 
-                if (diff === 0) {
-                    card.classList.add('slot-active');
-                    console.log(`[SPATIAL-DIAGNOSTIC] --> Assigned 'slot-active' to card index ${i} (${card.id || 'no-id'})`);
-                }
+                if (diff === 0) card.classList.add('slot-active');
                 else if (diff === -1) card.classList.add('slot-prev');
                 else if (diff === 1) card.classList.add('slot-next');
                 else if (diff === -2) card.classList.add('slot-far-prev');
@@ -439,8 +416,11 @@ window.initSpatialCommandCenter = function() {
             });
 
             if (instant) {
-                void deck.offsetWidth; 
-                cards.forEach(card => card.style.transition = '');
+                // Force the browser GPU to paint immediately, then restore smooth swipe animations
+                requestAnimationFrame(() => {
+                    void deck.offsetHeight; 
+                    cards.forEach(card => card.style.removeProperty('transition'));
+                });
             }
         }
 
@@ -453,12 +433,12 @@ window.initSpatialCommandCenter = function() {
         let isDragging = false;
 
         deck.addEventListener('touchstart', e => { 
-            console.log("[SPATIAL-DIAGNOSTIC] 👆 User triggered touchstart.");
             startX = e.touches[0].clientX; 
             currentX = startX;
             isDragging = true;
-            deck.style.transition = 'none';
-            cards.forEach(c => c.style.transition = 'none');
+            // Overpower CSS for 1:1 finger tracking without rubber-band lag
+            deck.style.setProperty('transition', 'none', 'important');
+            cards.forEach(c => c.style.setProperty('transition', 'none', 'important'));
         }, {passive: true});
 
         deck.addEventListener('touchmove', e => {
@@ -479,9 +459,10 @@ window.initSpatialCommandCenter = function() {
                 currentIndex--; 
             }
 
-            deck.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            // Restore smooth momentum physics
+            deck.style.setProperty('transition', 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
             deck.style.transform = 'translateX(0px)';
-            cards.forEach(c => c.style.transition = ''); 
+            cards.forEach(c => c.style.removeProperty('transition')); 
             updateSlots();
         }, {passive: true});
 
@@ -501,22 +482,19 @@ window.initSpatialCommandCenter = function() {
         if(leftArrow) leftArrow.addEventListener('click', () => { if(currentIndex > 0) { currentIndex--; updateSlots(); }});
         if(rightArrow) rightArrow.addEventListener('click', () => { if(currentIndex < cards.length - 1) { currentIndex++; updateSlots(); }});
 
-        console.log(`[SPATIAL-DIAGNOSTIC] ✅ bootEngine() completed successfully at ${performance.now().toFixed(1)}ms`);
         return true;
     }
 
+    // Failsafe Boot Injection
     if (!bootEngine()) {
-        console.log("[SPATIAL-DIAGNOSTIC] bootEngine() returned false. Attaching MutationObserver...");
         const observer = new MutationObserver((mutations, obs) => {
-            if (bootEngine()) {
-                console.log("[SPATIAL-DIAGNOSTIC] MutationObserver triggered successful boot. Disconnecting observer.");
-                obs.disconnect(); 
-            }
+            if (bootEngine()) obs.disconnect(); 
         });
         observer.observe(deck, { childList: true, subtree: true });
     }
 };
 
+// Start Sequence
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', window.initSpatialCommandCenter);
 } else {
