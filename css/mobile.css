@@ -3,6 +3,12 @@
    Loads only on viewports < 1023px
    ========================================= */
 
+/* 🚀 FIX 0: The Viewport Cage (Prevents 3D Deck Bleed) */
+html, body, .app-shell, .main-content {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+
 /* FIX 1: The iOS Auto-Zoom Bug */
 input, select, textarea { font-size: 16px !important; }
 
