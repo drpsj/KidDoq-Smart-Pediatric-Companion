@@ -378,3 +378,109 @@ window.closePatientFile = function() {
     ViewController.switchNavTab('databaseFeatureView');
     showSystemToast("Patient file closed.");
 };
+
+// =========================================================
+// THE SPATIAL COMMAND CENTER ENGINE (Drag Tracking & Momentum)
+// =========================================================
+window.initSpatialCommandCenter = function() {
+    if (window.innerWidth > 1023) return; // Only runs on mobile
+
+    const deck = document.querySelector('.cortex-bento-grid');
+    if (!deck) return;
+
+    const cards = Array.from(deck.querySelectorAll('.bento-card'));
+    if (cards.length === 0) return;
+
+    let currentIndex = 0; // Force reset to first card
+
+    function updateSlots() {
+        cards.forEach((card, i) => {
+            card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'holo-active');
+            let diff = i - currentIndex;
+            
+            if (diff === 0) card.classList.add('slot-active');
+            else if (diff === -1) card.classList.add('slot-prev');
+            else if (diff === 1) card.classList.add('slot-next');
+            else if (diff === -2) card.classList.add('slot-far-prev');
+            else if (diff === 2) card.classList.add('slot-far-next');
+        });
+    }
+
+    // 1. Guaranteed Initialization (Waits for DOM to paint)
+    requestAnimationFrame(() => {
+        updateSlots();
+    });
+
+    // 2. Direct Touch Interaction & Momentum Drag Engine
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    deck.addEventListener('touchstart', e => { 
+        startX = e.touches[0].clientX; 
+        currentX = startX;
+        isDragging = true;
+
+        // Pause CSS transitions to allow 1:1 finger tracking
+        deck.style.transition = 'none';
+        cards.forEach(c => c.style.transition = 'none');
+    }, {passive: true});
+
+    deck.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        currentX = e.touches[0].clientX;
+        let diffX = currentX - startX;
+        
+        // Drag resistance creates a physical tension effect (0.4 ratio)
+        deck.style.transform = `translateX(${diffX * 0.4}px)`;
+    }, {passive: true});
+
+    deck.addEventListener('touchend', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        let diffX = currentX - startX;
+
+        // Momentum Snap-to-Nearest Logic (40px threshold)
+        if (diffX < -40 && currentIndex < cards.length - 1) {
+            currentIndex++; // Swiped left -> Snap Next
+        } else if (diffX > 40 && currentIndex > 0) {
+            currentIndex--; // Swiped right -> Snap Previous
+        }
+
+        // Release the drag tension and restore CSS transitions
+        deck.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        deck.style.transform = 'translateX(0px)';
+        
+        // Clear inline pauses so the stylesheet handles the 3D rotation gracefully
+        cards.forEach(c => c.style.transition = ''); 
+        
+        updateSlots();
+    }, {passive: true});
+
+    // 3. Tap-to-Focus Physics (Tap a side card to bring it forward)
+    cards.forEach((card, index) => {
+        card.addEventListener('click', () => {
+            if (currentIndex !== index) {
+                currentIndex = index;
+                updateSlots();
+            }
+        });
+    });
+
+    // 4. Arrow Hints Integration
+    const leftArrow = document.querySelector('.holo-swipe-hint .arrow-left');
+    const rightArrow = document.querySelector('.holo-swipe-hint .arrow-right');
+    
+    if(leftArrow) leftArrow.addEventListener('click', () => { if(currentIndex > 0) { currentIndex--; updateSlots(); }});
+    if(rightArrow) rightArrow.addEventListener('click', () => { if(currentIndex < cards.length - 1) { currentIndex++; updateSlots(); }});
+};
+
+// Boot the engine automatically with dual-failsafes to guarantee cards are visible instantly
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.initSpatialCommandCenter);
+} else {
+    window.initSpatialCommandCenter();
+}
+// Final fail-safe delay for heavily injected DOM environments
+setTimeout(window.initSpatialCommandCenter, 300);

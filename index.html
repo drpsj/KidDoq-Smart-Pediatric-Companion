@@ -722,9 +722,9 @@
                         </div>
                     </div>
                     <div class="card-body" style="padding: 15px;">
-    <div id="hudFluidsOutput" style="margin-bottom: 15px;"></div>
-    
-    <div id="hudVitalsOutput" data-age-bracket="">
+                        <div id="hudFluidsOutput" style="margin-bottom: 15px;"></div>
+                        
+                        <div id="hudVitalsOutput" data-age-bracket="">
         <div class="hud-empty-state" style="border:none; padding: 0;">Enter Age to calibrate normal ranges.</div>
     </div>
 </div>
@@ -732,11 +732,13 @@
                     </div>
                 </div>
 
-                </div> <div class="holo-swipe-hint">
+            </div> <div class="holo-swipe-hint">
                 <svg class="hint-arrow arrow-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>
                 <span>Swipe Deck</span>
                 <svg class="hint-arrow arrow-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>
             </div>
+
+            <div class="cortex-workflow-stack" style="display: flex; flex-direction: column; gap: 20px; padding: 0 20px 40px 20px;">
 
                 <div class="bento-card card-vaccines" id="bentoVaccines">
                     <div class="card-header"><div class="card-icon" style="background: rgba(255, 51, 102, 0.15); color: var(--brand-pink);">💉</div><div class="card-title-group"><h3>Vaccines Due</h3><span class="card-subtitle">Based on age</span></div></div>
@@ -762,10 +764,7 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
-
-            <div id="databaseFeatureView" class="view-content">
+            </div> </div> <div id="databaseFeatureView" class="view-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
                 <h2 class="section-title" style="margin-bottom: 0; border: none;">🗄️ Patient Master Database</h2>
                 <button onclick="if(typeof incrementEncounter === 'function') incrementEncounter(); document.getElementById('registryModal').classList.add('active')" style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 800; font-size: 0.95rem; box-shadow: var(--shadow-md); cursor: pointer; white-space: nowrap; transition: transform 0.2s;">➕ New Patient</button>
@@ -2197,6 +2196,21 @@ window.manualEditAge = function() {
         document.getElementById('anchorAgeDisplay').innerText = ageStr;
         
         if(typeof autoApproximateVitals === 'function') autoApproximateVitals(newTotal);
+        window.syncAllDashboards(); // Broadcast update!
+    }
+};
+
+window.manualEditWeight = function() {
+    let currentWt = parseFloat(document.getElementById('hudWeight').value) || 0;
+    let input = prompt("Enter Patient Weight (kg):", currentWt);
+    if (input !== null && input !== "" && !isNaN(input)) {
+        let newWt = parseFloat(input);
+        if (newWt < 0) newWt = 0;
+        
+        document.getElementById('hudWeight').value = newWt.toFixed(1);
+        const dispWt = document.getElementById('anchorWtDisplay');
+        if (dispWt) dispWt.innerText = newWt.toFixed(1);
+        
         window.syncAllDashboards(); // Broadcast update!
     }
 };
@@ -4090,15 +4104,15 @@ function init3DPhysics() {
     document.addEventListener('mousemove', (e) => {
         const card = e.target.closest('.bento-card, .vax-flip-card');
         
-        // Reset previously hovered card
-        if (window._active3DCard && window._active3DCard !== card) {
+        // Reset previously hovered card (Desktop Only)
+        if (window.innerWidth > 1023 && window._active3DCard && window._active3DCard !== card) {
             window._active3DCard.style.setProperty('transition', 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
             window._active3DCard.style.setProperty('transform', `perspective(1200px) translateY(0px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`, 'important');
             window._active3DCard = null;
         }
 
-        // Apply tilt to current card
-        if (card) {
+        // Apply tilt to current card (Desktop Only)
+        if (card && window.innerWidth > 1023) {
             window._active3DCard = card;
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left; 

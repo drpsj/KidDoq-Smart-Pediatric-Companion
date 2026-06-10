@@ -71,72 +71,6 @@ input, select, textarea { font-size: 16px !important; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* =========================================
-   KIDDOQ MOBILE DIAGNOSTIC FIXES
-   ========================================= */
-
-/* FIX 1: The iOS Auto-Zoom Bug */
-input, select, textarea {
-    font-size: 16px !important;
-}
-
-/* FIX 2: Squished Row Inputs */
-.row-inputs { 
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; 
-}
-
-/* FIX 3: Horizontal Table Blowouts */
-.theory-table {
-    display: block;
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    white-space: nowrap; 
-}
-
-/* FIX 4: Tool Grid & Button Text Wrapping */
-.tools-grid {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
-    gap: 12px !important;
-}
-.tool-btn { padding: 15px 5px !important; }
-.tool-icon-wrapper { width: 50px !important; height: 50px !important; }
-.tool-btn span { font-size: 0.8rem !important; }
-
-/* FIX 5: Safe Area Insets (For iPhones with the bottom swipe bar) */
-.main-nav {
-    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-}
-.main-content {
-    padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
-}
-
-/* FIX 6: Floating Action Button & Toast Overlap */
-.fab {
-    bottom: calc(85px + env(safe-area-inset-bottom)) !important;
-    right: 15px !important;
-    width: 55px !important; height: 55px !important;
-}
-#systemToastContainer {
-    bottom: calc(90px + env(safe-area-inset-bottom)) !important;
-    top: auto !important; /* Overrides inline top position to prevent vertical stretching */
-    right: 15px !important;
-    left: 15px !important;
-    transform: none !important; /* THIS KILLS THE ROGUE LEFT-BLEED */
-    align-items: center;
-}
-
-/* FIX 7: Modal Keyboard Squeeze */
-.modal-content {
-    max-height: 85vh !important; 
-    padding: 20px 15px !important;
-}
-
-/* FIX 8: Live Rx Preview alignment */
-#rxCartList {
-    min-height: auto !important;
-}
-
-/* =========================================
    NATIVE MOBILE SCROLL PHYSICS & GESTURES
    ========================================= */
 
@@ -421,75 +355,11 @@ input, select, textarea {
 }
 
 /* =========================================================
-   THE CORTEX SPATIAL DECK (STRICT MOBILE SANDBOX)
+   THE CORTEX SPATIAL ORBIT ENGINE & HINTS (COMMAND CENTER)
    ========================================================= */
 @media screen and (max-width: 1023px) {
-    
-    /* 🚀 THE ACID: Melts away desktop columns so cards can join the deck */
-    .cortex-bento-grid > div:not(.bento-card),
-    .cortex-bento-grid .hud-col {
-        display: contents !important;
-    }
 
-    /* 1. The Holographic Stage */
-    .cortex-bento-grid {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        overflow-y: visible !important;
-        scroll-snap-type: x mandatory !important;
-        scroll-behavior: smooth !important;
-        -webkit-overflow-scrolling: touch !important;
-        gap: 15px !important;
-        width: 100vw !important;
-        margin-left: -20px !important; 
-        padding: 20px 10vw 40px 10vw !important; 
-        perspective: 1200px !important; 
-        align-items: center !important;
-    }
-
-    .cortex-bento-grid::-webkit-scrollbar {
-        display: none !important;
-    }
-
-    /* 2. The Inactive Background Cards (Targets ALL cards safely) */
-    .cortex-bento-grid .bento-card {
-        width: 80vw !important; 
-        min-width: 80vw !important;
-        height: max-content !important;
-        min-height: 0 !important; 
-        scroll-snap-align: center !important; 
-        flex-shrink: 0 !important;
-        margin: 0 !important;
-        
-        /* Spatial Physics */
-        transform-style: preserve-3d !important;
-        transform: scale(0.85) translateZ(-80px) rotateY(12deg) !important;
-        opacity: 0.4 !important;
-        filter: blur(2px) !important;
-        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-    }
-
-    /* 3. The Active Card */
-    .cortex-bento-grid .bento-card.holo-active {
-        transform: scale(1) translateZ(0px) rotateY(0deg) !important; 
-        opacity: 1 !important;
-        filter: blur(0px) !important;
-        box-shadow: 0 20px 40px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05) !important;
-        border-color: rgba(0, 229, 255, 0.4) !important;
-    }
-    
-    .bento-card .card-body {
-        flex-grow: 0 !important; 
-        justify-content: flex-start !important;
-        padding-bottom: 0 !important;
-    }
-
-    /* =========================================================
-       HOLOGRAPHIC SWIPE INDICATOR 
-       ========================================================= */
+    /* --- THE HOLOGRAPHIC SWIPE ARROWS --- */
     .holo-swipe-hint {
         display: flex !important;
         justify-content: center !important;
@@ -514,11 +384,7 @@ input, select, textarea {
         transition: transform 0.2s ease !important;
     }
     
-    .holo-swipe-hint:active {
-        transform: scale(0.95) !important;
-        opacity: 1 !important;
-    }
-
+    .holo-swipe-hint:active { transform: scale(0.95) !important; opacity: 1 !important; }
     .arrow-left { animation: pulseLeft 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
     .arrow-right { animation: pulseRight 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
 
@@ -530,4 +396,90 @@ input, select, textarea {
         0%, 100% { transform: translateX(-2px); opacity: 0.3; }
         50% { transform: translateX(4px); opacity: 1; }
     }
-}
+
+    /* --- THE 3D SPATIAL ORBIT ENGINE --- */
+    .cortex-bento-grid {
+        position: relative !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        height: 480px !important;
+        width: 100vw !important;
+        margin-left: -20px !important;
+        margin-bottom: 20px !important;
+        overflow: visible !important; 
+        perspective: 1200px !important;
+        transform-style: preserve-3d !important;
+        background: radial-gradient(ellipse 65% 20px at 50% 100%, rgba(0, 229, 255, 0.15) 0%, transparent 100%) !important;
+    }
+
+    .cortex-bento-grid::-webkit-scrollbar { display: none !important; }
+
+    .cortex-bento-grid .bento-card {
+        position: absolute !important;
+        width: 58vw !important;
+        min-width: 58vw !important;
+        height: auto !important;
+        margin: 0 !important;
+        transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s ease, filter 0.6s ease, box-shadow 0.6s ease, border-color 0.6s ease !important;
+        will-change: transform, opacity, filter;
+        
+        /* Default 'Deep Background' State */
+        transform: translateZ(-250px) translateY(60px) scale(0.6) !important;
+        opacity: 0 !important;
+        pointer-events: none !important; 
+        z-index: 0 !important;
+    }
+
+    /* SLOT: Active Center */
+    .cortex-bento-grid .bento-card.slot-active {
+        transform: translateZ(90px) translateY(-10px) rotateY(0deg) scale(1.05) !important; 
+        opacity: 1 !important;
+        z-index: 9999 !important; 
+        pointer-events: auto !important; 
+        filter: brightness(1.15) saturate(1.1) !important; 
+        box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(0, 229, 255, 0.35), 0 0 25px rgba(0, 229, 255, 0.5) !important;
+        border: 2px solid rgba(0, 229, 255, 1) !important;
+    }
+
+    /* SLOT: Previous (Left Orbit) */
+    .cortex-bento-grid .bento-card.slot-prev {
+        transform: translateX(-105%) translateZ(-100px) translateY(20px) rotateY(30deg) scale(0.9) !important;
+        opacity: 0.65 !important;
+        z-index: 10 !important;
+        pointer-events: auto !important;
+        filter: brightness(0.85) saturate(0.8) !important;
+        box-shadow: 15px 15px 30px rgba(0,0,0,0.4) !important;
+    }
+
+    /* SLOT: Next (Right Orbit) */
+    .cortex-bento-grid .bento-card.slot-next {
+        transform: translateX(105%) translateZ(-100px) translateY(20px) rotateY(-30deg) scale(0.9) !important;
+        opacity: 0.65 !important;
+        z-index: 10 !important;
+        pointer-events: auto !important;
+        filter: brightness(0.85) saturate(0.8) !important;
+        box-shadow: -15px 15px 30px rgba(0,0,0,0.4) !important;
+    }
+
+    /* SLOT: Far Previous (Deep Left) */
+    .cortex-bento-grid .bento-card.slot-far-prev {
+        transform: translateX(-190%) translateZ(-180px) translateY(40px) rotateY(45deg) scale(0.75) !important;
+        opacity: 0.25 !important;
+        z-index: 1 !important;
+    }
+
+    /* SLOT: Far Next (Deep Right) */
+    .cortex-bento-grid .bento-card.slot-far-next {
+        transform: translateX(190%) translateZ(-180px) translateY(40px) rotateY(-45deg) scale(0.75) !important;
+        opacity: 0.25 !important;
+        z-index: 1 !important;
+    }
+    
+    .bento-card .card-body {
+        flex-grow: 0 !important; 
+        justify-content: flex-start !important;
+        padding-bottom: 0 !important;
+    }
+
+} /* <-- THIS IS THE CRITICAL MASTER BRACKET THAT PREVENTS THE CRASH */
