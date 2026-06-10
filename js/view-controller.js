@@ -380,121 +380,96 @@ window.closePatientFile = function() {
 };
 
 // =========================================================
-// THE SPATIAL COMMAND CENTER ENGINE (Production Grade)
+// THE HYBRID SPATIAL ENGINE (Native Scroll Sensor)
 // =========================================================
 window.initSpatialCommandCenter = function() {
-    if (window.innerWidth > 1023) return; // Only runs on mobile
+    if (window.innerWidth > 1023) return; 
 
     const deck = document.querySelector('.cortex-bento-grid');
     if (!deck) return;
 
-    function bootEngine() {
-        const cards = Array.from(deck.querySelectorAll('.bento-card'));
-        if (cards.length === 0) return false;
+    const cards = Array.from(deck.querySelectorAll('.bento-card'));
+    if (cards.length === 0) return;
 
-        // Prevent double-booting
-        if (deck.dataset.spatialEngineActive === "true") return true;
-        deck.dataset.spatialEngineActive = "true";
+    // Prevent double initialization
+    if (deck.dataset.spatialEngineActive === "true") return;
+    deck.dataset.spatialEngineActive = "true";
 
-        let currentIndex = 0; 
+    let currentIndex = -1; 
+    let isScrolling = false;
 
-        function updateSlots(instant = false) {
-            cards.forEach((card, i) => {
-                // THE FIX: Aggressively overpower the CSS !important rule to guarantee an instant snap
-                if (instant) {
-                    card.style.setProperty('transition', 'none', 'important');
-                }
+    // Only updates CSS visually, NEVER translates the container
+    function updateSlots(activeIndex) {
+        if (currentIndex === activeIndex) return; // Prevent redundant repaints
+        currentIndex = activeIndex;
 
-                card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'holo-active');
-                let diff = i - currentIndex;
-                
-                if (diff === 0) card.classList.add('slot-active');
-                else if (diff === -1) card.classList.add('slot-prev');
-                else if (diff === 1) card.classList.add('slot-next');
-                else if (diff === -2) card.classList.add('slot-far-prev');
-                else if (diff === 2) card.classList.add('slot-far-next');
-            });
+        cards.forEach((card, i) => {
+            card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'holo-active');
+            let diff = i - currentIndex;
+            
+            if (diff === 0) card.classList.add('slot-active');
+            else if (diff === -1) card.classList.add('slot-prev');
+            else if (diff === 1) card.classList.add('slot-next');
+            else if (diff < -1) card.classList.add('slot-far-prev');
+            else if (diff > 1) card.classList.add('slot-far-next');
+        });
+    }
 
-            if (instant) {
-                // Force the browser GPU to paint immediately, then restore smooth swipe animations
-                requestAnimationFrame(() => {
-                    void deck.offsetHeight; 
-                    cards.forEach(card => card.style.removeProperty('transition'));
-                });
-            }
-        }
+    // The Sensor: Calculates which card is physically closest to the center of the viewport
+    function processScrollPhysics() {
+        const deckCenter = deck.scrollLeft + (deck.clientWidth / 2);
+        let closestIndex = 0;
+        let minDistance = Infinity;
 
-        // 1. Force Instant Boot
-        updateSlots(true);
-
-        // 2. Direct Touch Interaction & Momentum Drag Engine
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-
-        deck.addEventListener('touchstart', e => { 
-            startX = e.touches[0].clientX; 
-            currentX = startX;
-            isDragging = true;
-            // Overpower CSS for 1:1 finger tracking without rubber-band lag
-            deck.style.setProperty('transition', 'none', 'important');
-            cards.forEach(c => c.style.setProperty('transition', 'none', 'important'));
-        }, {passive: true});
-
-        deck.addEventListener('touchmove', e => {
-            if (!isDragging) return;
-            currentX = e.touches[0].clientX;
-            let diffX = currentX - startX;
-            deck.style.transform = `translateX(${diffX * 0.4}px)`;
-        }, {passive: true});
-
-        deck.addEventListener('touchend', e => {
-            if (!isDragging) return;
-            isDragging = false;
-            let diffX = currentX - startX;
-
-            if (diffX < -40 && currentIndex < cards.length - 1) {
-                currentIndex++; 
-            } else if (diffX > 40 && currentIndex > 0) {
-                currentIndex--; 
-            }
-
-            // Restore smooth momentum physics
-            deck.style.setProperty('transition', 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
-            deck.style.transform = 'translateX(0px)';
-            cards.forEach(c => c.style.removeProperty('transition')); 
-            updateSlots();
-        }, {passive: true});
-
-        // 3. Tap-to-Focus Physics
         cards.forEach((card, index) => {
-            card.addEventListener('click', () => {
-                if (currentIndex !== index) {
-                    currentIndex = index;
-                    updateSlots();
-                }
+            // Using offsetLeft natively tracks the card's position inside the scroll container
+            const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+            const distance = Math.abs(deckCenter - cardCenter);
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestIndex = index;
+            }
+        });
+
+        updateSlots(closestIndex);
+        isScrolling = false;
+    }
+
+    // Passive listener allows the browser native scroll to run at maximum priority
+    deck.addEventListener('scroll', () => {
+        if (!isScrolling) {
+            window.requestAnimationFrame(() => {
+                processScrollPhysics();
             });
+            isScrolling = true;
+        }
+    }, { passive: true });
+
+    // Tap-to-Focus natively scrolls the chosen card into the center snap point
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         });
+    });
 
-        // 4. Arrow Hints Integration
-        const leftArrow = document.querySelector('.holo-swipe-hint .arrow-left');
-        const rightArrow = document.querySelector('.holo-swipe-hint .arrow-right');
-        if(leftArrow) leftArrow.addEventListener('click', () => { if(currentIndex > 0) { currentIndex--; updateSlots(); }});
-        if(rightArrow) rightArrow.addEventListener('click', () => { if(currentIndex < cards.length - 1) { currentIndex++; updateSlots(); }});
+    // Arrow Hints Integration
+    const leftArrow = document.querySelector('.holo-swipe-hint .arrow-left');
+    const rightArrow = document.querySelector('.holo-swipe-hint .arrow-right');
+    
+    if(leftArrow) leftArrow.addEventListener('click', () => { 
+        if(currentIndex > 0) cards[currentIndex - 1].scrollIntoView({ behavior: 'smooth', inline: 'center' }); 
+    });
+    if(rightArrow) rightArrow.addEventListener('click', () => { 
+        if(currentIndex < cards.length - 1) cards[currentIndex + 1].scrollIntoView({ behavior: 'smooth', inline: 'center' }); 
+    });
 
-        return true;
-    }
-
-    // Failsafe Boot Injection
-    if (!bootEngine()) {
-        const observer = new MutationObserver((mutations, obs) => {
-            if (bootEngine()) obs.disconnect(); 
-        });
-        observer.observe(deck, { childList: true, subtree: true });
-    }
+    // Boot execution
+    requestAnimationFrame(() => {
+        processScrollPhysics(); // Establish the initial active card
+    });
 };
 
-// Start Sequence
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', window.initSpatialCommandCenter);
 } else {
