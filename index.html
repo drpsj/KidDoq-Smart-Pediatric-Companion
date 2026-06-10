@@ -1040,11 +1040,6 @@
                 <button class="action" onclick="deleteActivePatient()" style="background:var(--danger); color:white; width:100%; padding:15px; font-size:1.1rem; margin-top:15px; box-shadow:var(--shadow-sm); border-radius:var(--radius-md);">🚨 Delete Patient Permanently</button>
             </div>
 
-            <div id="historicalEncountersView" class="view-content">
-                <h2 class="section-title">📂 Historical Ledger</h2>
-                <div id="historicalLedgerContainer"></div>
-            </div>
-
             <div id="encounterSummaryGlobalView" class="view-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h2 class="section-title" style="margin:0; border:none;">📄 Active Visit Review</h2>
@@ -4011,58 +4006,66 @@ document.addEventListener('DOMContentLoaded', () => {
         sleepObserver.observe(el);
     });
 
-   /* =========================================
-   CORTEX SPATIAL DECK ENGINE (MOBILE) v2
+/* =========================================
+   CORTEX SPATIAL DECK ENGINE (MOBILE) v3
    ========================================= */
 function initHoloDeck() {
     // Only run this logic if we are on a mobile screen
     if (window.innerWidth > 1023) return;
 
     const grid = document.querySelector('.cortex-bento-grid');
-    // We convert the NodeList to an Array so we can find the index easily
-    const cards = Array.from(document.querySelectorAll('.cortex-bento-grid .bento-card'));
+    if(!grid) return;
+
+    // 🚀 THE EXTRACTION PROTOCOL
+    // 1. Find every single card, no matter how deeply trapped it is.
+    const allTrappedCards = grid.querySelectorAll('.bento-card');
+    
+    // 2. Rip them out of their wrappers and drop them directly onto the main deck.
+    allTrappedCards.forEach(card => {
+        grid.appendChild(card); 
+    });
+
+    // 3. Hide the empty cages left behind so they don't break the layout.
+    Array.from(grid.children).forEach(child => {
+        if (!child.classList.contains('bento-card')) {
+            child.style.display = 'none';
+        }
+    });
+
+    // Now grab the perfectly flat, clean array of cards
+    const cards = Array.from(grid.querySelectorAll('.bento-card'));
     const swipeHintContainer = document.querySelector('.holo-swipe-hint');
     
-    if(!grid || cards.length === 0) return;
+    if(cards.length === 0) return;
 
-    // 1. The 3D Sensor (Observes which card is in the center)
+    // 4. The 3D Sensor 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // Remove the active glow from all cards
                 cards.forEach(c => c.classList.remove('holo-active'));
-                // Blast the card currently in the center with the active glow
                 entry.target.classList.add('holo-active');
             }
         });
     }, {
         root: grid,
-        threshold: 0.6 // Card must be 60% inside the center zone to trigger the pop
+        threshold: 0.6 
     });
 
-    // Attach the sensor to every card in the deck
     cards.forEach(card => observer.observe(card));
 
-    // 2. The Bulletproof Click-to-Rotate Engine
+    // 5. The Click-to-Rotate Controls
     if (swipeHintContainer) {
         swipeHintContainer.addEventListener('click', (e) => {
-            // Find exactly which card is currently active
             const activeIndex = cards.findIndex(card => card.classList.contains('holo-active'));
-            
-            // Fallback just in case
             if (activeIndex === -1) return; 
 
             let targetIndex;
-
             if (e.target.closest('.arrow-left')) {
-                // Go backwards, but don't go past the first card (index 0)
                 targetIndex = Math.max(0, activeIndex - 1);
             } else {
-                // Go forwards, but don't go past the last card
                 targetIndex = Math.min(cards.length - 1, activeIndex + 1);
             }
 
-            // Command the browser to perfectly center the target card
             cards[targetIndex].scrollIntoView({ 
                 behavior: 'smooth', 
                 inline: 'center', 
@@ -4074,11 +4077,12 @@ function initHoloDeck() {
 
 // Fire the engine when the app loads
 document.addEventListener('DOMContentLoaded', initHoloDeck);
+</script>
 
 // NOTE: If your app switches views without reloading the page, 
 // call `initHoloDeck();` whenever the Home Dashboard becomes active.
 
-    // ---------------------------------------------------------
+// ---------------------------------------------------------
 // 🚀 BULLETPROOF 3D PARALLAX ENGINE (Event Delegation)
 // ---------------------------------------------------------
 function init3DPhysics() {

@@ -257,7 +257,7 @@ window.populatePatientProfile = function(pId) {
         mileHtml = "No milestones logged yet."; 
     }
     if(mileOut) mileOut.innerHTML = mileHtml;
-}; // <--- THIS WAS THE FATAL MISSING BRACKET
+}
 
 window.editActivePatient = function() {
     const p = AppStore.getPatient(activePatientId);
