@@ -403,43 +403,59 @@ input, select, textarea { font-size: 16px !important; }
         50% { transform: translateX(4px); opacity: 1; }
     }
 
-    /* --- THE 3D SPATIAL ORBIT ENGINE --- */
+    /* --- THE HYBRID SPATIAL ENGINE (Native Scroll + 3D Physics) --- */
     .cortex-bento-grid {
         position: relative !important;
         display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        height: 480px !important;
-        width: 100vw !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        
+        /* The Native Scroll Engine */
+        overflow-x: auto !important;
+        overflow-y: visible !important; 
+        scroll-snap-type: x mandatory !important;
+        scroll-behavior: smooth !important;
+        -webkit-overflow-scrolling: touch !important;
+        
+        /* 🚀 STRICT DIMENSIONAL LOCK (Fixes Horizontal Bleed) */
+        box-sizing: border-box !important; 
+        width: calc(100% + 40px) !important; 
         margin-left: -20px !important;
-        margin-bottom: 20px !important;
-        overflow: visible !important; 
+        padding: 40px 21vw 40px 21vw !important; 
+        gap: 0px !important;
+        align-items: center !important;
+        
         perspective: 1200px !important;
         transform-style: preserve-3d !important;
-        background: radial-gradient(ellipse 65% 20px at 50% 100%, rgba(0, 229, 255, 0.15) 0%, transparent 100%) !important;
+        background: radial-gradient(ellipse 65% 20px at 50% 95%, rgba(0, 229, 255, 0.12) 0%, transparent 100%) !important;
+        background-attachment: local !important;
     }
 
     .cortex-bento-grid::-webkit-scrollbar { display: none !important; }
 
     .cortex-bento-grid .bento-card {
-        position: absolute !important;
+        position: relative !important; /* Back to the document flow */
         width: 58vw !important;
         min-width: 58vw !important;
         height: auto !important;
-        margin: 0 !important;
-        transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s ease, filter 0.6s ease, box-shadow 0.6s ease, border-color 0.6s ease !important;
-        will-change: transform, opacity, filter;
         
-        /* Default 'Deep Background' State */
-        transform: translateZ(-250px) translateY(60px) scale(0.6) !important;
-        opacity: 0 !important;
-        pointer-events: none !important; 
-        z-index: 0 !important;
+        /* Native Mechanics */
+        scroll-snap-align: center !important;
+        flex-shrink: 0 !important;
+        margin: 0 -8vw !important; /* Physical overlap */
+        
+        transform: translateZ(-120px) rotateY(0deg) scale(0.85) !important;
+        opacity: 0.4 !important;
+        z-index: 1 !important;
+        pointer-events: none !important;
+        
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, filter 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease !important;
+        will-change: transform, opacity, filter;
     }
 
     /* SLOT: Active Center */
     .cortex-bento-grid .bento-card.slot-active {
-        transform: translateZ(90px) translateY(-10px) rotateY(0deg) scale(1.05) !important; 
+        transform: translateZ(90px) translateY(-4px) rotateY(0deg) scale(1.05) !important; 
         opacity: 1 !important;
         z-index: 9999 !important; 
         pointer-events: auto !important; 
@@ -450,7 +466,7 @@ input, select, textarea { font-size: 16px !important; }
 
     /* SLOT: Previous (Left Orbit) */
     .cortex-bento-grid .bento-card.slot-prev {
-        transform: translateX(-105%) translateZ(-100px) translateY(20px) rotateY(30deg) scale(0.9) !important;
+        transform: translateZ(-80px) rotateY(30deg) scale(0.9) !important;
         opacity: 0.65 !important;
         z-index: 10 !important;
         pointer-events: auto !important;
@@ -460,7 +476,7 @@ input, select, textarea { font-size: 16px !important; }
 
     /* SLOT: Next (Right Orbit) */
     .cortex-bento-grid .bento-card.slot-next {
-        transform: translateX(105%) translateZ(-100px) translateY(20px) rotateY(-30deg) scale(0.9) !important;
+        transform: translateZ(-80px) rotateY(-30deg) scale(0.9) !important;
         opacity: 0.65 !important;
         z-index: 10 !important;
         pointer-events: auto !important;
@@ -468,24 +484,15 @@ input, select, textarea { font-size: 16px !important; }
         box-shadow: -15px 15px 30px rgba(0,0,0,0.4) !important;
     }
 
-    /* SLOT: Far Previous (Deep Left) */
+    /* SLOT: Far Left/Right Backgrounds */
     .cortex-bento-grid .bento-card.slot-far-prev {
-        transform: translateX(-190%) translateZ(-180px) translateY(40px) rotateY(45deg) scale(0.75) !important;
+        transform: translateZ(-160px) rotateY(45deg) scale(0.8) !important;
         opacity: 0.25 !important;
         z-index: 1 !important;
     }
-
-    /* SLOT: Far Next (Deep Right) */
     .cortex-bento-grid .bento-card.slot-far-next {
-        transform: translateX(190%) translateZ(-180px) translateY(40px) rotateY(-45deg) scale(0.75) !important;
+        transform: translateZ(-160px) rotateY(-45deg) scale(0.8) !important;
         opacity: 0.25 !important;
         z-index: 1 !important;
     }
-    
-    .bento-card .card-body {
-        flex-grow: 0 !important; 
-        justify-content: flex-start !important;
-        padding-bottom: 0 !important;
-    }
-
-} /* <-- THIS IS THE CRITICAL MASTER BRACKET THAT PREVENTS THE CRASH */
+}
