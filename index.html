@@ -589,6 +589,70 @@
 
                         <div id="hudQuickDoseRes"></div>
                         
+                        <div id="doseBridgeContainer" style="margin-top: 15px; display: none;">
+                            <button style="width: 100%; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--brand-cyan); color: var(--brand-cyan); padding: 12px; border-radius: 8px; font-weight: 800; font-size: 0.95rem; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s;" onclick="grabStructuredDose(this)">
+                                ➕ Push Clean Order to Clipboard
+                            </button>
+                        </div>
+
+                        <script>
+                            // 1. The Observer: Reveals the button when a dose appears
+                            setTimeout(() => {
+                                const targetNode = document.getElementById('hudQuickDoseRes');
+                                const bridgeBtn = document.getElementById('doseBridgeContainer');
+                                if(targetNode) {
+                                    const doseResObserver = new MutationObserver(function() {
+                                        if (targetNode.innerText.trim().length > 5) bridgeBtn.style.display = 'block';
+                                        else bridgeBtn.style.display = 'none';
+                                    });
+                                    doseResObserver.observe(targetNode, { childList: true, subtree: true, characterData: true });
+                                }
+                            }, 1000);
+
+                            // 2. The Smart Data Bridge: Now with NO default duration
+                            window.grabStructuredDose = function(btnElement) {
+                                const drugId = document.getElementById('hudQuickForm').value;
+                                const wtInput = document.getElementById('hudWeight');
+                                const wt = wtInput ? parseFloat(wtInput.value) : 0;
+
+                                if (!drugId || wt <= 0) return alert("Missing active drug or weight.");
+
+                                let db = (typeof window.getUnifiedDB === 'function') ? window.getUnifiedDB() : window.drugsDb;
+                                const drug = db.find(d => d.id === drugId);
+                                if (!drug) return;
+
+                                let math = ClinicalMath.computeDose(drug, wt);
+                                let unit = ClinicalMath.getUnit(drug);
+                                const displayFreq = typeof window.translateFreqToLocal === 'function' ? window.translateFreqToLocal(drug.defaultFreq) : drug.defaultFreq;
+
+                                // 4. Construct the strict 5-part clinical order (Duration is strictly empty!)
+                                const medObject = {
+                                    name: drug.name,
+                                    formulation: drug.conc ? `${drug.conc}mg/${drug.vol}${unit.replace('s','')}` : `${drug.doseMg}mg`,
+                                    dose: `${math.reqVol.toFixed(1)} ${unit}`,
+                                    frequency: displayFreq || "SOS",
+                                    duration: "" // Wiped the 3 Days default!
+                                };
+                                
+                                if(window.pushToDashboardCart) {
+                                    window.pushToDashboardCart(medObject);
+                                    
+                                    const originalHTML = btnElement.innerHTML;
+                                    btnElement.innerHTML = "✅ Secure Order Staged!";
+                                    btnElement.style.background = "rgba(46, 213, 115, 0.2)";
+                                    btnElement.style.borderColor = "#2ed573";
+                                    btnElement.style.color = "#2ed573";
+                                    
+                                    setTimeout(() => {
+                                        btnElement.innerHTML = originalHTML;
+                                        btnElement.style.background = "rgba(0, 229, 255, 0.1)";
+                                        btnElement.style.borderColor = "var(--brand-cyan)";
+                                        btnElement.style.color = "var(--brand-cyan)";
+                                    }, 2000);
+                                }
+                            };
+                        </script>
+                        
                         <div id="trustBadgesFooter" style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); gap: 10px;">
                             <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
                                 <div style="font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(216, 180, 254, 0.5));">🛡️</div>
@@ -647,90 +711,133 @@
 
             <!-- 2. BENTO COMMAND GRID -->
             <div class="cortex-bento-grid">
-                <div id="growthSnapshotCard" class="bento-card growth-state-normal" style="position: relative; overflow: hidden; padding: 20px;">
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                        <div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Weight for Age (WFA)</div>
-                            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 4px;">
-                                <span id="liveZScore" style="font-family: 'SF Mono', ui-monospace, monospace; font-size: 3.5rem; font-weight: 800; line-height: 1; letter-spacing: -2px; transition: color 0.3s ease;">-0.00</span>
-                                <span style="font-size: 1.2rem; font-weight: 800; color: var(--text-muted);">SD</span>
-                            </div>
-                        </div>
-                        
-                        <div style="width: 60px; height: 30px; opacity: 0.8;">
-                            <svg viewBox="0 0 100 40" style="width: 100%; height: 100%; overflow: visible;">
-                                <path class="sparkline-path" d="M0,35 L25,28 L50,25 L75,15 L100,5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle class="sparkline-dot" cx="100" cy="5" r="4" fill="currentColor" />
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <div id="liveSeverityBadge" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
-                            <span id="liveSeverityIcon" style="font-size: 0.9rem;">✅</span>
-                            <span id="liveSeverityText" style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Normal Growth</span>
-                        </div>
-                    </div>
-
-                    <div style="position: relative; width: 100%; margin-top: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 800; margin-bottom: 6px;">
-                            <span>-6 SD</span>
-                            <span>-3</span>
-                            <span>-2</span>
-                            <span>-1</span>
-                            <span>+2</span>
-                            <span>+3 SD</span>
-                        </div>
-                        
-                        <div style="display: flex; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden;">
-                            <div style="width: 33.33%; background: var(--sev-severe); opacity: 0.4;"></div>  <div style="width: 11.11%; background: var(--sev-moderate); opacity: 0.4;"></div> <div style="width: 11.11%; background: var(--sev-mild); opacity: 0.4;"></div>     <div style="width: 33.33%; background: var(--sev-normal); opacity: 0.4;"></div>   <div style="width: 11.11%; background: var(--sev-high); opacity: 0.4;"></div>     </div>
-
-                        <div id="liveScaleMarker" style="position: absolute; top: 18px; left: 66.66%; width: 14px; height: 14px; background: var(--sev-normal); border: 2px solid #1e293b; border-radius: 50%; transform: translateX(-50%); transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px var(--sev-normal);"></div>
-                    </div>
+    
+    <div id="growthSnapshotCard" class="bento-card growth-state-normal" style="position: relative; overflow: hidden; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Weight for Age (WFA)</div>
+                <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 4px;">
+                    <span id="liveZScore" style="font-family: 'SF Mono', ui-monospace, monospace; font-size: 3.5rem; font-weight: 800; line-height: 1; letter-spacing: -2px; transition: color 0.3s ease;">-0.00</span>
+                    <span style="font-size: 1.2rem; font-weight: 800; color: var(--text-muted);">SD</span>
                 </div>
-
-                <div class="bento-card card-nutrition" id="bentoNutrition" style="transition: all 0.4s ease;">
-                    <div class="card-header">
-                        <div id="nutriCardIcon" class="card-icon" style="background: rgba(255, 255, 255, 0.1); color: var(--text-muted); transition: all 0.4s ease;">🛡️</div>
-                        <div class="card-title-group">
-                            <h3>Nutrition Status</h3>
-                            <span class="card-subtitle">Acute Triage & Neurology</span>
-                        </div>
-                    </div>
-                    <div class="card-body" style="padding: 15px;">
-                        <div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Open top drawer (⌄) to enter HC & MAC.</div>
-                    </div>
-                </div>
-
-                <!-- 🚀 DYNAMIC VITALS & FLUIDS ASSISTANT -->
-                <div class="bento-card card-vitals" id="bentoVitals">
-                    <div class="card-header" style="align-items: flex-start;">
-                        <!-- 🚀 THE FIX: Running Telemetry Monitor Icon -->
-<div class="card-icon" style="background: rgba(255, 51, 102, 0.15); color: var(--brand-pink); overflow: hidden; position: relative;">
-    <svg class="running-ecg" viewBox="0 0 100 50" preserveAspectRatio="none">
-        <!-- Two identical heartbeats for a seamless infinite loop -->
-        <polyline points="0,25 10,25 13,10 18,45 23,25 50,25 60,25 63,10 68,45 73,25 100,25" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-</div>
-                        <div class="card-title-group" style="width: 100%;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h3 style="margin: 0;">Vitals & Fluids</h3>
-                                <div id="vitalsAgeContext" style="font-size: 0.65rem; font-weight: 800; color: var(--brand-cyan); background: rgba(0, 229, 255, 0.1); padding: 4px 8px; border-radius: 6px; letter-spacing: 0.5px;">--</div>
-                            </div>
-                            <span class="card-subtitle">Patient Assessment Mode</span>
-                        </div>
-                    </div>
-                    <div class="card-body" style="padding: 15px;">
-                        <div id="hudFluidsOutput" style="margin-bottom: 15px;"></div>
-                        
-                        <div id="hudVitalsOutput" data-age-bracket="">
-        <div class="hud-empty-state" style="border:none; padding: 0;">Enter Age to calibrate normal ranges.</div>
+            </div>
+            <div style="width: 60px; height: 30px; opacity: 0.8;">
+                <svg viewBox="0 0 100 40" style="width: 100%; height: 100%; overflow: visible;">
+                    <path class="sparkline-path" d="M0,35 L25,28 L50,25 L75,15 L100,5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle class="sparkline-dot" cx="100" cy="5" r="4" fill="currentColor" />
+                </svg>
+            </div>
+        </div>
+        <div style="margin-bottom: 25px;">
+            <div id="liveSeverityBadge" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                <span id="liveSeverityIcon" style="font-size: 0.9rem;">✅</span>
+                <span id="liveSeverityText" style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Normal Growth</span>
+            </div>
+        </div>
+        <div style="position: relative; width: 100%; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 800; margin-bottom: 6px;">
+                <span>-6 SD</span><span>-3</span><span>-2</span><span>-1</span><span>+2</span><span>+3 SD</span>
+            </div>
+            <div style="display: flex; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden;">
+                <div style="width: 33.33%; background: var(--sev-severe); opacity: 0.4;"></div><div style="width: 11.11%; background: var(--sev-moderate); opacity: 0.4;"></div><div style="width: 11.11%; background: var(--sev-mild); opacity: 0.4;"></div><div style="width: 33.33%; background: var(--sev-normal); opacity: 0.4;"></div><div style="width: 11.11%; background: var(--sev-high); opacity: 0.4;"></div>
+            </div>
+            <div id="liveScaleMarker" style="position: absolute; top: 18px; left: 66.66%; width: 14px; height: 14px; background: var(--sev-normal); border: 2px solid #1e293b; border-radius: 50%; transform: translateX(-50%); transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px var(--sev-normal);"></div>
+        </div>
     </div>
-</div>
 
+    <div class="bento-card card-nutrition" id="bentoNutrition" style="transition: all 0.4s ease;">
+        <div class="card-header">
+            <div id="nutriCardIcon" class="card-icon" style="background: rgba(255, 255, 255, 0.1); color: var(--text-muted); transition: all 0.4s ease;">🛡️</div>
+            <div class="card-title-group">
+                <h3>Nutrition Status</h3>
+                <span class="card-subtitle">Acute Triage & Neurology</span>
+            </div>
+        </div>
+        <div class="card-body" style="padding: 15px;">
+            <div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Open top drawer (⌄) to enter HC & MAC.</div>
+        </div>
+    </div>
+
+    <div class="bento-card card-vitals" id="bentoVitals">
+        <div class="card-header" style="align-items: flex-start;">
+            <div class="card-icon" style="background: rgba(255, 51, 102, 0.15); color: var(--brand-pink); overflow: hidden; position: relative;">
+                <svg class="running-ecg" viewBox="0 0 100 50" preserveAspectRatio="none">
+                    <polyline points="0,25 10,25 13,10 18,45 23,25 50,25 60,25 63,10 68,45 73,25 100,25" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="card-title-group" style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Vitals & Fluids</h3>
+                    <div id="vitalsAgeContext" style="font-size: 0.65rem; font-weight: 800; color: var(--brand-cyan); background: rgba(0, 229, 255, 0.1); padding: 4px 8px; border-radius: 6px; letter-spacing: 0.5px;">--</div>
+                </div>
+                <span class="card-subtitle">Patient Assessment Mode</span>
+            </div>
+        </div>
+        <div class="card-body" style="padding: 15px;">
+            <div id="hudFluidsOutput" style="margin-bottom: 15px;"></div>
+            <div id="hudVitalsOutput" data-age-bracket="">
+                <div class="hud-empty-state" style="border:none; padding: 0;">Enter Age to calibrate normal ranges.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bento-card card-vaccines" id="bentoVaccines">
+        <div class="card-header">
+            <div class="card-icon" style="background: rgba(255, 51, 102, 0.15); color: var(--brand-pink);">💉</div>
+            <div class="card-title-group">
+                <h3>Vaccines Due</h3>
+                <span class="card-subtitle">Based on age</span>
+            </div>
+        </div>
+        <div class="card-body" style="overflow-y: auto; max-height: 320px; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-right: 5px;">
+            <div id="hudVaxOutput" class="hud-empty-state" style="border:none;">Enter Age to see due vaccines.</div>
+        </div>
+    </div>
+
+    <div class="bento-card" id="bentoMilestones" style="perspective: 1000px; box-shadow: inset 0 40px 60px -30px rgba(147, 51, 234, 0.12), var(--shadow-sm); border-top: 1px solid rgba(147, 51, 234, 0.2);">
+        <div class="card-inner" style="position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;">
+            
+            <div class="card-front" style="position: relative; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column;">
+                <div class="card-header" style="position: relative; z-index: 5;">
+                    <div class="card-icon" style="background: rgba(147, 51, 234, 0.15); color: #9333EA; transform: translateZ(30px);">🧠</div>
+                    <div class="card-title-group" style="transform: translateZ(20px);">
+                        <h3>Milestones</h3>
+                        <span class="card-subtitle">Developmental Progress</span>
                     </div>
                 </div>
+                <div class="card-body" id="hudMilestonesOutput" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1;">
+                    <div class="hud-empty-state" style="border:none;">Enter Age</div>
+                    <button class="secondary" style="width: 100%; margin-top: auto; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--brand-cyan); padding: 10px; border-radius: 8px; font-weight: 800; cursor: pointer;" onclick="this.closest('.card-inner').style.transform = 'rotateY(180deg)'">View Actions ↻</button>
+                </div>
+            </div>
+            
+            <div class="card-back" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; background: var(--bg-surface); border-radius: inherit;">
+                <h3 style="color: var(--text-main); margin-bottom: 5px;">Milestone Actions</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px; line-height: 1.4;">Access the complete developmental progress checklist.</p>
+                <button style="width: 100%; margin-bottom: 15px; background: #9333EA; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);" onclick="openPopSheet('milestoneFeatureView', 'Developmental Milestones')">Open Milestones</button>
+                <button style="width: 100%; background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-muted); padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;" onclick="this.closest('.card-inner').style.transform = 'rotateY(0deg)'">↩ Back to Summary</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bento-card card-prescription-builder" id="bentoRxCompact" style="perspective: 1000px; cursor: pointer;" onclick="toggleWorkspace(true)">
+            <div class="card-inner" style="position: relative; width: 100%; height: 100%;">
+                <div class="card-front" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column;">
+                    <div class="card-header" style="position: relative; z-index: 5;">
+                        <div class="card-icon" style="background: rgba(91, 97, 246, 0.15); color: var(--primary); transform: translateZ(30px);">📝</div>
+                        <div class="card-title-group" style="transform: translateZ(20px);">
+                            <h3>Rx Staging</h3>
+                            <span class="card-subtitle">Tap to open</span>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: stretch; flex-grow: 1;">
+                        <div id="compactRxPreviewContainer" style="width: 100%;">
+                            <div style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.85rem; font-weight: 600; margin-top: 10px;">Cart Empty</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
             </div> <div class="holo-swipe-hint">
                 <svg class="hint-arrow arrow-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>
@@ -739,21 +846,8 @@
             </div>
 
             <div class="cortex-workflow-stack" style="display: flex; flex-direction: column; gap: 20px; padding: 0 20px 40px 20px;">
-
-                <div class="bento-card card-vaccines" id="bentoVaccines">
-                    <div class="card-header"><div class="card-icon" style="background: rgba(255, 51, 102, 0.15); color: var(--brand-pink);">💉</div><div class="card-title-group"><h3>Vaccines Due</h3><span class="card-subtitle">Based on age</span></div></div>
-                    <div class="card-body" style="overflow-y: auto; max-height: 320px; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-right: 5px;">
-    <div id="hudVaxOutput" class="hud-empty-state" style="border:none;">Enter Age to see due vaccines.</div>
+    
 </div>
-                </div>
-                
-                <div class="bento-card" id="bentoMilestones" style="box-shadow: inset 0 40px 60px -30px rgba(147, 51, 234, 0.12), var(--shadow-sm); border-top: 1px solid rgba(147, 51, 234, 0.2);">
-    <div class="card-header" style="position: relative; z-index: 5;"><div class="card-icon" style="background: rgba(147, 51, 234, 0.15); color: #9333EA; transform: translateZ(30px);">🧠</div><div class="card-title-group" style="transform: translateZ(20px);"><h3>Milestones</h3><span class="card-subtitle">Developmental Progress</span></div></div>
-    <div class="card-body" id="hudMilestonesOutput" style="padding: 15px; display: flex; flex-direction: column;">
-        <div class="hud-empty-state" style="border:none;">Enter Age</div>
-    </div>
-</div>
-                
                 <div class="bento-card card-tools">
                     <div class="card-header"><div class="card-icon" style="background: rgba(255, 176, 32, 0.15); color: var(--warning);">🧰</div><div class="card-title-group"><h3>Clinical Tools</h3><span class="card-subtitle">Quick access</span></div></div>
                     <div class="card-body tools-mini-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
@@ -763,6 +857,7 @@
                         <button class="secondary" onclick="window.openClinicalTool('asthmaFeatureView')" style="margin:0; font-size:0.75rem; padding:8px;">🫁 PRAM</button>
                     </div>
                 </div>
+            </div>
 
             </div> </div> <div id="databaseFeatureView" class="view-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
@@ -1994,6 +2089,19 @@
 
     <div id="printEngine" class="print-container"></div>
 
+    <div id="cortexPopSheetOverlay" class="cortex-hidden" onclick="closePopSheet()" style="opacity: 0; pointer-events: none;"></div>
+    
+    <div id="cortexPopSheet" class="cortex-pop-sheet">
+        <div class="sheet-header" onclick="closePopSheet()">
+            <div class="sheet-drag-handle"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0 20px 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <h3 id="popSheetTitle" style="margin:0; color:var(--text-main); font-size: 1.3rem;">Clinical Tool</h3>
+                <button class="secondary" style="margin:0; padding:0; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.1); border:none; color:var(--text-muted);">✕</button>
+            </div>
+        </div>
+        <div id="popSheetContent" class="sheet-content">
+            </div>
+    </div>
 
         <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -4134,5 +4242,296 @@ function init3DPhysics() {
     window.addEventListener('load', init3DPhysics);
 });
 </script>
+
+<div id="workspaceBackdrop" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;" onclick="toggleWorkspace(false)"></div>
+
+    <div id="rxSmartClipboard" class="cortex-pop-sheet" style="position: fixed; bottom: 0; left: 0; width: 100%; height: 85vh; background: var(--bg-surface); z-index: 9999; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -10px 50px rgba(0,0,0,0.8); border-top: 1px solid rgba(255,255,255,0.1); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;">
+        
+        <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="font-size: 1.2rem;">⚡</div>
+                <h3 style="margin: 0; color: var(--text-main); font-size: 1.1rem; font-weight: 800;">Prescription Staging</h3>
+            </div>
+            <button class="secondary" style="margin:0; padding:0; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.1); border:none; color:var(--text-muted);" onclick="toggleWorkspace(false)">✕</button>
+        </div>
+
+        <div style="padding: 20px; overflow-y: auto; flex-grow: 1; padding-bottom: 100px;">
+            
+            <div style="margin-bottom: 25px;">
+                <div style="font-size: 0.7rem; color: var(--brand-pink); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 8px;">1. Symptoms / Complaints</div>
+                <div style="display: flex; gap: 6px; margin-bottom: 8px; overflow-x: auto; scrollbar-width: none;">
+                    <button class="secondary" style="font-size: 0.7rem; padding: 6px 12px; border-radius: 12px; margin: 0; background: rgba(255,51,102,0.1); border: 1px solid rgba(255,51,102,0.2); color: var(--brand-pink); white-space: nowrap;" onclick="addSymptomChip('Fever')">+ Fever</button>
+                    <button class="secondary" style="font-size: 0.7rem; padding: 6px 12px; border-radius: 12px; margin: 0; background: rgba(255,51,102,0.1); border: 1px solid rgba(255,51,102,0.2); color: var(--brand-pink); white-space: nowrap;" onclick="addSymptomChip('Cough with expectoration')">+ Cough</button>
+                    <button class="secondary" style="font-size: 0.7rem; padding: 6px 12px; border-radius: 12px; margin: 0; background: rgba(255,51,102,0.1); border: 1px solid rgba(255,51,102,0.2); color: var(--brand-pink); white-space: nowrap;" onclick="addSymptomChip('Vomiting')">+ Vomiting</button>
+                </div>
+                <textarea id="wsSymptoms" placeholder="Tap chips above or type (e.g., Fever x 3 days)..." style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,51,102,0.2); color: var(--text-main); border-radius: 12px; padding: 12px; font-family: inherit; font-size: 0.95rem; min-height: 80px; resize: none;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 8px;">2. Smart Protocols (Auto-Calculated)</div>
+                <div style="display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; -webkit-overflow-scrolling: touch;">
+                    <button id="btnProto-fever" class="secondary" style="margin:0; padding:8px 16px; font-size:0.85rem; border-radius:20px; white-space:nowrap; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); transition: all 0.2s;" onclick="applySmartProtocol('fever')">🌡️ Fever</button>
+                    <button id="btnProto-uri" class="secondary" style="margin:0; padding:8px 16px; font-size:0.85rem; border-radius:20px; white-space:nowrap; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); transition: all 0.2s;" onclick="applySmartProtocol('uri')">🤧 URI</button>
+                    <button id="btnProto-ge" class="secondary" style="margin:0; padding:8px 16px; font-size:0.85rem; border-radius:20px; white-space:nowrap; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); transition: all 0.2s;" onclick="applySmartProtocol('ge')">💩 GE</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <div style="font-size: 0.7rem; color: var(--brand-cyan); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 8px;">3. Treatment Plan</div>
+                <div id="clipboardRxList" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="hud-empty-state" style="border:none; padding: 20px 0; font-size: 0.85rem; margin: 0; background: rgba(0,0,0,0.2); border-radius: 12px;">No medications staged.</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 0.7rem; color: var(--warning); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 8px;">4. Clinical Advice</div>
+                <textarea id="wsAdvice" placeholder="Diet, follow-up, red flags..." style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,176,32,0.2); color: var(--text-main); border-radius: 12px; padding: 12px; font-family: inherit; font-size: 0.95rem; min-height: 100px; resize: none;"></textarea>
+            </div>
+            
+        </div>
+
+        <div style="position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 5px; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 8px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05); z-index: 10000; width: max-content;">
+            
+            <button class="secondary" style="margin: 0; padding: 10px 16px; border-radius: 40px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; transition: all 0.2s; box-shadow: none;" onclick="clearWorkspace()">
+                🗑️ Clear
+            </button>
+            
+            <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.1);"></div>
+            
+            <button class="secondary" style="margin: 0; padding: 10px 16px; border-radius: 40px; border: none; background: transparent; color: var(--text-main); font-size: 0.85rem; font-weight: 700; transition: all 0.2s; box-shadow: none;" onclick="alert('Save to Patient feature coming in future update!')">
+                💾 Save
+            </button>
+            
+            <button style="margin: 0; padding: 10px 20px; border-radius: 40px; border: none; background: var(--brand-cyan); color: #000; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3); transition: transform 0.2s;" onclick="printWorkspaceRx()">
+                🖨️ Print Rx
+            </button>
+
+        </div>
+    </div>
+
+    <script>
+        let workspaceRxList = [];
+
+        // UI Toggle logic (Actively hides Deck)
+        window.toggleWorkspace = function(show) {
+            const sheet = document.getElementById('rxSmartClipboard');
+            const backdrop = document.getElementById('workspaceBackdrop');
+            const bentoGrid = document.querySelector('.cortex-bento-grid'); 
+
+            if(show) {
+                sheet.style.transform = 'translateY(0)';
+                backdrop.style.opacity = '1';
+                backdrop.style.pointerEvents = 'auto';
+                if(bentoGrid) {
+                    bentoGrid.style.transition = 'opacity 0.3s ease';
+                    bentoGrid.style.opacity = '0'; 
+                    bentoGrid.style.pointerEvents = 'none';
+                }
+            } else {
+                sheet.style.transform = 'translateY(100%)';
+                backdrop.style.opacity = '0';
+                backdrop.style.pointerEvents = 'none';
+                if(bentoGrid) {
+                    bentoGrid.style.opacity = '1'; 
+                    bentoGrid.style.pointerEvents = 'auto';
+                }
+            }
+        };
+
+        const compactCard = document.getElementById('bentoRxCompact');
+        if(compactCard) compactCard.onclick = () => toggleWorkspace(true);
+
+        window.addSymptomChip = function(symp) {
+            const field = document.getElementById('wsSymptoms');
+            field.value += (field.value ? '\n' : '') + symp + ' x __ days';
+        };
+
+        // --- SMART PROTOCOL ENGINE (Now with Offline Advice Dictionary) ---
+        window.applySmartProtocol = function(type) {
+            let wt = window.globalPatientWeight || 10; 
+            const sympField = document.getElementById('wsSymptoms');
+            const advField = document.getElementById('wsAdvice');
+            
+            // 1. Visual Active State
+            const btn = document.getElementById('btnProto-' + type);
+            if(btn) {
+                btn.style.background = 'rgba(0, 229, 255, 0.15)';
+                btn.style.borderColor = 'var(--brand-cyan)';
+                btn.style.color = 'var(--brand-cyan)';
+            }
+
+            // 2. The Offline Advice Dictionary
+            const adviceDictionary = {
+                fever: "• Maintain adequate hydration\n• Tepid sponging for temp > 101°F\n• Return if persistent fever > 3 days\n• RED FLAGS: Lethargy, poor oral intake, zero urine output for 6 hours.",
+                uri: "• Steam inhalation twice daily\n• Avoid cold food/drinks\n• Saline drops before feeds if nasal block\n• Return if breathing gets fast or labored.",
+                ge: "• STRICT ORS. No plain water.\n• Soft, freshly cooked diet. Avoid dairy if purging worsens.\n• RED FLAGS: Lethargy, sunken eyes, zero urine for 6 hours."
+            };
+
+            // 3. Smart Advice Injection (Anti-duplication logic)
+            let newAdvice = adviceDictionary[type];
+            if (newAdvice && !advField.value.includes(newAdvice)) {
+                advField.value += (advField.value ? '\n\n' : '') + newAdvice;
+            }
+
+            // 4. Medication Injection (Durations wiped to trigger Phase 3 Editor)
+            if (type === 'fever') {
+                let doseMg = Math.round(wt * 15);
+                let volMl = (doseMg / 250) * 5;
+                let cleanVol = (Math.round(volMl * 2) / 2).toFixed(1);
+
+                pushToWorkspaceRx({ name: "Paracetamol", formulation: "Syrup (250mg/5mL)", dose: `${cleanVol} mL`, frequency: "Q6H (SOS)", duration: "" });
+            
+            } else if (type === 'uri') {
+                let cetMg = wt * 0.25;
+                let cetVol = (cetMg / 5) * 5;
+                let cleanCet = (Math.round(cetVol * 2) / 2).toFixed(1);
+
+                pushToWorkspaceRx({ name: "Cetirizine", formulation: "Syrup (5mg/5mL)", dose: `${cleanCet} mL`, frequency: "OD (HS)", duration: "" });
+                pushToWorkspaceRx({ name: "Saline Nasal Drops", formulation: "0.65% w/v", dose: "2 Drops Both Nostrils", frequency: "TDS (SOS)", duration: "" });
+            
+            } else if (type === 'ge') {
+                pushToWorkspaceRx({ name: "ORS Sachet", formulation: "WHO Standard", dose: "1 Sachet in 1L Water", frequency: "Sip post loose stool", duration: "" });
+                pushToWorkspaceRx({ name: "Zinc", formulation: "Syrup (20mg/5mL)", dose: "5.0 mL", frequency: "OD", duration: "" });
+            }
+        };
+
+        // --- GLOBAL BRIDGE ---
+        window.pushToDashboardCart = function(medObject) {
+            pushToWorkspaceRx(medObject);
+        };
+
+        function pushToWorkspaceRx(medObject) {
+            workspaceRxList.push(medObject);
+            renderWorkspaceRx();
+        }
+
+        // --- UPGRADED RENDERER: Active Duration Editing ---
+        function renderWorkspaceRx() {
+            const list = document.getElementById('clipboardRxList');
+            if (workspaceRxList.length === 0) {
+                list.innerHTML = '<div class="hud-empty-state" style="border:none; padding: 20px 0; font-size: 0.85rem; margin: 0; background: rgba(0,0,0,0.2); border-radius: 12px;">No medications staged.</div>';
+            } else {
+                list.innerHTML = '';
+                workspaceRxList.forEach((item, index) => {
+                    
+                    // Smart Duration Display Logic
+                    let displayDuration = item.duration;
+                    let durationColor = "var(--text-main)";
+                    let durationBg = "rgba(255,255,255,0.05)";
+                    let durationBorder = "rgba(255,255,255,0.1)";
+                    
+                    if (!displayDuration || displayDuration.trim() === '') {
+                        displayDuration = '✎ Tap to set duration';
+                        durationColor = "var(--warning)";
+                        durationBg = "rgba(255, 176, 32, 0.1)";
+                        durationBorder = "rgba(255, 176, 32, 0.3)";
+                    }
+
+                    list.innerHTML += `
+                        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--brand-cyan); border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 15px; background: rgba(255,255,255,0.02); border-bottom: 1px dashed rgba(255,255,255,0.1);">
+                                <div>
+                                    <div style="font-weight: 800; color: #fff; font-size: 1.05rem; display: flex; align-items: center; gap: 6px;">💊 ${item.name}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; font-weight: 600;">Formulation: <span style="color: rgba(255,255,255,0.7);">${item.formulation}</span></div>
+                                </div>
+                                <button class="secondary" style="margin: 0; padding: 4px 8px; border:none; background:rgba(239, 68, 68, 0.1); border-radius: 6px; color: var(--danger); font-size: 1rem; line-height: 1; transition: all 0.2s;" onclick="removeWorkspaceItem(${index})">✕</button>
+                            </div>
+                            
+                            <div style="padding: 12px 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">Dose</div>
+                                    <div style="font-size: 0.95rem; color: var(--brand-cyan); font-family: 'SF Mono', ui-monospace, monospace; font-weight: 700; margin-top: 2px;">${item.dose}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">Frequency</div>
+                                    <div style="font-size: 0.95rem; color: #fff; font-weight: 600; margin-top: 2px;">${item.frequency}</div>
+                                </div>
+                                
+                                <div style="grid-column: 1 / -1; padding-top: 10px; margin-top: 2px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">Duration</div>
+                                    <div style="font-size: 0.85rem; color: ${durationColor}; font-weight: 800; cursor: pointer; background: ${durationBg}; padding: 6px 12px; border-radius: 6px; border: 1px dashed ${durationBorder}; transition: all 0.2s;" onclick="editDuration(${index})">
+                                        ${displayDuration}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Sync with 3D Deck Preview Card
+            const previewContainer = document.getElementById('compactRxPreviewContainer');
+            if (previewContainer) {
+                if (workspaceRxList.length === 0) {
+                    previewContainer.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.85rem; font-weight: 600; margin-top: 10px;">Cart Empty</div>';
+                } else if (workspaceRxList.length === 1) {
+                    const item = workspaceRxList[0];
+                    previewContainer.innerHTML = `
+                        <div style="background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 8px; padding: 10px; margin-top: 5px;">
+                            <div style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💊 ${item.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--brand-cyan); font-family: 'SF Mono', ui-monospace, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.dose} • ${item.frequency}</div>
+                        </div>
+                    `;
+                } else {
+                    let html = `<div style="display: flex; flex-direction: column; gap: 6px; margin-top: 5px;">`;
+                    const limit = Math.min(2, workspaceRxList.length);
+                    for(let i=0; i<limit; i++) {
+                        html += `<div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 6px; border-left: 2px solid var(--brand-cyan);">💊 ${workspaceRxList[i].name}</div>`;
+                    }
+                    if (workspaceRxList.length > 2) {
+                        html += `<div style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-align: center; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">+${workspaceRxList.length - 2} more</div>`;
+                    }
+                    html += `</div>`;
+                    previewContainer.innerHTML = html;
+                }
+            }
+        }
+
+        // --- NEW: DURATION EDITOR ---
+        window.editDuration = function(index) {
+            let currentVal = workspaceRxList[index].duration || "";
+            let newVal = prompt("Enter duration (e.g., 5 Days, 1 Week, SOS):", currentVal);
+            
+            // If user clicked OK and didn't cancel the prompt
+            if (newVal !== null) {
+                workspaceRxList[index].duration = newVal.trim();
+                renderWorkspaceRx(); // Re-render the UI instantly
+            }
+        };
+
+        window.removeWorkspaceItem = function(index) {
+            workspaceRxList.splice(index, 1);
+            renderWorkspaceRx();
+        };
+
+        window.clearWorkspace = function() {
+            workspaceRxList = [];
+            document.getElementById('wsSymptoms').value = '';
+            document.getElementById('wsAdvice').value = '';
+            ['fever', 'uri', 'ge'].forEach(id => {
+                const btn = document.getElementById('btnProto-' + id);
+                if(btn) {
+                    btn.style.background = 'rgba(255,255,255,0.05)';
+                    btn.style.borderColor = 'rgba(255,255,255,0.1)';
+                    btn.style.color = 'var(--text-main)';
+                }
+            });
+            renderWorkspaceRx();
+        };
+
+        window.printWorkspaceRx = function() {
+            const symp = document.getElementById('wsSymptoms').value;
+            const adv = document.getElementById('wsAdvice').value;
+            if (workspaceRxList.length === 0 && !symp && !adv) return alert("Workspace is entirely empty.");
+            
+            let printString = "--- OPD CONSULTATION ---\n\n";
+            if(symp) printString += "SYMPTOMS:\n" + symp + "\n\n";
+            if(workspaceRxList.length > 0) {
+                printString += "RX:\n" + workspaceRxList.map(item => `${item.name} (${item.formulation})\n  -> ${item.dose} • ${item.frequency} • ${item.duration}`).join("\n\n") + "\n\n";
+            }
+            if(adv) printString += "ADVICE:\n" + adv + "\n";
+            alert(printString);
+        };
+    </script>
 </body>
 </html>

@@ -380,7 +380,7 @@ window.closePatientFile = function() {
 };
 
 // =========================================================
-// THE HYBRID SPATIAL ENGINE (Native Scroll Sensor)
+// THE INFINITE SPATIAL RING ENGINE (True Trigonometric Loop)
 // =========================================================
 window.initSpatialCommandCenter = function() {
     if (window.innerWidth > 1023) return; 
@@ -388,86 +388,123 @@ window.initSpatialCommandCenter = function() {
     const deck = document.querySelector('.cortex-bento-grid');
     if (!deck) return;
 
-    const cards = Array.from(deck.querySelectorAll('.bento-card'));
-    if (cards.length === 0) return;
+    function bootEngine() {
+        const cards = Array.from(deck.querySelectorAll('.bento-card'));
+        const total = cards.length;
+        if (total === 0) return false;
 
-    // Prevent double initialization
-    if (deck.dataset.spatialEngineActive === "true") return;
-    deck.dataset.spatialEngineActive = "true";
+        if (deck.dataset.spatialEngineActive === "true") return true;
+        deck.dataset.spatialEngineActive = "true";
 
-    let currentIndex = -1; 
-    let isScrolling = false;
+        let currentIndex = 0; // Absolute guarantee the first card boots active
 
-    // Only updates CSS visually, NEVER translates the container
-    function updateSlots(activeIndex) {
-        if (currentIndex === activeIndex) return; // Prevent redundant repaints
-        currentIndex = activeIndex;
-
-        cards.forEach((card, i) => {
-            card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'holo-active');
-            let diff = i - currentIndex;
-            
-            if (diff === 0) card.classList.add('slot-active');
-            else if (diff === -1) card.classList.add('slot-prev');
-            else if (diff === 1) card.classList.add('slot-next');
-            else if (diff < -1) card.classList.add('slot-far-prev');
-            else if (diff > 1) card.classList.add('slot-far-next');
-        });
-    }
-
-    // The Sensor: Calculates which card is physically closest to the center of the viewport
-    function processScrollPhysics() {
-        const deckCenter = deck.scrollLeft + (deck.clientWidth / 2);
-        let closestIndex = 0;
-        let minDistance = Infinity;
-
-        cards.forEach((card, index) => {
-            // Using offsetLeft natively tracks the card's position inside the scroll container
-            const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
-            const distance = Math.abs(deckCenter - cardCenter);
-            
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestIndex = index;
-            }
-        });
-
-        updateSlots(closestIndex);
-        isScrolling = false;
-    }
-
-    // Passive listener allows the browser native scroll to run at maximum priority
-    deck.addEventListener('scroll', () => {
-        if (!isScrolling) {
-            window.requestAnimationFrame(() => {
-                processScrollPhysics();
-            });
-            isScrolling = true;
+        // 🚀 THE FIX: Mathematical Array Wrapping
+        // Turns a flat list of cards into an infinite circular loop
+        function getWrappedOffset(target, center) {
+            let diff = target - center;
+            // Force the difference into a physical circle [-2, -1, 0, 1, 2]
+            if (diff > Math.floor(total / 2)) diff -= total;
+            if (diff < -Math.floor(total / 2)) diff += total;
+            return diff;
         }
-    }, { passive: true });
 
-    // Tap-to-Focus natively scrolls the chosen card into the center snap point
-    cards.forEach(card => {
-        card.addEventListener('click', () => {
-            card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        function updateSlots(instant = false) {
+            cards.forEach((card, i) => {
+                if (instant) card.style.setProperty('transition', 'none', 'important');
+
+                card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next');
+                
+                // Calculate physical position on the circle
+                let diff = getWrappedOffset(i, currentIndex);
+                
+                if (diff === 0) card.classList.add('slot-active');
+                else if (diff === -1) card.classList.add('slot-prev');
+                else if (diff === 1) card.classList.add('slot-next');
+                else if (diff < -1) card.classList.add('slot-far-prev');
+                else if (diff > 1) card.classList.add('slot-far-next');
+            });
+
+            if (instant) {
+                // Force paint for instant boot centering
+                requestAnimationFrame(() => {
+                    void deck.offsetHeight; 
+                    cards.forEach(card => card.style.removeProperty('transition'));
+                });
+            }
+        }
+
+        // 1. Force Instant Centered Boot
+        updateSlots(true);
+
+        // 2. Gesture Physics (Infinite Drag Engine)
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        deck.addEventListener('touchstart', e => { 
+            startX = e.touches[0].clientX; 
+            currentX = startX;
+            isDragging = true;
+            deck.style.setProperty('transition', 'none', 'important');
+        }, {passive: true});
+
+        deck.addEventListener('touchmove', e => {
+            if (!isDragging) return;
+            currentX = e.touches[0].clientX;
+            let diffX = currentX - startX;
+            // Adds slight 3D rotation to the entire stage during drag for a premium feel
+            deck.style.transform = `translateX(${diffX * 0.4}px) rotateY(${diffX * 0.05}deg)`;
+        }, {passive: true});
+
+        deck.addEventListener('touchend', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            let diffX = currentX - startX;
+
+            // Trigger Rotation & Apply Array Wrap Math
+            if (diffX < -40) {
+                currentIndex = (currentIndex + 1) % total; // Wrap Forward
+            } else if (diffX > 40) {
+                currentIndex = (currentIndex - 1 + total) % total; // Wrap Backward
+            }
+
+            // Snap the stage back to center, the CSS will gracefully rotate the cards into their new slots
+            deck.style.setProperty('transition', 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
+            deck.style.transform = 'translateX(0px) rotateY(0deg)';
+            updateSlots();
+        }, {passive: true});
+
+        // 3. Tap-to-Focus
+        cards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                if (currentIndex !== index) {
+                    currentIndex = index;
+                    updateSlots();
+                }
+            });
         });
-    });
 
-    // Arrow Hints Integration
-    const leftArrow = document.querySelector('.holo-swipe-hint .arrow-left');
-    const rightArrow = document.querySelector('.holo-swipe-hint .arrow-right');
-    
-    if(leftArrow) leftArrow.addEventListener('click', () => { 
-        if(currentIndex > 0) cards[currentIndex - 1].scrollIntoView({ behavior: 'smooth', inline: 'center' }); 
-    });
-    if(rightArrow) rightArrow.addEventListener('click', () => { 
-        if(currentIndex < cards.length - 1) cards[currentIndex + 1].scrollIntoView({ behavior: 'smooth', inline: 'center' }); 
-    });
+        // 4. Infinite Arrow Hints
+        const leftArrow = document.querySelector('.holo-swipe-hint .arrow-left');
+        const rightArrow = document.querySelector('.holo-swipe-hint .arrow-right');
+        if(leftArrow) leftArrow.addEventListener('click', () => { 
+            currentIndex = (currentIndex - 1 + total) % total; 
+            updateSlots(); 
+        });
+        if(rightArrow) rightArrow.addEventListener('click', () => { 
+            currentIndex = (currentIndex + 1) % total; 
+            updateSlots(); 
+        });
 
-    // Boot execution
-    requestAnimationFrame(() => {
-        processScrollPhysics(); // Establish the initial active card
-    });
+        return true;
+    }
+
+    if (!bootEngine()) {
+        const observer = new MutationObserver((mutations, obs) => {
+            if (bootEngine()) obs.disconnect(); 
+        });
+        observer.observe(deck, { childList: true, subtree: true });
+    }
 };
 
 if (document.readyState === 'loading') {
@@ -475,3 +512,47 @@ if (document.readyState === 'loading') {
 } else {
     window.initSpatialCommandCenter();
 }
+
+// =========================================================
+// CORTEX POP SHEET CONTROLLER
+// =========================================================
+
+// Opens the Bottom Sheet and injects the requested heavy module
+window.openPopSheet = function(targetElementId, titleText) {
+    const targetElement = document.getElementById(targetElementId);
+    const sheetContent = document.getElementById('popSheetContent');
+    const overlay = document.getElementById('cortexPopSheetOverlay');
+    const sheet = document.getElementById('cortexPopSheet');
+    const title = document.getElementById('popSheetTitle');
+
+    if (!targetElement) return;
+
+    // Set the custom title for the sheet
+    title.innerText = titleText || "Clinical Tool";
+
+    // Physically move the heavy module DOM node into the Pop Sheet
+    sheetContent.appendChild(targetElement);
+    targetElement.style.display = 'block';
+
+    // Ignite the slide-up physics
+    overlay.classList.remove('cortex-hidden');
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'auto';
+    sheet.classList.add('active');
+};
+
+// Closes the Bottom Sheet gracefully
+window.closePopSheet = function() {
+    const overlay = document.getElementById('cortexPopSheetOverlay');
+    const sheet = document.getElementById('cortexPopSheet');
+
+    // Slide it down
+    sheet.classList.remove('active');
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+
+    // Wait for the slide animation to finish before fully hiding the overlay
+    setTimeout(() => {
+        overlay.classList.add('cortex-hidden');
+    }, 500);
+};

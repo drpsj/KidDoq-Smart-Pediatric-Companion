@@ -403,59 +403,47 @@ input, select, textarea { font-size: 16px !important; }
         50% { transform: translateX(4px); opacity: 1; }
     }
 
-    /* --- THE HYBRID SPATIAL ENGINE (Native Scroll + 3D Physics) --- */
+    /* --- THE INFINITE SPATIAL RING (Command Center) --- */
     .cortex-bento-grid {
         position: relative !important;
         display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        
-        /* The Native Scroll Engine */
-        overflow-x: auto !important;
-        overflow-y: visible !important; 
-        scroll-snap-type: x mandatory !important;
-        scroll-behavior: smooth !important;
-        -webkit-overflow-scrolling: touch !important;
-        
-        /* 🚀 STRICT DIMENSIONAL LOCK (Fixes Horizontal Bleed) */
-        box-sizing: border-box !important; 
-        width: calc(100% + 40px) !important; 
-        margin-left: -20px !important;
-        padding: 40px 21vw 40px 21vw !important; 
-        gap: 0px !important;
+        justify-content: center !important;
         align-items: center !important;
+        height: 480px !important;
+        width: 100vw !important;
+        margin-left: -20px !important;
+        margin-bottom: 20px !important;
         
+        /* 🚀 THE FIX: Kills the linear track, enables pure 3D space */
+        overflow: visible !important; 
         perspective: 1200px !important;
         transform-style: preserve-3d !important;
-        background: radial-gradient(ellipse 65% 20px at 50% 95%, rgba(0, 229, 255, 0.12) 0%, transparent 100%) !important;
-        background-attachment: local !important;
+        background: radial-gradient(ellipse 65% 20px at 50% 100%, rgba(0, 229, 255, 0.15) 0%, transparent 100%) !important;
     }
 
     .cortex-bento-grid::-webkit-scrollbar { display: none !important; }
 
     .cortex-bento-grid .bento-card {
-        position: relative !important; /* Back to the document flow */
+        /* 🚀 THE FIX: Detaches cards from the document flow, stacking them in the center */
+        position: absolute !important; 
         width: 58vw !important;
         min-width: 58vw !important;
         height: auto !important;
+        margin: 0 !important;
         
-        /* Native Mechanics */
-        scroll-snap-align: center !important;
-        flex-shrink: 0 !important;
-        margin: 0 -8vw !important; /* Physical overlap */
-        
-        transform: translateZ(-120px) rotateY(0deg) scale(0.85) !important;
-        opacity: 0.4 !important;
-        z-index: 1 !important;
-        pointer-events: none !important;
-        
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, filter 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease !important;
+        transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease !important;
         will-change: transform, opacity, filter;
+        
+        /* Default State (Cards waiting in the invisible background loop) */
+        transform: translateZ(-300px) translateY(80px) rotateY(180deg) scale(0.5) !important;
+        opacity: 0 !important;
+        pointer-events: none !important; 
+        z-index: 0 !important;
     }
 
     /* SLOT: Active Center */
     .cortex-bento-grid .bento-card.slot-active {
-        transform: translateZ(90px) translateY(-4px) rotateY(0deg) scale(1.05) !important; 
+        transform: translateZ(90px) translateY(-10px) rotateY(0deg) scale(1.05) !important; 
         opacity: 1 !important;
         z-index: 9999 !important; 
         pointer-events: auto !important; 
@@ -466,7 +454,7 @@ input, select, textarea { font-size: 16px !important; }
 
     /* SLOT: Previous (Left Orbit) */
     .cortex-bento-grid .bento-card.slot-prev {
-        transform: translateZ(-80px) rotateY(30deg) scale(0.9) !important;
+        transform: translateX(-105%) translateZ(-100px) translateY(20px) rotateY(30deg) scale(0.9) !important;
         opacity: 0.65 !important;
         z-index: 10 !important;
         pointer-events: auto !important;
@@ -476,7 +464,7 @@ input, select, textarea { font-size: 16px !important; }
 
     /* SLOT: Next (Right Orbit) */
     .cortex-bento-grid .bento-card.slot-next {
-        transform: translateZ(-80px) rotateY(-30deg) scale(0.9) !important;
+        transform: translateX(105%) translateZ(-100px) translateY(20px) rotateY(-30deg) scale(0.9) !important;
         opacity: 0.65 !important;
         z-index: 10 !important;
         pointer-events: auto !important;
@@ -484,15 +472,64 @@ input, select, textarea { font-size: 16px !important; }
         box-shadow: -15px 15px 30px rgba(0,0,0,0.4) !important;
     }
 
-    /* SLOT: Far Left/Right Backgrounds */
+    /* SLOT: Far Previous (Deep Left) */
     .cortex-bento-grid .bento-card.slot-far-prev {
-        transform: translateZ(-160px) rotateY(45deg) scale(0.8) !important;
+        transform: translateX(-190%) translateZ(-180px) translateY(40px) rotateY(45deg) scale(0.75) !important;
         opacity: 0.25 !important;
         z-index: 1 !important;
     }
+
+    /* SLOT: Far Next (Deep Right) */
     .cortex-bento-grid .bento-card.slot-far-next {
-        transform: translateZ(-160px) rotateY(-45deg) scale(0.8) !important;
+        transform: translateX(190%) translateZ(-180px) translateY(40px) rotateY(-45deg) scale(0.75) !important;
         opacity: 0.25 !important;
         z-index: 1 !important;
     }
+} /* <-- Final Master Bracket */
+
+/* =========================================================
+   CORTEX POP SHEET PHYSICS (Bottom Sheet Modal)
+   ========================================================= */
+#cortexPopSheetOverlay {
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100vw; height: 100dvh;
+    background: rgba(0, 0, 0, 0.7); 
+    backdrop-filter: blur(8px); 
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10500; 
+    transition: opacity 0.4s ease;
+}
+
+.cortex-pop-sheet {
+    position: fixed; 
+    bottom: 0; left: 0; 
+    width: 100vw; height: 90dvh; /* Takes up 90% of screen, leaving the deck slightly visible */
+    background: var(--bg-body); 
+    border-radius: 24px 24px 0 0;
+    z-index: 10600; 
+    display: flex; flex-direction: column;
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.8), inset 0 2px 10px rgba(255,255,255,0.05);
+    
+    /* The Slide-Up Spring Physics */
+    transform: translateY(100%); 
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.cortex-pop-sheet.active {
+    transform: translateY(0);
+}
+
+.cortex-pop-sheet .sheet-drag-handle {
+    width: 45px; height: 5px; 
+    background: rgba(255,255,255,0.2); 
+    border-radius: 5px; 
+    margin: 12px auto 15px auto;
+}
+
+.cortex-pop-sheet .sheet-content {
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 20px;
+    -webkit-overflow-scrolling: touch;
 }
