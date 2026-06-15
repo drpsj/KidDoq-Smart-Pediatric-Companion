@@ -452,49 +452,46 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 }
 
 /* =========================================
-   3. THE PERFECT VIEWPORT WINDOW 
+   3. MAXIMUM CARDS (78% Viewport)
    ========================================= */
 .cortex-spatial-stage {
-    position: fixed !important; /* 🚀 Detaches from the page scroll */
-    top: 135px !important; /* 🚀 Pushes the top safely below the Patient HUD */
-    bottom: 110px !important; /* 🚀 Pulls the bottom safely above the Deck Rail */
-    left: 0 !important;
-    width: 100% !important;
-    height: auto !important; /* Removes the greedy 78vh */
-    min-height: 0 !important;
-    margin: 0 !important;
-    z-index: 10 !important;
+    height: 78vh !important; 
+    min-height: 550px !important;
+    margin-bottom: 0 !important; 
 }
 
 .cortex-spatial-stage .bento-card {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important; /* Locks left & right */
-    margin: 0 auto !important; /* 🚀 Perfectly centers the card for the 3D physics */
-    width: calc(100% - 20px) !important; /* Keeps edges slightly off the screen sides */
-    max-width: 450px !important;
-    height: 100% !important; /* Perfectly matches the new safe window */
-    max-height: 100% !important;
-    overflow: hidden !important; /* Prevents internal content from bleeding */
-    display: flex !important;
-    flex-direction: column !important;
+    height: 100% !important; 
+    max-height: 80vh !important; 
+}
+
+.main-content {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; 
 }
 
 /* =========================================
-   4. INTERNAL SCROLLING ENGINE
+   4. STRICT CARD BOUNDARIES & SCROLLING
    ========================================= */
+
+/* 1. Force the card frame to stay rigid and clip escaping content */
+.cortex-spatial-stage .bento-card {
+    height: 100% !important; 
+    max-height: 80vh !important; 
+    overflow: hidden !important; /* 🚀 Clips any content trying to bleed out */
+    min-height: 0 !important; /* 🚀 Forces the browser to strictly obey the max-height */
+}
+
+/* 2. Turn the inside of the card into a scrollable zone */
 .cortex-spatial-stage .bento-card .card-body,
 .cortex-spatial-stage .bento-card .vax-face-front,
 .cortex-spatial-stage .bento-card .vax-face-back {
     flex-grow: 1 !important;
-    overflow-y: auto !important; /* Enables internal vertical scrolling */
+    overflow-y: auto !important; /* 🚀 Enables internal vertical scrolling */
     min-height: 0 !important;
-    padding-bottom: 30px !important; 
+    padding-bottom: 20px !important; /* Adds breathing room at the bottom of the scroll */
     
-    /* Hide the ugly scrollbar for a clean glass aesthetic */
+    /* Hides the ugly scrollbar for a cleaner glass aesthetic */
     scrollbar-width: none !important; 
-    -webkit-overflow-scrolling: touch !important; /* Smooth iOS scrolling */
 }
 
 .cortex-spatial-stage .bento-card .card-body::-webkit-scrollbar { 
