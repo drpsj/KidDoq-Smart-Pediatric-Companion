@@ -468,3 +468,32 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 .main-content {
     padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; 
 }
+
+/* =========================================
+   4. STRICT CARD BOUNDARIES & SCROLLING
+   ========================================= */
+
+/* 1. Force the card frame to stay rigid and clip escaping content */
+.cortex-spatial-stage .bento-card {
+    height: 100% !important; 
+    max-height: 80vh !important; 
+    overflow: hidden !important; /* 🚀 Clips any content trying to bleed out */
+    min-height: 0 !important; /* 🚀 Forces the browser to strictly obey the max-height */
+}
+
+/* 2. Turn the inside of the card into a scrollable zone */
+.cortex-spatial-stage .bento-card .card-body,
+.cortex-spatial-stage .bento-card .vax-face-front,
+.cortex-spatial-stage .bento-card .vax-face-back {
+    flex-grow: 1 !important;
+    overflow-y: auto !important; /* 🚀 Enables internal vertical scrolling */
+    min-height: 0 !important;
+    padding-bottom: 20px !important; /* Adds breathing room at the bottom of the scroll */
+    
+    /* Hides the ugly scrollbar for a cleaner glass aesthetic */
+    scrollbar-width: none !important; 
+}
+
+.cortex-spatial-stage .bento-card .card-body::-webkit-scrollbar { 
+    display: none !important; 
+}
