@@ -26,7 +26,7 @@ function getPrintHeaderHTML(title, patientObj) {
                 <div style="font-size:14px;"><b>Date:</b> ${new Date().toLocaleDateString('en-IN')}</div>
             </div>
             <div style="font-size: 14px; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 10px 0; margin-bottom: 10px; display:flex; justify-content:space-between;">
-                <span><b>Patient:</b> ${p.name || "________________"}</span>
+                <span><b>Patient:</b> ${p.name && p.name.trim() !== "" ? p.name : "________________"}</span>
                 <span><b>Age:</b> ${p.ageYrs || "_"}Y ${p.ageMos || "_"}M</span>
                 <span><b>Weight:</b> ${p.weight || '___'} kg</span>
                 <span><b>Gender:</b> ${p.gender ? p.gender.toUpperCase() : "___"}</span>
@@ -264,6 +264,20 @@ window.executePrint = function(mode) {
     
     const engine = document.getElementById('printEngine'); 
     let p = AppStore.getPatient(currentPId) || { name: "", ageYrs: "", ageMos: "", weight: "", gender: "", rxList: [] };
+
+    // --- INTEGRATION FIX: Auto-Pull Live Context (No Redundant Fields) ---
+    const liveWt = document.getElementById('hudWeight') ? document.getElementById('hudWeight').value : "";
+    const liveAgeYrs = document.getElementById('hudAgeYrs') ? document.getElementById('hudAgeYrs').value : "0";
+    const liveAgeMos = document.getElementById('hudAgeMos') ? document.getElementById('hudAgeMos').value : "0";
+    const liveGender = document.getElementById('hudGender') ? document.getElementById('hudGender').value : "";
+
+    // If Ghost Mode or missing data, inherit from the active UI HUD
+    if (!p.weight || p.weight === "0") p.weight = liveWt;
+    if (!p.ageYrs || p.ageYrs === "0") p.ageYrs = liveAgeYrs;
+    if (!p.ageMos || p.ageMos === "0") p.ageMos = liveAgeMos;
+    if (!p.gender || p.gender === "___") p.gender = liveGender;
+    // ---------------------------------------------------------------------
+
     let html = "";
 
     if (mode === 'nutrition') {
@@ -296,15 +310,24 @@ window.executePrint = function(mode) {
             if(val) examHTML += `<li style="margin-bottom:4px;"><b>${sys}:</b> ${val}</li>`;
         });
 
+        // --- INTEGRATION FIX: Pull Symptoms directly from Spatial Staging ---
         let sympHtml = "";
-        const tags = document.querySelectorAll('#symptomTagsArea .symptom-tag');
-        if(tags.length > 0) {
-            let sList = [];
-            tags.forEach(t => sList.push(t.innerText.replace('✖', '').trim()));
-            sympHtml = sList.join(", ");
+        let stagingSymptoms = document.getElementById('rxCc') ? document.getElementById('rxCc').value.trim() : "";
+        
+        if (stagingSymptoms) {
+            // Preserve the line breaks and bullets you typed in the Spatial Deck
+            sympHtml = stagingSymptoms.replace(/\n/g, '<br>');
+        } else {
+            // Fallback for legacy Case Sheets
+            const tags = document.querySelectorAll('#symptomTagsArea .symptom-tag');
+            if(tags.length > 0) {
+                let sList = [];
+                tags.forEach(t => sList.push(t.innerText.replace('✖', '').trim()));
+                sympHtml = sList.join(", ");
+            }
         }
 
-        if(sympHtml) html += `<div style="margin-bottom:10px; font-size:1rem; font-family:sans-serif; color:#333;"><b>Presenting Complaints:</b> ${sympHtml}</div>`;
+        if(sympHtml) html += `<div style="margin-bottom:15px; font-size:1rem; font-family:sans-serif; color:#333;"><b>Presenting Complaints:</b><br>${sympHtml}</div>`;
         if(hopi) html += `<div style="margin-bottom:10px; font-size:0.95rem; font-family:sans-serif; color:#333;"><b>HOPI:</b><br>${hopi}</div>`;
         if(examHTML) html += `<div style="margin-bottom:15px; font-size:0.95rem; font-family:sans-serif; color:#333;"><b>Systemic Examination:</b><ul style="margin:5px 0; padding-left:20px;">${examHTML}</ul></div>`;
         if(printDx) html += `<div style="margin-bottom:20px; font-size:1.1rem; color:#1e3a8a; font-family:sans-serif;"><b>Diagnosis:</b> ${printDx}</div>`;
@@ -381,6 +404,21 @@ window.executePrint = function(mode) {
         let printAdvice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : "";
         let printTests = document.getElementById('rxTests') ? document.getElementById('rxTests').value : "";
         
+        // --- ADDED: Extract Complaints for Comprehensive Report ---
+        let sympHtml = "";
+        let stagingSymptoms = document.getElementById('rxCc') ? document.getElementById('rxCc').value.trim() : "";
+        if (stagingSymptoms) {
+            sympHtml = stagingSymptoms.replace(/\n/g, '<br>');
+        } else {
+            const tags = document.querySelectorAll('#symptomTagsArea .symptom-tag');
+            if(tags.length > 0) {
+                let sList = [];
+                tags.forEach(t => sList.push(t.innerText.replace('✖', '').trim()));
+                sympHtml = sList.join(", ");
+            }
+        }
+        // ----------------------------------------------------------
+
         let examHTML = "";
         ['RS', 'CVS', 'PA', 'CNS'].forEach(sys => {
             let val = document.getElementById('exam' + sys) ? document.getElementById('exam' + sys).value.trim() : "";
@@ -390,6 +428,7 @@ window.executePrint = function(mode) {
         html += `
         <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #1e3a8a; background: #f8fafc; border-radius: 8px; font-family:sans-serif;">
             <div style="font-weight:bold; font-size:16px; margin-bottom:10px; color:#1e3a8a;">Current Visit: ${new Date().toLocaleDateString('en-IN')}</div>
+            ${sympHtml ? `<div style="font-size:14px; margin-bottom:8px;"><b>Presenting Complaints:</b><br>${sympHtml}</div>` : ''}
             ${printDx ? `<div style="font-size:14px; margin-bottom:8px;"><b>Diagnosis:</b> ${printDx}</div>` : ''}
             ${examHTML ? `<div style="font-size:14px; margin-bottom:8px; color:#475569;"><b>O/E:</b> ${examHTML.replace(/ \|\s*$/, '')}</div>` : ''}
             ${p.rxList && p.rxList.length > 0 ? `<div style="font-size:14px; margin-bottom:8px;"><b>Medications Prescribed:</b><ul style="margin:5px 0; padding-left:20px;">${p.rxList.map(rx => `<li>${rx.name} - ${translateFreqToLocal(rx.freq)} (${rx.vol} ${rx.unit})</li>`).join('')}</ul></div>` : ''}

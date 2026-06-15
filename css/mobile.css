@@ -1,6 +1,27 @@
+/* =========================================================
+   PREMIUM CLINICAL TYPOGRAPHY & MICRO-INTERACTIONS
+   ========================================================= */
+
+/* 1. Tabular Numbers (Prevents layout jiggling during live calculations) */
+.stat-value, .breathing-digit, .queue-count, .calc-digit-display, #liveZScore, .vital-status {
+    font-family: "JetBrains Mono", "Space Grotesk", "SF Mono", ui-monospace, monospace !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.05em;
+}
+
+/* 2. Milestone Radar Pulse Effect */
+@keyframes radarPulse {
+    0% { filter: drop-shadow(0 0 2px var(--brand-cyan)); }
+    50% { filter: drop-shadow(0 0 8px var(--brand-cyan)); }
+    100% { filter: drop-shadow(0 0 2px var(--brand-cyan)); }
+}
+.radar-arc {
+    animation: radarPulse 3s infinite ease-in-out;
+}
+
 /* =========================================
    MOBILE EXCLUSIVE FIXES & HACKS
-   Loads only on viewports < 1023px
+   Loads only on viewports < 1023px via HTML link
    ========================================= */
 
 /* 🚀 FIX 0: The Viewport Cage (Prevents 3D Deck Bleed) */
@@ -47,6 +68,137 @@ input, select, textarea { font-size: 16px !important; }
 /* FIX 8: Live Rx Preview alignment */
 #rxCartList { min-height: auto !important; }
 
+
+/* =========================================
+   NATIVE MOBILE SCROLL PHYSICS & GESTURES
+   ========================================= */
+* { -webkit-tap-highlight-color: transparent !important; }
+
+.main-content, .modal-content, .rx-desktop-grid, .timeline-section, .sub-tabs-nav, #rxLedgerList {
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+}
+.main-content::-webkit-scrollbar, 
+.modal-content::-webkit-scrollbar, 
+.rx-desktop-grid::-webkit-scrollbar, 
+.timeline-section::-webkit-scrollbar,
+.sub-tabs-nav::-webkit-scrollbar,
+#rxLedgerList::-webkit-scrollbar {
+    display: none !important;
+}
+
+
+/* =========================================
+   STRICT MOBILE LAYOUT ENFORCEMENT
+   ========================================= */
+.hud-grid { display: flex !important; flex-direction: column !important; gap: 15px !important; width: 100% !important; }
+.hud-global-inputs { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+.hud-global-inputs > div:last-child { grid-column: 1 / -1; }
+#hudSmartDoseCards { padding: 10px 5px !important; gap: 10px !important; }
+.rx-desktop-grid { display: flex !important; flex-direction: column !important; gap: 20px !important; width: 100% !important; }
+.modal-overlay.active { align-items: flex-end !important; }
+.modal-content { border-radius: 24px 24px 0 0 !important; width: 100% !important; }
+
+
+/* ==========================================
+   THE CORTEX PROTOCOL: KINETIC UI STYLES
+   ========================================== */
+.cortex-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(20px); visibility: hidden; }
+
+#cortexActionPill {
+    position: fixed; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan));
+    color: white; border: none; padding: 14px 28px; border-radius: var(--radius-pill);
+    font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-float); z-index: 8000;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer;
+}
+#cortexActionPill.snapped-out { transform: translate(-50%, 100px) scale(0.8); }
+
+#cortexOverlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+    background: rgba(11, 14, 20, 0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); 
+    z-index: 8500; transition: opacity 0.3s ease;
+}
+
+#cortexInputPod {
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    background: var(--bg-surface); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px; 
+    z-index: 9000; box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1.15), opacity 0.3s;
+    transform: translateY(0);
+}
+#cortexInputPod.cortex-hidden { transform: translateY(100%); opacity: 1 !important; visibility: visible !important; pointer-events: none; }
+
+.pod-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.action-btn-mini { background: var(--success); color: white; border: none; padding: 8px 20px; border-radius: var(--radius-pill); font-weight: 800; box-shadow: var(--shadow-sm); cursor: pointer; }
+.action-btn-mini:disabled { opacity: 0.5; background: var(--text-muted); pointer-events: none; }
+.cortex-row { display: flex; gap: 12px; margin-bottom: 12px; }
+.cortex-input-group label { color: var(--text-muted); font-size: 0.75rem; margin-bottom: 6px; display: block; font-weight: 700; text-transform: uppercase;}
+.cortex-input-group input, .cortex-input-group select {
+    width: 100%; border: 2px solid var(--border-soft); background: var(--bg-body);
+    font-size: 1.3rem; font-weight: 800; color: var(--primary-dark);
+    border-radius: var(--radius-md); padding: 12px; text-align: center;
+    transition: border-color 0.2s;
+}
+.cortex-input-group input:focus { border-color: var(--brand-cyan); outline: none; background: #fff;}
+
+/* THE ANCHOR PILL */
+#cortexAnchorPill {
+    position: relative; top: 10px; z-index: 7000;
+    background: var(--bg-surface) !important;
+    backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important;
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+    margin-bottom: 20px; border: 2px solid var(--primary);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex !important; margin: 0 auto !important; max-width: 100% !important; 
+    overflow-x: auto !important; scrollbar-width: none !important; 
+}
+#cortexAnchorPill::-webkit-scrollbar { display: none !important; }
+.anchor-core { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; background: rgba(91, 97, 246, 0.05); border-radius: var(--radius-lg); }
+.anchor-stats { font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); display: flex; gap: 10px; align-items: center; }
+.anchor-divider { color: var(--border-soft); }
+.anchor-chevron { font-size: 1.2rem; color: var(--primary); font-weight: bold; transition: transform 0.3s; }
+
+/* THE DRAWER */
+#cortexDrawer { padding: 0 16px 16px 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; transform-origin: top; transition: all 0.3s ease; }
+#cortexDrawer.cortex-collapsed { display: none; }
+.expanded-chevron { transform: rotate(180deg); }
+
+.cortex-sticky-anchor {
+    position: sticky !important; top: 10px !important; z-index: 5000 !important;
+    display: flex !important; justify-content: center !important; width: 100% !important;
+    background: transparent !important; margin-bottom: 10px !important;
+    margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important;
+}
+.cortex-greeting-wrapper {
+    position: relative !important; display: block !important; margin-top: 35px !important; padding-top: 10px !important; clear: both !important;
+}
+
+
+/* =========================================
+   TRANSPARENT BOTTOM APP NAVIGATION
+   ========================================= */
+nav.main-nav {
+    position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100vw !important; transform: none !important;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%) !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    border: none !important; border-radius: 0 !important; box-shadow: none !important;
+    padding: 5px 0 calc(5px + env(safe-area-inset-bottom)) 0 !important; min-height: 0 !important; 
+    display: flex !important; flex-direction: row !important; justify-content: space-evenly !important; align-items: flex-end !important; z-index: 9999 !important;
+}
+nav.main-nav button.nav-item {
+    background: transparent !important; border: none !important; outline: none !important; display: flex !important; flex-direction: column !important;
+    align-items: center !important; justify-content: center !important; padding: 4px !important; color: rgba(255,255,255,0.4) !important;
+    transition: color 0.3s ease !important; transform: none !important; box-shadow: none !important;
+}
+nav.main-nav button.nav-item svg { width: 24px !important; height: 24px !important; margin-bottom: 4px !important; }
+nav.main-nav button.nav-item span { font-size: 0.7rem !important; font-weight: 600 !important; }
+nav.main-nav button.nav-item.active { color: var(--brand-cyan) !important; }
+nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6)) !important; }
+
+
 /* =========================================
    MOBILE SPLASH SCREEN
    ========================================= */
@@ -67,469 +219,164 @@ input, select, textarea { font-size: 16px !important; }
 .splash-content h1 { color: var(--primary-dark); font-size: 3.5rem; margin: 0; letter-spacing: -1px; }
 .splash-content p { color: var(--text-muted); font-size: 1.1rem; margin-top: 5px; font-weight: 600; }
 .splash-loader {
-    margin-top: 50px; width: 40px; height: 40px; border: 4px solid var(--border-soft);
-    border-left-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
-}
-.splash-loader {
     margin-top: 50px; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
     border-left-color: var(--brand-cyan); border-radius: 50%; animation: spin 1s linear infinite;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* =========================================
-   NATIVE MOBILE SCROLL PHYSICS & GESTURES
-   ========================================= */
-
-/* 1. Eliminate the blue highlight flash when tapping on Android/iOS */
-* {
-    -webkit-tap-highlight-color: transparent !important;
-}
-
-/* 2. Enable buttery momentum scrolling for all scrollable areas */
-.main-content, .modal-content, .rx-desktop-grid, .timeline-section, .sub-tabs-nav, #rxLedgerList {
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important; /* Hides in Firefox */
-}
-
-/* 3. Completely hide the ugly scrollbars on mobile */
-.main-content::-webkit-scrollbar, 
-.modal-content::-webkit-scrollbar, 
-.rx-desktop-grid::-webkit-scrollbar, 
-.timeline-section::-webkit-scrollbar,
-.sub-tabs-nav::-webkit-scrollbar,
-#rxLedgerList::-webkit-scrollbar {
-    display: none !important; /* Hides in Safari/Chrome */
-}
-
-/* =========================================
-   STRICT MOBILE LAYOUT ENFORCEMENT
-   ========================================= */
-
-
-/* 1. Force the Dashboard to stack neatly on mobile */
-.hud-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
-    width: 100% !important;
-}
-
-/* 2. Fix the top Global Parameter Bar inputs on mobile */
-.hud-global-inputs {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important; /* 2 columns on mobile */
-    gap: 10px !important;
-}
-.hud-global-inputs > div:last-child {
-    grid-column: 1 / -1; /* Gender spans full width */
-}
-
-/* 3. Ensure horizontal swipe works smoothly on mobile for Smart Cards */
-#hudSmartDoseCards {
-    padding: 10px 5px !important;
-    gap: 10px !important;
-}
-
-/* 4. Force the Case File to stack neatly on mobile */
-.rx-desktop-grid { 
-    display: flex !important; 
-    flex-direction: column !important; 
-    gap: 20px !important; 
-    width: 100% !important; 
-}
-
-/* 2. Lock the Modal so it slides up from the bottom edge like iOS */
-.modal-overlay.active { 
-    align-items: flex-end !important; 
-}
-.modal-content { 
-    border-radius: 24px 24px 0 0 !important; 
-    width: 100% !important;
-}
-
-/* ==========================================
-   THE CORTEX PROTOCOL: KINETIC UI STYLES
-   ========================================== */
-
-/* Universal Hidden State (Uses hardware acceleration) */
-.cortex-hidden { 
-    opacity: 0 !important; 
-    pointer-events: none !important; 
-    transform: translateY(20px); 
-    visibility: hidden; 
-}
-
-/* 1. THE ACTION PILL */
-#cortexActionPill {
-    position: fixed; 
-    bottom: calc(85px + env(safe-area-inset-bottom)); 
-    left: 50%; 
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan));
-    color: white; 
-    border: none; 
-    padding: 14px 28px; 
-    border-radius: var(--radius-pill);
-    font-weight: 800; 
-    font-size: 1.05rem; 
-    display: flex; 
-    align-items: center; 
-    gap: 8px;
-    box-shadow: var(--shadow-float); 
-    z-index: 8000;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-    cursor: pointer;
-}
-#cortexActionPill.snapped-out { 
-    transform: translate(-50%, 100px) scale(0.8); /* Dives off screen */
-}
-
-/* 2. THE BACKGROUND OVERLAY */
-#cortexOverlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
-    background: rgba(11, 14, 20, 0.5); 
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); 
-    z-index: 8500;
-    transition: opacity 0.3s ease;
-}
-
-/* 3. THE INPUT POD (Sliding up) */
-#cortexInputPod {
-    position: fixed; bottom: 0; left: 0; width: 100%;
-    background: var(--bg-surface); 
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px; 
-    z-index: 9000; 
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-    /* Bouncy Spring Physics */
-    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1.15), opacity 0.3s;
-    transform: translateY(0);
-}
-#cortexInputPod.cortex-hidden { 
-    transform: translateY(100%); /* Slides down completely */
-    opacity: 1 !important; visibility: visible !important; pointer-events: none;
-}
-
-.pod-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.action-btn-mini { 
-    background: var(--success); color: white; border: none; 
-    padding: 8px 20px; border-radius: var(--radius-pill); 
-    font-weight: 800; box-shadow: var(--shadow-sm); cursor: pointer;
-}
-.action-btn-mini:disabled { opacity: 0.5; background: var(--text-muted); pointer-events: none; }
-
-.cortex-row { display: flex; gap: 12px; margin-bottom: 12px; }
-.cortex-input-group label { color: var(--text-muted); font-size: 0.75rem; margin-bottom: 6px; display: block; font-weight: 700; text-transform: uppercase;}
-.cortex-input-group input, .cortex-input-group select {
-    width: 100%; border: 2px solid var(--border-soft); background: var(--bg-body);
-    font-size: 1.3rem; font-weight: 800; color: var(--primary-dark);
-    border-radius: var(--radius-md); padding: 12px; text-align: center;
-    transition: border-color 0.2s;
-}
-.cortex-input-group input:focus { border-color: var(--brand-cyan); outline: none; background: #fff;}
-
-/* 4. THE ANCHOR PILL (Sticky Top) */
-#cortexAnchorPill {
-    position: relative; top: 10px; z-index: 7000;
-    background: var(--bg-surface) !important;
-    backdrop-filter: blur(25px) !important;
-    -webkit-backdrop-filter: blur(25px) !important;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    margin-bottom: 20px;
-    border: 2px solid var(--primary);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.anchor-core {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 16px; cursor: pointer; background: rgba(91, 97, 246, 0.05);
-    border-radius: var(--radius-lg);
-}
-.anchor-stats { font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); display: flex; gap: 10px; align-items: center; }
-.anchor-divider { color: var(--border-soft); }
-.anchor-chevron { font-size: 1.2rem; color: var(--primary); font-weight: bold; transition: transform 0.3s; }
-
-/* 5. THE DRAWER */
-#cortexDrawer {
-    padding: 0 16px 16px 16px; 
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-    transform-origin: top; transition: all 0.3s ease;
-}
-#cortexDrawer.cortex-collapsed { display: none; }
-.expanded-chevron { transform: rotate(180deg); }
-
-/* =========================================================
-   STRICT MOBILE FLOATING HEADER LOCK & SPACING
-   ========================================================= */
-
-/* 1. Ensure the Anchor Pill floats properly and stays dead-center on mobile */
-.cortex-sticky-anchor {
-    position: sticky !important;
-    top: 10px !important; 
-    z-index: 5000 !important;
-    display: flex !important;
-    justify-content: center !important;
-    width: 100% !important;
-    background: transparent !important;
-    margin-left: 0 !important;  /* Kills the negative inline margin pulling it left */
-    margin-right: 0 !important; /* Kills the negative inline margin pulling it right */
-    margin-bottom: 10px !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-/* 2. Push the Good Morning greeting safely down below the pill */
-.cortex-greeting-wrapper {
-    position: relative !important;
-    display: block !important;
-    margin-top: 35px !important; /* This provides the breathing room */
-    padding-top: 10px !important;
-    clear: both !important;
-}
-
-/* 3. Protect the sleek horizontal layout on tiny screens */
-#cortexAnchorPill {
-    display: flex !important; 
-    margin: 0 auto !important;
-    max-width: 100% !important; 
-    overflow-x: auto !important;
-    scrollbar-width: none !important; 
-}
-#cortexAnchorPill::-webkit-scrollbar { 
-    display: none !important; 
-}
-
-/* =========================================
-   NUCLEAR MOBILE NAVIGATION OVERRIDE
-   (Destroys the box and shrinks the bar)
-   ========================================= */
-@media (max-width: 1023px) {
-    nav.main-nav {
-        background: rgba(11, 14, 20, 0.95) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border-top: 1px solid rgba(255,255,255,0.1) !important;
-        border-right: none !important;
-        height: auto !important;
-        min-height: 65px !important;
-        padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) !important;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-evenly !important;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5) !important;
-    }
-    
-    nav.main-nav button.nav-item {
-        background: transparent !important;
-        border: none !important;
-        outline: none !important; /* Kills browser focus rings */
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 4px !important;
-        width: auto !important;
-        gap: 4px !important;
-        color: rgba(255,255,255,0.5) !important;
-        box-shadow: none !important;
-        transform: none !important;
-    }
-    
-    nav.main-nav button.nav-item svg {
-        margin: 0 !important;
-        width: 24px !important;
-        height: 24px !important;
-        filter: none !important;
-    }
-    
-    nav.main-nav button.nav-item span {
-        font-size: 0.7rem !important;
-        font-weight: 600 !important;
-        opacity: 1 !important;
-    }
-
-    /* THE EXECUTIONER: Kills the box and lights up the active icon */
-    nav.main-nav button.nav-item.active {
-        color: var(--brand-cyan) !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-    nav.main-nav button.nav-item.active svg {
-        filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6)) !important;
-    }
-}
-
-/* =========================================================
-   THE CORTEX SPATIAL ORBIT ENGINE & HINTS (COMMAND CENTER)
-   ========================================================= */
-@media screen and (max-width: 1023px) {
-
-    /* --- THE HOLOGRAPHIC SWIPE ARROWS --- */
-    .holo-swipe-hint {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 15px !important;
-        margin-top: 5px !important;
-        margin-bottom: 15px !important;
-        color: var(--brand-cyan) !important;
-        font-size: 0.65rem !important;
-        font-weight: 800 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 2px !important;
-        opacity: 0.8 !important;
-        cursor: pointer !important; 
-        -webkit-tap-highlight-color: transparent !important;
-    }
-
-    .hint-arrow {
-        width: 14px !important;
-        height: 14px !important;
-        filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.6)) !important;
-        transition: transform 0.2s ease !important;
-    }
-    
-    .holo-swipe-hint:active { transform: scale(0.95) !important; opacity: 1 !important; }
-    .arrow-left { animation: pulseLeft 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
-    .arrow-right { animation: pulseRight 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
-
-    @keyframes pulseLeft {
-        0%, 100% { transform: translateX(2px); opacity: 0.3; }
-        50% { transform: translateX(-4px); opacity: 1; }
-    }
-    @keyframes pulseRight {
-        0%, 100% { transform: translateX(-2px); opacity: 0.3; }
-        50% { transform: translateX(4px); opacity: 1; }
-    }
-
-    /* --- THE INFINITE SPATIAL RING (Command Center) --- */
-    .cortex-bento-grid {
-        position: relative !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        height: 480px !important;
-        width: 100vw !important;
-        margin-left: -20px !important;
-        margin-bottom: 20px !important;
-        
-        /* 🚀 THE FIX: Kills the linear track, enables pure 3D space */
-        overflow: visible !important; 
-        perspective: 1200px !important;
-        transform-style: preserve-3d !important;
-        background: radial-gradient(ellipse 65% 20px at 50% 100%, rgba(0, 229, 255, 0.15) 0%, transparent 100%) !important;
-    }
-
-    .cortex-bento-grid::-webkit-scrollbar { display: none !important; }
-
-    .cortex-bento-grid .bento-card {
-        /* 🚀 THE FIX: Detaches cards from the document flow, stacking them in the center */
-        position: absolute !important; 
-        width: 58vw !important;
-        min-width: 58vw !important;
-        height: auto !important;
-        margin: 0 !important;
-        
-        transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease !important;
-        will-change: transform, opacity, filter;
-        
-        /* Default State (Cards waiting in the invisible background loop) */
-        transform: translateZ(-300px) translateY(80px) rotateY(180deg) scale(0.5) !important;
-        opacity: 0 !important;
-        pointer-events: none !important; 
-        z-index: 0 !important;
-    }
-
-    /* SLOT: Active Center */
-    .cortex-bento-grid .bento-card.slot-active {
-        transform: translateZ(90px) translateY(-10px) rotateY(0deg) scale(1.05) !important; 
-        opacity: 1 !important;
-        z-index: 9999 !important; 
-        pointer-events: auto !important; 
-        filter: brightness(1.15) saturate(1.1) !important; 
-        box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(0, 229, 255, 0.35), 0 0 25px rgba(0, 229, 255, 0.5) !important;
-        border: 2px solid rgba(0, 229, 255, 1) !important;
-    }
-
-    /* SLOT: Previous (Left Orbit) */
-    .cortex-bento-grid .bento-card.slot-prev {
-        transform: translateX(-105%) translateZ(-100px) translateY(20px) rotateY(30deg) scale(0.9) !important;
-        opacity: 0.65 !important;
-        z-index: 10 !important;
-        pointer-events: auto !important;
-        filter: brightness(0.85) saturate(0.8) !important;
-        box-shadow: 15px 15px 30px rgba(0,0,0,0.4) !important;
-    }
-
-    /* SLOT: Next (Right Orbit) */
-    .cortex-bento-grid .bento-card.slot-next {
-        transform: translateX(105%) translateZ(-100px) translateY(20px) rotateY(-30deg) scale(0.9) !important;
-        opacity: 0.65 !important;
-        z-index: 10 !important;
-        pointer-events: auto !important;
-        filter: brightness(0.85) saturate(0.8) !important;
-        box-shadow: -15px 15px 30px rgba(0,0,0,0.4) !important;
-    }
-
-    /* SLOT: Far Previous (Deep Left) */
-    .cortex-bento-grid .bento-card.slot-far-prev {
-        transform: translateX(-190%) translateZ(-180px) translateY(40px) rotateY(45deg) scale(0.75) !important;
-        opacity: 0.25 !important;
-        z-index: 1 !important;
-    }
-
-    /* SLOT: Far Next (Deep Right) */
-    .cortex-bento-grid .bento-card.slot-far-next {
-        transform: translateX(190%) translateZ(-180px) translateY(40px) rotateY(-45deg) scale(0.75) !important;
-        opacity: 0.25 !important;
-        z-index: 1 !important;
-    }
-} /* <-- Final Master Bracket */
 
 /* =========================================================
    CORTEX POP SHEET PHYSICS (Bottom Sheet Modal)
    ========================================================= */
 #cortexPopSheetOverlay {
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100vw; height: 100dvh;
-    background: rgba(0, 0, 0, 0.7); 
-    backdrop-filter: blur(8px); 
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 10500; 
-    transition: opacity 0.4s ease;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    z-index: 10500; transition: opacity 0.4s ease;
 }
-
 .cortex-pop-sheet {
-    position: fixed; 
-    bottom: 0; left: 0; 
-    width: 100vw; height: 90dvh; /* Takes up 90% of screen, leaving the deck slightly visible */
-    background: var(--bg-body); 
-    border-radius: 24px 24px 0 0;
-    z-index: 10600; 
-    display: flex; flex-direction: column;
+    position: fixed; bottom: 0; left: 0; width: 100vw; height: 90dvh; 
+    background: var(--bg-body); border-radius: 24px 24px 0 0; z-index: 10600; display: flex; flex-direction: column;
     box-shadow: 0 -20px 60px rgba(0,0,0,0.8), inset 0 2px 10px rgba(255,255,255,0.05);
-    
-    /* The Slide-Up Spring Physics */
-    transform: translateY(100%); 
-    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.cortex-pop-sheet.active { transform: translateY(0); }
+.cortex-pop-sheet .sheet-drag-handle { width: 45px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin: 12px auto 15px auto; }
+.cortex-pop-sheet .sheet-content { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+
+
+/* =========================================
+   THE HOLOGRAPHIC SWIPE ARROWS 
+   ========================================= */
+.holo-swipe-hint {
+    display: flex !important; justify-content: center !important; align-items: center !important; gap: 15px !important;
+    margin-top: 5px !important; margin-bottom: 15px !important; color: var(--brand-cyan) !important;
+    font-size: 0.65rem !important; font-weight: 800 !important; text-transform: uppercase !important;
+    letter-spacing: 2px !important; opacity: 0.8 !important; cursor: pointer !important; 
+}
+.hint-arrow { width: 14px !important; height: 14px !important; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.6)) !important; transition: transform 0.2s ease !important; }
+.holo-swipe-hint:active { transform: scale(0.95) !important; opacity: 1 !important; }
+.arrow-left { animation: pulseLeft 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
+.arrow-right { animation: pulseRight 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important; }
+
+@keyframes pulseLeft { 0%, 100% { transform: translateX(2px); opacity: 0.3; } 50% { transform: translateX(-4px); opacity: 1; } }
+@keyframes pulseRight { 0%, 100% { transform: translateX(-2px); opacity: 0.3; } 50% { transform: translateX(4px); opacity: 1; } }
+
+
+/* =========================================
+   SPATIAL 3D COMMAND CENTER (VISION PRO STYLE)
+   ========================================= */
+
+/* 1. THE SPATIAL STAGE (The 3D Room) */
+.cortex-spatial-stage {
+    perspective: 1200px !important; perspective-origin: 50% 50% !important; transform-style: preserve-3d !important;
+    position: relative !important; width: 100% !important; margin-top: 20px !important; margin-bottom: 20px !important;
+    margin-left: auto !important; margin-right: auto !important; left: auto !important; height: 68vh !important;
+    display: flex !important; justify-content: center !important; align-items: center !important; overflow: hidden !important; 
+    background-color: transparent !important; background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px; animation: spatialDrift 20s linear infinite !important;
 }
 
-.cortex-pop-sheet.active {
-    transform: translateY(0);
+@keyframes spatialDrift { 0% { background-position: 0px 0px; } 100% { background-position: 40px 40px; } }
+
+.cortex-spatial-stage::before {
+    content: ''; position: absolute; bottom: -20%; left: 50%; width: 150vw; height: 80vh; 
+    background: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px), radial-gradient(ellipse at center, rgba(0, 229, 255, 0.1) 0%, transparent 65%);
+    background-size: 30px 30px, 30px 30px, 100% 100%; pointer-events: none; z-index: 0; transform-origin: center bottom;
+    animation: gpuGridPan 2s linear infinite; will-change: transform;
+    -webkit-mask-image: radial-gradient(ellipse at center, transparent 30%, black 70%) !important; mask-image: radial-gradient(ellipse at center, transparent 30%, black 70%) !important;
+}
+@keyframes gpuGridPan { 0% { transform: translateX(-50%) rotateX(75deg) translateY(0px); } 100% { transform: translateX(-50%) rotateX(75deg) translateY(30px); } }
+
+.cortex-spatial-stage::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 130vw; height: 130vw; border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.03); box-shadow: inset 0 0 50px rgba(0, 229, 255, 0.05), 0 0 0 80px rgba(255, 255, 255, 0.01), 0 0 0 160px rgba(0, 229, 255, 0.02);
+    transform-style: preserve-3d; transform: translate(-50%, -50%) rotateX(60deg) translateZ(-200px); pointer-events: none; z-index: -1;
+    animation: slowOrbit 60s linear infinite;
+}
+@keyframes slowOrbit { 0% { transform: translate(-50%, -50%) rotateX(60deg) translateZ(-200px) rotateZ(0deg); } 100% { transform: translate(-50%, -50%) rotateX(60deg) translateZ(-200px) rotateZ(360deg); } }
+
+/* =========================================
+   THE ORBITAL PHYSICS ENGINE (Vision Pro Style)
+   ========================================= */
+
+/* 2. BASE CARDS */
+.cortex-spatial-stage .bento-card {
+    box-sizing: border-box !important; border-radius: 24px !important; background-clip: padding-box !important;
+    position: absolute !important; top: 50% !important; left: 50% !important; margin: 0 !important; transform-origin: center center !important;
+    height: 60vh !important; max-height: 520px !important; width: 72vw !important; max-width: 340px !important;
+    overflow: hidden !important; touch-action: pan-y !important; pointer-events: none !important;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease, filter 0.6s ease !important;
+    will-change: transform, opacity, filter !important; scrollbar-width: none;
+}
+.cortex-spatial-stage .bento-card::-webkit-scrollbar { display: none; }
+
+/* 🚀 SURGICAL FIX: Prevents the initial fly-in animation lag on load */
+.cortex-spatial-stage.cortex-booting .bento-card {
+    transition: none !important;
+    animation: none !important;
 }
 
-.cortex-pop-sheet .sheet-drag-handle {
-    width: 45px; height: 5px; 
-    background: rgba(255,255,255,0.2); 
-    border-radius: 5px; 
-    margin: 12px auto 15px auto;
+/* 3. THE FOCUS PULSE ENERGY SYSTEM (Mobile Bug Fix) */
+@keyframes focusPulse {
+    0%   { box-shadow: 0 0 10px rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.2); }
+    50%  { box-shadow: 0 0 10px rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.2); }
+    70%  { box-shadow: 0 0 60px rgba(0, 229, 255, 1), inset 0 0 40px rgba(0, 229, 255, 0.6); border-color: rgb(0, 255, 255); }
+    100% { box-shadow: 0 0 35px rgba(0, 229, 255, 0.4), inset 0 0 30px rgba(0, 229, 255, 0.15); border-color: rgba(0, 229, 255, 0.8); }
 }
 
-.cortex-pop-sheet .sheet-content {
-    flex: 1; 
-    overflow-y: auto; 
-    padding: 20px;
-    -webkit-overflow-scrolling: touch;
+/* 4. SLOT: ACTIVE (The Focal Workstation) */
+.cortex-spatial-stage .bento-card.slot-active {
+    transform: translate3d(-50%, -50%, 60px) rotateY(0deg) scale(1) !important;
+    opacity: 1 !important; z-index: 100 !important; pointer-events: auto !important;
+    filter: blur(0px) brightness(1) grayscale(0%) !important;
+    background: rgba(10, 15, 25, 0.1) !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important;
+    outline: none !important; box-shadow: 0 0 35px rgba(0, 229, 255, 0.4), inset 0 0 30px rgba(0, 229, 255, 0.15) !important;
+    border: 1px solid rgba(0, 229, 255, 0.8) !important; animation: focusPulse 0.8s ease-out forwards !important;
+}
+
+/* 5. SLOT: PREV & NEXT (The Waiting Periphery) */
+.cortex-spatial-stage .bento-card.slot-prev, .cortex-spatial-stage .bento-card.slot-next {
+    opacity: 0.8 !important; z-index: 50 !important; filter: blur(5px) brightness(0.4) grayscale(30%) !important;
+    background: rgba(10, 15, 25, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; box-shadow: none !important; animation: none !important;
+}
+
+.cortex-spatial-stage .bento-card.slot-prev { transform: translate3d(calc(-50% - 24vw), -50%, -220px) rotateY(28deg) scale(0.9) !important; }
+.cortex-spatial-stage .bento-card.slot-next { transform: translate3d(calc(-50% + 24vw), -50%, -220px) rotateY(-28deg) scale(0.9) !important; }
+
+/* 6. SLOT: THE DEEP VOID (Hidden) */
+.cortex-spatial-stage .bento-card.slot-far-prev, .cortex-spatial-stage .bento-card.slot-far-next, .cortex-spatial-stage .bento-card.slot-hidden {
+    opacity: 0 !important; z-index: 10 !important; filter: blur(10px) brightness(0) !important;
+    transform: translate3d(-50%, -50%, -500px) rotateY(0deg) scale(0.8) !important; pointer-events: none !important;
+}
+
+
+/* =========================================
+   SPATIAL DECK NAVIGATOR TRACK (Transparent Bottom Bar)
+   ========================================= */
+.deck-navigator {
+    position: absolute !important; bottom: 0 !important; left: 0 !important; width: 100vw !important; margin: 0 !important;
+    display: flex !important; align-items: center !important; justify-content: center !important; gap: 15px !important; z-index: 200 !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%) !important;
+    padding: 20px 0 30px 0 !important; border: none !important;
+}
+.deck-arrow { color: rgba(255, 255, 255, 0.3) !important; font-size: 28px !important; padding: 5px 15px !important; cursor: pointer !important; transition: color 0.3s ease, transform 0.2s ease !important; }
+.deck-arrow:active { color: #00E5FF !important; transform: scale(0.9) !important; }
+.deck-nav-track {
+    display: flex !important; gap: 25px !important; overflow-x: auto !important; scrollbar-width: none !important; scroll-behavior: smooth !important; max-width: 60vw !important;
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+.deck-nav-track::-webkit-scrollbar { display: none !important; }
+.deck-nav-item {
+    display: flex !important; flex-direction: column !important; align-items: center !important; gap: 4px !important; color: rgba(255, 255, 255, 0.2) !important;
+    font-size: 11px !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 1px !important; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important; white-space: nowrap !important; padding: 5px 0 !important;
+}
+.deck-nav-icon { font-size: 14px !important; margin-bottom: 2px !important; }
+.deck-nav-item.active { color: #00E5FF !important; transform: scale(1.15) !important; text-shadow: 0 0 15px rgba(0, 229, 255, 0.6) !important; }
+
+/* =========================================
+   MOBILE SPATIAL FIXES (Phones Only)
+   ========================================= */
+
+.main-content {
+    padding-bottom: 70px !important; 
 }

@@ -1519,3 +1519,107 @@ header {
 .bento-card .card-body {
     justify-content: flex-start !important;
 }
+
+
+/* =========================================================
+   GLOBAL SPATIAL DESIGN SYSTEM (Applies Everywhere)
+   ========================================================= */
+
+/* 1. Page Switching & Skeletons */
+.view-content { display: none; }
+.view-content.active-view { display: block; }
+.skeleton-box { padding: 40px; text-align: center; border: 2px dashed var(--brand-cyan); border-radius: 16px; margin: 20px; font-weight: bold; color: var(--primary-dark); }
+
+/* 2. Dead Space Resets */
+#homeDashboardView { padding-bottom: 0 !important; margin-bottom: 0 !important; }
+.holo-swipe-hint { margin-bottom: 10px !important; padding-bottom: 0 !important; }
+
+/* 3. Spatial Sub-Navigation Pills */
+.case-subnav, .sub-tabs-nav {
+    display: flex; gap: 10px; overflow-x: auto; padding: 10px;
+    background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; margin-bottom: 20px;
+    box-shadow: inset 0 4px 15px rgba(0,0,0,0.2); scrollbar-width: none; 
+}
+.case-subnav::-webkit-scrollbar, .sub-tabs-nav::-webkit-scrollbar { display: none; }
+
+.case-tab, .sub-tab-btn {
+    background: transparent !important; border: 1px solid transparent !important;
+    color: rgba(255,255,255,0.7) !important; padding: 10px 18px !important;
+    border-radius: 12px !important; font-weight: 600 !important; white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; box-shadow: none !important;
+}
+.case-tab:hover:not(.active), .sub-tab-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.05) !important; border-color: rgba(255,255,255,0.1) !important;
+    color: var(--brand-cyan) !important; transform: translateY(-2px);
+}
+.case-tab.active, .sub-tab-btn.active {
+    background: rgba(0, 229, 255, 0.1) !important; border: 1px solid rgba(0, 229, 255, 0.3) !important;
+    color: var(--brand-cyan) !important; box-shadow: inset 0 0 10px rgba(0,229,255,0.1), 0 4px 10px rgba(0,0,0,0.3) !important;
+    text-shadow: 0 0 8px rgba(0,229,255,0.3); transform: scale(1.02);
+}
+
+/* 4. Glowing ER & Triage Results */
+.tool-result {
+    background: rgba(0, 0, 0, 0.3) !important; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    border-radius: 16px !important; padding: 20px !important; box-shadow: inset 0 4px 15px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2) !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important; color: var(--text-main) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+.tool-result.neutral { border: 1px dashed rgba(0, 229, 255, 0.3) !important; color: rgba(255,255,255,0.5) !important; background: rgba(0, 0, 0, 0.15) !important; box-shadow: inset 0 0 20px rgba(0,229,255,0.02) !important; }
+.tool-result.danger { border: 1px solid rgba(239, 68, 68, 0.3) !important; border-left: 4px solid var(--danger) !important; background: rgba(239, 68, 68, 0.08) !important; box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.1), 0 4px 15px rgba(0,0,0,0.3) !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.2); }
+.tool-result.warning { border: 1px solid rgba(245, 158, 11, 0.3) !important; border-left: 4px solid var(--warning) !important; background: rgba(245, 158, 11, 0.08) !important; box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.1), 0 4px 15px rgba(0,0,0,0.3) !important; }
+.tool-result.success { border: 1px solid rgba(16, 185, 129, 0.3) !important; border-left: 4px solid var(--success) !important; background: rgba(16, 185, 129, 0.08) !important; box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.1), 0 4px 15px rgba(0,0,0,0.3) !important; }
+.formula-box { background: rgba(0, 0, 0, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border-radius: 10px !important; color: rgba(255,255,255,0.7) !important; padding: 12px !important; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2) !important; }
+
+/* 5. Spatial Modals & Deep Glass Inputs */
+.modal-content, .auth-box {
+    background: rgba(0, 0, 0, 0.45) !important; backdrop-filter: blur(35px) !important; -webkit-backdrop-filter: blur(35px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important; border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.05) !important; border-radius: 24px !important; color: var(--text-main) !important;
+}
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    background: rgba(0, 0, 0, 0.25) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: var(--text-main) !important;
+    border-radius: 12px !important; box-shadow: inset 0 4px 10px rgba(0,0,0,0.3) !important; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 12px !important; width: 100% !important; box-sizing: border-box !important; font-family: inherit !important;
+}
+input[type="date"] { color-scheme: dark !important; appearance: none; -webkit-appearance: none; min-height: 46px; margin-bottom: 12px; }
+input:focus, select:focus, textarea:focus { border-color: rgba(0, 229, 255, 0.5) !important; box-shadow: inset 0 4px 10px rgba(0,0,0,0.3), 0 0 15px rgba(0, 229, 255, 0.2) !important; outline: none !important; background: rgba(0, 0, 0, 0.4) !important; }
+::placeholder { color: rgba(255, 255, 255, 0.3) !important; font-weight: 400 !important; }
+select option { background: #0f172a !important; color: #ffffff !important; }
+
+/* 6. Base Dashboard Bento Cards & Top Scrubber */
+.bento-card {
+    background: rgba(0, 0, 0, 0.3) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.2), 0 8px 25px rgba(0,0,0,0.4) !important; border-radius: 20px !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important; transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.bento-card::before { content: ''; position: absolute; inset: 0; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border-radius: inherit !important; transform: translateZ(-1px) !important; z-index: -1; pointer-events: none; }
+.bento-card:hover { border-color: rgba(0, 229, 255, 0.3) !important; box-shadow: inset 0 2px 15px rgba(0,229,255,0.1), 0 12px 30px rgba(0,0,0,0.5) !important; }
+
+.anchor-pill-premium {
+    background: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(35px) !important; -webkit-backdrop-filter: blur(35px) !important;
+    border: 1px solid rgba(0, 229, 255, 0.25) !important; border-bottom: 1px solid rgba(0, 229, 255, 0.1) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 20px rgba(0, 229, 255, 0.1) !important; border-radius: 50px !important;
+}
+.cortex-greeting-wrapper .opd-queue { background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border: 1px solid rgba(255, 51, 102, 0.3) !important; box-shadow: inset 0 0 10px rgba(255, 51, 102, 0.15) !important; }
+.cortex-greeting-wrapper .opd-queue .queue-count { color: #ffffff !important; text-shadow: 0 0 8px rgba(255, 51, 102, 0.6) !important; }
+#liveSummaryPreview { background: rgba(0, 0, 0, 0.25) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; border: 1px solid rgba(255,255,255,0.1) !important; box-shadow: inset 0 5px 15px rgba(0,0,0,0.3) !important; color: var(--text-main) !important; border-radius: 16px !important; }
+
+/* 7. Rx Staging Physics & Animations */
+.card-rx-staging { border: 1px solid rgba(255,255,255,0.08) !important; position: relative; overflow: hidden; --current-glow: rgba(255,255,255,0.05); }
+.card-rx-staging:active { transform: scale(1.04) translateZ(10px) !important; }
+.card-rx-staging:hover .custom-rx-svg { filter: drop-shadow(0 0 10px var(--brand-cyan)); }
+.card-rx-staging:hover .rx-staging-chip { transform: translateY(-2px); }
+.card-rx-staging::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 0 0 1px transparent; animation: rxBorderPulse 12s infinite; }
+
+@keyframes rxBorderPulse { 0%, 90%, 100% { box-shadow: inset 0 0 0 1px transparent; } 95% { box-shadow: inset 0 0 0 1.5px var(--current-glow); } }
+.rx-line-draw { stroke-dasharray: 10; stroke-dashoffset: 10; animation: rxDrawSignature 12s infinite ease-in-out; }
+@keyframes rxDrawSignature { 0%, 80%, 100% { stroke-dashoffset: 10; opacity: 0; } 85%, 95% { stroke-dashoffset: 0; opacity: 1; } }
+
+.rx-staging-chip {
+    background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.05); border-left: 2px solid var(--current-glow-solid, var(--brand-cyan));
+    border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
+    animation: chipSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; opacity: 0;
+}
+@keyframes chipSlideUp { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }

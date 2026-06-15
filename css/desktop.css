@@ -445,3 +445,28 @@
     height: max-content !important;
     min-height: auto !important;
 }
+
+/* =========================================
+   DESKTOP SPATIAL FIXES (Widescreen Only)
+   ========================================= */
+
+.cortex-sticky-anchor {
+    position: sticky !important;
+    top: 20px !important;
+    display: block !important; 
+    width: 100% !important;
+    margin-bottom: 50px !important; 
+}
+
+.cortex-greeting-wrapper {
+    display: block !important;
+    width: 100% !important;
+    clear: both !important;
+    padding-top: 30px !important; 
+}
+
+.cortex-greeting {
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    text-align: left !important; 
+}

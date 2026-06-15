@@ -145,15 +145,20 @@ function renderFullDatabase() {
     let html = "";
     patientKeys.forEach(id => {
         let p = AppStore.getPatient(id);
-        if (p.name.toLowerCase().includes(query) || (p.phone && p.phone.includes(query))) {
+        
+        // SAFE FALLBACKS
+        let safeName = p.name ? p.name : "Unknown Patient";
+        let safeGender = p.gender ? p.gender.toUpperCase() : "N/A";
+        
+        if (safeName.toLowerCase().includes(query) || (p.phone && p.phone.includes(query))) {
             html += `
             <div style="background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); border-top: 1px solid rgba(255, 255, 255, 0.2); border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: inset 0 4px 15px rgba(0,0,0,0.2), 0 8px 25px rgba(0,0,0,0.3); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); margin-bottom: 20px;" onmouseover="this.style.transform='scale(1.02) translateY(-3px)'; this.style.borderColor='rgba(0, 229, 255, 0.3)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255, 255, 255, 0.08)';">
                 
                 <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
                     <div>
-                        <h3 style="margin:0; color:var(--brand-cyan); font-size:1.3rem; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">${p.name}</h3>
+                        <h3 style="margin:0; color:var(--brand-cyan); font-size:1.3rem; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">${safeName}</h3>
                         <div style="font-size:0.9rem; color:var(--text-main); margin-top:8px; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9;">
-                            ${p.ageYrs}Y ${p.ageMos}M <span style="color:var(--brand-pink); margin: 0 4px;">|</span> ${p.gender.toUpperCase()}
+                            ${p.ageYrs || 0}Y ${p.ageMos || 0}M <span style="color:var(--brand-pink); margin: 0 4px;">|</span> ${safeGender}
                         </div>
                     </div>
                     <div style="font-size:1.1rem; font-weight:800; color:var(--brand-cyan); background: rgba(0, 229, 255, 0.1); padding:8px 14px; border-radius:12px; border: 1px solid rgba(0, 229, 255, 0.3); box-shadow: inset 0 0 10px rgba(0,229,255,0.1);">${p.weight} kg</div>

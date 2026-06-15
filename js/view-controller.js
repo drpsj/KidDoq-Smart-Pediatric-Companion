@@ -380,140 +380,6 @@ window.closePatientFile = function() {
 };
 
 // =========================================================
-// THE INFINITE SPATIAL RING ENGINE (True Trigonometric Loop)
-// =========================================================
-window.initSpatialCommandCenter = function() {
-    if (window.innerWidth > 1023) return; 
-
-    const deck = document.querySelector('.cortex-bento-grid');
-    if (!deck) return;
-
-    function bootEngine() {
-        const cards = Array.from(deck.querySelectorAll('.bento-card'));
-        const total = cards.length;
-        if (total === 0) return false;
-
-        if (deck.dataset.spatialEngineActive === "true") return true;
-        deck.dataset.spatialEngineActive = "true";
-
-        let currentIndex = 0; // Absolute guarantee the first card boots active
-
-        // 🚀 THE FIX: Mathematical Array Wrapping
-        // Turns a flat list of cards into an infinite circular loop
-        function getWrappedOffset(target, center) {
-            let diff = target - center;
-            // Force the difference into a physical circle [-2, -1, 0, 1, 2]
-            if (diff > Math.floor(total / 2)) diff -= total;
-            if (diff < -Math.floor(total / 2)) diff += total;
-            return diff;
-        }
-
-        function updateSlots(instant = false) {
-            cards.forEach((card, i) => {
-                if (instant) card.style.setProperty('transition', 'none', 'important');
-
-                card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next');
-                
-                // Calculate physical position on the circle
-                let diff = getWrappedOffset(i, currentIndex);
-                
-                if (diff === 0) card.classList.add('slot-active');
-                else if (diff === -1) card.classList.add('slot-prev');
-                else if (diff === 1) card.classList.add('slot-next');
-                else if (diff < -1) card.classList.add('slot-far-prev');
-                else if (diff > 1) card.classList.add('slot-far-next');
-            });
-
-            if (instant) {
-                // Force paint for instant boot centering
-                requestAnimationFrame(() => {
-                    void deck.offsetHeight; 
-                    cards.forEach(card => card.style.removeProperty('transition'));
-                });
-            }
-        }
-
-        // 1. Force Instant Centered Boot
-        updateSlots(true);
-
-        // 2. Gesture Physics (Infinite Drag Engine)
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-
-        deck.addEventListener('touchstart', e => { 
-            startX = e.touches[0].clientX; 
-            currentX = startX;
-            isDragging = true;
-            deck.style.setProperty('transition', 'none', 'important');
-        }, {passive: true});
-
-        deck.addEventListener('touchmove', e => {
-            if (!isDragging) return;
-            currentX = e.touches[0].clientX;
-            let diffX = currentX - startX;
-            // Adds slight 3D rotation to the entire stage during drag for a premium feel
-            deck.style.transform = `translateX(${diffX * 0.4}px) rotateY(${diffX * 0.05}deg)`;
-        }, {passive: true});
-
-        deck.addEventListener('touchend', e => {
-            if (!isDragging) return;
-            isDragging = false;
-            let diffX = currentX - startX;
-
-            // Trigger Rotation & Apply Array Wrap Math
-            if (diffX < -40) {
-                currentIndex = (currentIndex + 1) % total; // Wrap Forward
-            } else if (diffX > 40) {
-                currentIndex = (currentIndex - 1 + total) % total; // Wrap Backward
-            }
-
-            // Snap the stage back to center, the CSS will gracefully rotate the cards into their new slots
-            deck.style.setProperty('transition', 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
-            deck.style.transform = 'translateX(0px) rotateY(0deg)';
-            updateSlots();
-        }, {passive: true});
-
-        // 3. Tap-to-Focus
-        cards.forEach((card, index) => {
-            card.addEventListener('click', () => {
-                if (currentIndex !== index) {
-                    currentIndex = index;
-                    updateSlots();
-                }
-            });
-        });
-
-        // 4. Infinite Arrow Hints
-        const leftArrow = document.querySelector('.holo-swipe-hint .arrow-left');
-        const rightArrow = document.querySelector('.holo-swipe-hint .arrow-right');
-        if(leftArrow) leftArrow.addEventListener('click', () => { 
-            currentIndex = (currentIndex - 1 + total) % total; 
-            updateSlots(); 
-        });
-        if(rightArrow) rightArrow.addEventListener('click', () => { 
-            currentIndex = (currentIndex + 1) % total; 
-            updateSlots(); 
-        });
-
-        return true;
-    }
-
-    if (!bootEngine()) {
-        const observer = new MutationObserver((mutations, obs) => {
-            if (bootEngine()) obs.disconnect(); 
-        });
-        observer.observe(deck, { childList: true, subtree: true });
-    }
-};
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.initSpatialCommandCenter);
-} else {
-    window.initSpatialCommandCenter();
-}
-
-// =========================================================
 // CORTEX POP SHEET CONTROLLER
 // =========================================================
 
@@ -556,3 +422,158 @@ window.closePopSheet = function() {
         overlay.classList.add('cortex-hidden');
     }, 500);
 };
+
+// =========================================================
+// THE SPATIAL COMMAND DECK ENGINE
+// =========================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const stage = document.querySelector('.cortex-spatial-stage');
+    if (!stage) return;
+
+    const cards = Array.from(stage.querySelectorAll('.bento-card'));
+    let currentIndex = 0; 
+    
+    // Optional: If you have navigation dots
+    const dotsContainer = document.querySelector('.deck-nav-dots');
+    let dots = [];
+    if (dotsContainer) {
+        cards.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot';
+            if (i === 0) dot.classList.add('active');
+            dotsContainer.appendChild(dot);
+            dots.push(dot);
+        });
+    }
+
+    // 1. THE DEALER: Assigns classes based on index offset
+    function update3DDeck() {
+        const total = cards.length;
+        cards.forEach((card, index) => {
+            // SURGICAL FIX: Strip ONLY the 3D positioning classes!
+            // This preserves all your custom colors, layouts, and states.
+            card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'slot-hidden');
+            
+            // INFINITE LOOP MATH: Calculates the shortest circular distance
+            let offset = (index - currentIndex) % total;
+            if (offset > Math.floor(total / 2)) offset -= total;
+            else if (offset < -Math.floor(total / 2)) offset += total;
+
+            if (offset === 0) card.classList.add('slot-active');
+            else if (offset === -1) card.classList.add('slot-prev');
+            else if (offset === 1) card.classList.add('slot-next');
+            else if (offset === -2) card.classList.add('slot-far-prev');
+            else if (offset === 2) card.classList.add('slot-far-next');
+            else card.classList.add('slot-hidden');
+        });
+
+        // BUILD AND UPDATE THE SPATIAL NAVIGATOR TRACK (Replaces Dots)
+        let navigator = document.querySelector('.deck-navigator');
+        if (!navigator) {
+            // Build the track automatically the first time the deck loads
+            navigator = document.createElement('div');
+            navigator.className = 'deck-navigator';
+            navigator.innerHTML = `
+                <div class="deck-arrow" id="deck-prev">‹</div>
+                <div class="deck-nav-track" id="deck-track"></div>
+                <div class="deck-arrow" id="deck-next">›</div>
+            `;
+            stage.parentNode.insertBefore(navigator, stage.nextSibling);
+
+            // Hook up the side arrows
+            document.getElementById('deck-prev').addEventListener('click', () => {
+                if (currentIndex > 0) { currentIndex--; update3DDeck(); }
+            });
+            document.getElementById('deck-next').addEventListener('click', () => {
+                if (currentIndex < cards.length - 1) { currentIndex++; update3DDeck(); }
+            });
+
+            // Hide the old dots completely
+            if (typeof dots !== 'undefined' && dots.length > 0 && dots[0].parentNode) {
+                dots[0].parentNode.style.display = 'none';
+            }
+
+            // Populate the track based on the actual cards in the deck
+            const track = document.getElementById('deck-track');
+            cards.forEach((card, index) => {
+                // Find a title or heading from the card to use as a label
+                const titleEl = card.querySelector('h1, h2, h3, .card-title, .bento-header span') || card.querySelector('header');
+                let title = titleEl ? titleEl.textContent.trim() : `Data ${index + 1}`;
+                
+                const item = document.createElement('div');
+                item.className = 'deck-nav-item';
+                item.innerHTML = `
+                    <div class="deck-nav-icon">◈</div>
+                    <div class="deck-nav-label">${title.substring(0, 10)}</div>
+                `;
+                item.addEventListener('click', () => {
+                    currentIndex = index;
+                    update3DDeck();
+                });
+                track.appendChild(item);
+            });
+        }
+
+        // Update active states on the track as you swipe
+        const navTrackItems = document.querySelectorAll('.deck-nav-item');
+        if (navTrackItems.length) {
+            navTrackItems.forEach(item => item.classList.remove('active'));
+            if(navTrackItems[currentIndex]) {
+                navTrackItems[currentIndex].classList.add('active');
+                // Auto-scroll the track so the active item stays centered
+                navTrackItems[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    }
+
+    // 2. THE SWIPE ENGINE: Pure touch delta, zero scroll
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const swipeThreshold = 50; 
+
+    stage.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    stage.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
+    // 🚀 SURGICAL FIX: Hardware-locked animation state to prevent glitchy double-swipes
+    let isDeckAnimating = false; 
+
+    function handleSwipe() {
+        if (isDeckAnimating) return; // Ignore touches while engine is shifting
+        
+        const swipeDistance = touchEndX - touchStartX;
+        const total = cards.length;
+
+        if (Math.abs(swipeDistance) > swipeThreshold) {
+            isDeckAnimating = true; // Lock engine
+            
+            // Sync strictly with the device's screen refresh rate
+            requestAnimationFrame(() => {
+                if (swipeDistance < -swipeThreshold) {
+                    // Swiped Left -> Move forward
+                    currentIndex = (currentIndex + 1) % total;
+                } else if (swipeDistance > swipeThreshold) {
+                    // Swiped Right -> Move backward
+                    currentIndex = (currentIndex - 1 + total) % total;
+                }
+                
+                update3DDeck();
+                
+                // 🚀 SURGICAL FIX: Locks engine strictly to match 600ms Apple spatial curve.
+                // We unlock at 500ms to allow smooth queuing of the next swipe.
+                setTimeout(() => { 
+                    isDeckAnimating = false; 
+                }, 500); 
+            });
+        }
+    }
+
+    // Initialize the physical space
+    update3DDeck();
+});

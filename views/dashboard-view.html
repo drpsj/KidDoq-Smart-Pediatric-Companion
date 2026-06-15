@@ -1,0 +1,496 @@
+<div id="homeDashboardView" class="view-content active-view cortex-fusion-mode">
+
+                <div class="cortex-sticky-anchor desktop-grid-override" style="position: sticky; top: 15px; z-index: 4000; display: block; text-align: center; width: 100%; max-width: 100vw; margin: 0 0 10px 0; padding: 0 10px; background: transparent; box-sizing: border-box;">
+                
+                <div id="cortexAnchorPill" class="anchor-pill-premium" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; width: 92% !important; max-width: 500px !important; min-height: 52px !important; margin: 0 auto !important; gap: 10px !important; padding: 6px 16px !important; border-radius: 50px !important; scrollbar-width: none;">
+                    
+                    <input type="hidden" id="hudAgeYrs" value="0">
+                    <input type="hidden" id="hudAgeMos" value="0">
+                    <input type="hidden" id="hudAge" value="0">
+                    <input type="hidden" id="hudWeight" value="0">
+                    <select id="hudGender" style="display:none;"><option value="male">Male</option><option value="female">Female</option></select>
+
+                    <div style="display: flex; align-items: center; cursor: pointer; flex-shrink: 0;" onclick="toggleCortexDrawer()">
+                        <img src="kiddoq lite.png" id="anchorDefaultLogo" alt="KidDoq" style="width: 32px; height: 32px; filter: drop-shadow(0 0 12px rgba(0,229,255,0.5));">
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 28px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+
+                    <div class="anchor-stat scrub-zone" id="scrubAgeZone" onclick="manualEditAge()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex: 1;">
+                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 0;">AGE <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
+                        <span class="stat-value" id="anchorAgeDisplay" style="font-size: 1.15rem; font-weight: 800; color: white;">0Y 0M</span>
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 28px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+                    
+                    <div class="anchor-stat scrub-zone" id="scrubWtZone" onclick="manualEditWeight()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex: 1;">
+                        <span class="stat-label" style="color:var(--brand-cyan); font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; gap: 4px; margin-bottom: 0;">WEIGHT <span class="scrub-hint-mini" style="color: rgba(255,255,255,0.4); font-size: 0.55rem; text-transform: lowercase;">‹drag›</span></span>
+                        <span class="stat-value" style="font-size: 1.15rem; font-weight: 800; color: white;"><span id="anchorWtDisplay">0.0</span> <small style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">kg</small></span>
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 28px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+                    
+                    <div class="anchor-stat" id="tapGenderZone" onclick="toggleAnchorGender()" style="cursor:pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; flex-shrink: 0;">
+                        <span class="stat-icon" id="anchorGenderIcon" style="font-size: 1.4rem; color: var(--brand-blue); filter: drop-shadow(0 0 8px rgba(77, 123, 255, 0.4)); line-height: 1;">♂️</span>
+                        <span class="stat-value" id="anchorGenderDisplay" style="font-size: 0.75rem; font-weight: 700; color: white; margin-top: 2px; display: block;">Male</span>
+                    </div>
+                    
+                    <div class="anchor-divider" style="width: 1px; height: 32px; background: rgba(255,255,255,0.2); flex-shrink: 0;"></div>
+
+                    <div class="anchor-action" onclick="toggleCortexDrawer()" style="display: flex; align-items: center; cursor: pointer; flex-shrink: 0;">
+                        <div class="anchor-chevron" style="font-size: 1.2rem; color: var(--brand-blue); transition: transform 0.3s ease;">⌄</div>
+                    </div>
+                </div>
+                
+                <div id="cortexDrawer" class="cortex-collapsed" style="max-height: 0px; opacity: 0; padding: 0 20px; overflow: hidden; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(0, 229, 255, 0.2); border-top: none; border-radius: 0 0 24px 24px; max-width: 480px; margin: -20px auto 10px auto; box-shadow: 0 20px 40px rgba(0,0,0,0.6); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; z-index: -1;">
+                    <div class="row-inputs" style="padding-top: 30px; margin-bottom: 10px;">
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Height (cm)</label>
+                            <input type="number" id="hudHt" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Head Circ (cm)</label>
+                            <input type="number" id="hudHc" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">MAC (cm)</label>
+                            <input type="number" id="hudMac" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="cortex-greeting-wrapper desktop-grid-override animate-entrance" style="position: relative; width: 100%; padding: 15px 0; border-bottom: 1px solid var(--border-soft);">
+                <div class="cortex-greeting" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; margin: 0;">
+                    
+                    <div class="greeting-text" style="display: flex; flex-direction: column; text-align: left;">
+                        <h2 class="hero-greeting-font" style="margin: 0;">
+                            <span id="liveGreetingTime">Good Evening</span>, Dr. 
+                            <span id="liveDoctorName" class="animated-gradient-text">User</span> 
+                            <span id="liveGreetingEmoji" class="animated-emoji">🌙</span>
+                        </h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin: 5px 0 0 0;">Ready to make a difference today</p>
+                    </div>
+
+                    <div class="opd-queue" style="background: var(--bg-surface); border: 1px solid var(--border-soft); box-shadow: var(--shadow-sm); padding: 8px 16px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; width: max-content; flex-shrink: 0;">
+                        <span class="queue-label" style="color: var(--brand-pink); font-weight: 700;">Encounters</span>
+                        <span class="queue-count" id="encounterCount" style="color: var(--primary-dark); font-weight: 900; font-size: 1.1rem;">0</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- NEW: HERO DOSE ENGINE (Sits above the Bento Grid) -->
+            <div class="cortex-hero-card" id="heroDoseEngine">
+                
+                <!-- LAYER 1: INSTANT DOSE COCKPIT -->
+                <div id="layer1InstantDoses" class="hero-layer-1">
+                    
+                    <div class="hero-header" style="margin-bottom: 15px; position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center;">
+                        
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div id="lightningToggleBtn" class="lightning-wrapper is-null" onclick="toggleFormularyExplorer()" title="Tap to expand Explorer">
+                                <svg class="telemetry-ring-svg" viewBox="0 0 100 100">
+                                    <defs>
+                                        <path id="circlePath" d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0" />
+                                    </defs>
+                                    <circle cx="50" cy="50" r="35" class="dashed-ring" />
+                                    <text class="ring-text">
+                                        <textPath href="#circlePath" startOffset="0%">
+                                            • TAP TO EXPLORE • TAP TO EXPLORE
+                                        </textPath>
+                                    </text>
+                                </svg>
+                                <svg class="lightning-bolt-svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path class="bolt-path" d="M11.201 1.5l-6.8 10.4a1 1 0 0 0 .837 1.547h4.686l-1.124 9.058a1 1 0 0 0 1.838.59l6.8-10.4a1 1 0 0 0-.837-1.547h-4.686l1.124-9.058a1 1 0 0 0-1.838-.59z" />
+                                </svg>
+                            </div>
+                            
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main); font-weight: 800;">Instant Doses</h3>
+                                <span id="instantDoseSubtitle" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Awaiting Weight...</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <input type="text" id="hudGlobalSearch" oninput="runGlobalSearch(this.value)" placeholder="🔍 Search..." 
+                                style="width: 140px; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(0, 229, 255, 0.3); background: rgba(0,0,0,0.3); color: #fff; font-size: 0.85rem; outline: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); transition: width 0.2s ease;">
+                        </div>
+
+                    </div>
+                    
+                    <div id="zoneAQuickMode" style="transition: opacity 0.3s ease;">
+                        <div id="hudSmartDoseCards" style="display: flex; overflow-x: auto; gap: 12px; padding: 12px 0; scrollbar-width: none;">
+                            <div class="hud-empty-state">Scrub Weight to unlock...</div>
+                        </div>
+                    </div>
+
+                    <div id="zoneBExplorerMode" style="display: none; opacity: 0; transition: opacity 0.3s ease; margin-top: 10px;">
+                        
+                        <div id="explorerDropdownContainer" style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 0.7rem; color: #a78bfa; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Select Category</label>
+                                <select id="hudQuickCat" onchange="populateHudDrugs()" style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(167, 139, 250, 0.3); color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
+                                    <option value="">-- Loading Categories... --</option>
+                                </select>
+                            </div>
+                            
+                            <div style="color: rgba(255,255,255,0.2); font-size: 1.2rem; margin-top: 15px; font-weight: 300;">➔</div>
+                            
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 0.7rem; color: #a78bfa; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Select Drug</label>
+                                <select id="hudQuickForm" onchange="runHudQuickDose()" style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(167, 139, 250, 0.3); color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
+                                    <option value="">-- Select Drug --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="hudQuickDoseRes"></div>
+                        
+                        <div id="doseBridgeContainer" style="margin-top: 15px; display: none;">
+                            <button style="width: 100%; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--brand-cyan); color: var(--brand-cyan); padding: 12px; border-radius: 8px; font-weight: 800; font-size: 0.95rem; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s;" onclick="grabStructuredDose(this)">
+                                ➕ Push Clean Order to Clipboard
+                            </button>
+                        </div>
+
+                        <script>
+                            // 1. The Observer: Reveals the button when a dose appears
+                            setTimeout(() => {
+                                const targetNode = document.getElementById('hudQuickDoseRes');
+                                const bridgeBtn = document.getElementById('doseBridgeContainer');
+                                if(targetNode) {
+                                    const doseResObserver = new MutationObserver(function() {
+                                        if (targetNode.innerText.trim().length > 5) bridgeBtn.style.display = 'block';
+                                        else bridgeBtn.style.display = 'none';
+                                    });
+                                    doseResObserver.observe(targetNode, { childList: true, subtree: true, characterData: true });
+                                }
+                            }, 1000);
+
+                            // 2. The Smart Data Bridge: Now with NO default duration
+                            window.grabStructuredDose = function(btnElement) {
+                                const drugId = document.getElementById('hudQuickForm').value;
+                                const wtInput = document.getElementById('hudWeight');
+                                const wt = wtInput ? parseFloat(wtInput.value) : 0;
+
+                                if (!drugId || wt <= 0) return alert("Missing active drug or weight.");
+
+                                let db = (typeof window.getUnifiedDB === 'function') ? window.getUnifiedDB() : window.drugsDb;
+                                const drug = db.find(d => d.id === drugId);
+                                if (!drug) return;
+
+                                let math = ClinicalMath.computeDose(drug, wt);
+                                let unit = ClinicalMath.getUnit(drug);
+                                const displayFreq = typeof window.translateFreqToLocal === 'function' ? window.translateFreqToLocal(drug.defaultFreq) : drug.defaultFreq;
+
+                                // 4. Construct the strict 5-part clinical order (Duration is strictly empty!)
+                                const medObject = {
+                                    name: drug.name,
+                                    formulation: drug.conc ? `${drug.conc}mg/${drug.vol}${unit.replace('s','')}` : `${drug.doseMg}mg`,
+                                    dose: `${math.reqVol.toFixed(1)} ${unit}`,
+                                    frequency: displayFreq || "SOS",
+                                    duration: "" // Wiped the 3 Days default!
+                                };
+                                
+                                if(window.pushToDashboardCart) {
+                                    window.pushToDashboardCart(medObject);
+                                    
+                                    const originalHTML = btnElement.innerHTML;
+                                    btnElement.innerHTML = "✅ Secure Order Staged!";
+                                    btnElement.style.background = "rgba(46, 213, 115, 0.2)";
+                                    btnElement.style.borderColor = "#2ed573";
+                                    btnElement.style.color = "#2ed573";
+                                    
+                                    setTimeout(() => {
+                                        btnElement.innerHTML = originalHTML;
+                                        btnElement.style.background = "rgba(0, 229, 255, 0.1)";
+                                        btnElement.style.borderColor = "var(--brand-cyan)";
+                                        btnElement.style.color = "var(--brand-cyan)";
+                                    }, 2000);
+                                }
+                            };
+                        </script>
+                        
+                        <div id="trustBadgesFooter" style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); gap: 10px;">
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
+                                <div style="font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(216, 180, 254, 0.5));">🛡️</div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: #d8b4fe;">WHO & Standard Doses</div>
+                                    <div style="font-size: 0.6rem; color: rgba(255,255,255,0.5); line-height: 1.2; margin-top: 2px;">Evidence-based math</div>
+                                </div>
+                            </div>
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
+                                <div style="font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.5));">🧠</div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: #c084fc;">Smart Suggestions</div>
+                                    <div style="font-size: 0.6rem; color: rgba(255,255,255,0.5); line-height: 1.2; margin-top: 2px;">AI-powered caps</div>
+                                </div>
+                            </div>
+                            <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
+                                <div style="font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(244, 114, 182, 0.5));">❤️</div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: #f472b6;">Safe & Reliable</div>
+                                    <div style="font-size: 0.6rem; color: rgba(255,255,255,0.5); line-height: 1.2; margin-top: 2px;">Pediatric verified</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> 
+
+                <!-- LAYER 2: FULL CALCULATOR (Hidden by default) -->
+                <div id="layer2FullCalc" class="hero-layer-2 cortex-collapsed">
+                    <div style="border-top: 1px solid var(--border-soft); margin: 15px 0; padding-top: 15px;">
+                        <div class="row-inputs" style="margin-bottom: 12px;">
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">Category</label>
+                                <select id="hudQuickCat" onchange="populateHudDrugs()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); font-weight:bold;">
+                                    <option value="">-- Select --</option>
+                                    <option value="antibiotics">Antibiotics</option>
+                                    <option value="antipyretics">Antipyretics / Pain</option>
+                                    <option value="antihistamines">Allergy / Cold</option>
+                                    <option value="respiratory">Respiratory</option>
+                                    <option value="git">Gastrointestinal</option>
+                                    <option value="vitamins">Vitamins & Minerals</option>
+                                    <option value="emergency">ER & Resuscitation</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">Formulation</label>
+                                <select id="hudQuickForm" onchange="runHudQuickDose()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); font-weight:bold;">
+                                    <option value="">-- Choose --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="hudQuickDoseRes"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. BENTO COMMAND GRID -->
+            <!-- ========================================== -->
+        <!-- THE MASTER BENTO COMMAND GRID              -->
+        <!-- ========================================== -->
+        <div class="cortex-spatial-stage cortex-booting">
+            
+            <!-- 1. GROWTH INTELLIGENCE -->
+            <div id="growthSnapshotCard" class="bento-card slot-active growth-state-normal" style="padding: 0; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));">📈</div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">GROWTH</h3>
+                            <span style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Growth Intelligence</span>
+                        </div>
+                    </div>
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand-cyan); box-shadow: 0 0 8px var(--brand-cyan);"></div>
+                </div>
+                <div class="card-body" style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Weight for Age (WFA)</div>
+                            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 4px;">
+                                <span id="liveZScore" class="stat-value" style="font-size: 3.5rem; font-weight: 800; line-height: 1; letter-spacing: -2px; transition: color 0.3s ease;">-0.00</span>
+                                <span style="font-size: 1.2rem; font-weight: 800; color: var(--text-muted);">SD</span>
+                            </div>
+                        </div>
+                        <div id="liveSeverityBadge" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); flex-direction: column;">
+                            <span id="liveSeverityIcon" style="font-size: 1.2rem;">✅</span>
+                            <span id="liveSeverityText" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Normal</span>
+                        </div>
+                    </div>
+                    <div style="position: relative; width: 100%; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 800; margin-bottom: 6px;">
+                            <span>-6 SD</span><span>-3</span><span>-2</span><span>-1</span><span>+2</span><span>+3 SD</span>
+                        </div>
+                        <div style="display: flex; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden;">
+                            <div style="width: 33.33%; background: var(--sev-severe); opacity: 0.4;"></div><div style="width: 11.11%; background: var(--sev-moderate); opacity: 0.4;"></div><div style="width: 11.11%; background: var(--sev-mild); opacity: 0.4;"></div><div style="width: 33.33%; background: var(--sev-normal); opacity: 0.4;"></div><div style="width: 11.11%; background: var(--sev-high); opacity: 0.4;"></div>
+                        </div>
+                        <div id="liveScaleMarker" style="position: absolute; top: 18px; left: 66.66%; width: 14px; height: 14px; background: var(--sev-normal); border: 2px solid #1e293b; border-radius: 50%; transform: translateX(-50%); transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px var(--sev-normal);"></div>
+                    </div>
+                    <div id="whoTriageTray" class="triage-tray-hidden"></div>
+                </div>
+                <div style="padding: 0 15px 15px 15px;">
+                    <button onclick="if(window.openClinicalTool) window.openClinicalTool('growthFeatureView')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN GROWTH CHARTS
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. NUTRITION INTELLIGENCE -->
+            <div class="bento-card slot-next card-nutrition" id="bentoNutrition" style="padding: 0; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div id="nutriCardIcon" style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));">🛡️</div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">NUTRITION</h3>
+                            <span style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Nutrition Intelligence</span>
+                        </div>
+                    </div>
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand-cyan); box-shadow: 0 0 8px var(--brand-cyan);"></div>
+                </div>
+                <div class="card-body" style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Open top drawer (⌄) to enter HC & MAC.</div>
+                </div>
+                <div style="padding: 0 15px 15px 15px;">
+                    <button onclick="if(window.openClinicalTool) window.openClinicalTool('nutritionFeatureView')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN NUTRITION TRACKER
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. CLINICAL VITALS INTELLIGENCE -->
+            <div class="bento-card card-vitals" id="bentoVitals" style="padding: 0; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; gap: 10px; align-items: center; width: 100%;">
+                        <div style="color: var(--brand-pink); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(255,51,102,0.4));">💓</div>
+                        <div style="flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">VITALS & FLUIDS</h3>
+                                <div id="vitalsAgeContext" style="font-size: 0.6rem; font-weight: 800; color: var(--brand-cyan); background: rgba(0, 229, 255, 0.1); padding: 3px 8px; border-radius: 8px; letter-spacing: 0.5px; border: 1px solid rgba(0,229,255,0.2);">--</div>
+                            </div>
+                            <span style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Emergency Intelligence</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <div id="hudFluidsOutput" style="margin-bottom: 15px;"></div>
+                    <div id="hudVitalsOutput" data-age-bracket=""><div class="hud-empty-state" style="border:none; padding: 0;">Enter Age to calibrate normal ranges.</div></div>
+                </div>
+                <div style="padding: 0 15px 15px 15px;">
+                    <button onclick="if(window.openClinicalTool) window.openClinicalTool('erFeatureView')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN ER & RESUSCITATION
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. VACCINES INTELLIGENCE -->
+            <div class="bento-card card-vaccines" id="bentoVaccines" style="padding: 0; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));">💉</div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">VACCINES</h3>
+                            <span style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Vaccine Intelligence</span>
+                        </div>
+                    </div>
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand-cyan); box-shadow: 0 0 8px var(--brand-cyan);"></div>
+                </div>
+                
+                <div class="card-body" style="overflow-y: auto; flex-grow: 1; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 15px;">
+                    <div id="hudVaxOutput" class="hud-empty-state" style="border:none;">Enter Age to see due vaccines.</div>
+                </div>
+            </div>
+
+            <!-- 5. MILESTONES INTELLIGENCE (With strict class mapping and structural locks) -->
+            <div class="bento-card card-milestones" id="bentoMilestones" style="padding: 0; min-height: 420px; display: flex; flex-direction: column; overflow: visible;">
+                <div class="vax-flip-container" style="flex-grow: 1; position: relative; width: 100%;">
+                    <div class="vax-flip-card" id="milesFlipCard" style="position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+                        
+                        <!-- FRONT FACE (Native Document Flow) -->
+                        <div class="vax-face-front" style="position: relative; width: 100%; height: 100%; z-index: 2; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; background: transparent;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <div style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));">🧠</div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">MILESTONES</h3>
+                                        <span style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Developmental Intelligence</span>
+                                    </div>
+                                </div>
+                                <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand-cyan); box-shadow: 0 0 8px var(--brand-cyan);"></div>
+                            </div>
+
+                            <div class="card-body" style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 15px;">
+                                <div style="display: flex; align-items: center; justify-content: center; position: relative; padding: 10px 0; margin-bottom: 5px;">
+                                    <div style="position: relative; width: 75px; height: 75px; margin: 0 auto;">
+                                        <svg viewBox="0 0 100 100" style="position: absolute; width: 100%; height: 100%; transform: rotate(-90deg);">
+                                            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"></circle>
+                                            <circle class="radar-arc" cx="50" cy="50" r="42" fill="none" stroke="var(--brand-cyan)" stroke-width="4" stroke-dasharray="264" stroke-dashoffset="0" stroke-linecap="round"></circle>
+                                        </svg>
+                                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                            <span class="stat-value" style="font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1;"><span id="msRadarCount">3</span><span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">/3</span></span>
+                                        </div>
+                                    </div>
+                                    <div id="msAgeBadge" style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; font-weight: 800; color: var(--brand-cyan); background: rgba(0,229,255,0.1); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(0,229,255,0.2); letter-spacing: 1px; white-space: nowrap;">-- CHECKPOINT</div>
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
+                                        <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">🗣</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 0.65rem; font-weight: 800; color: #a855f7; text-transform: uppercase; margin-bottom: 2px;">Language</div>
+                                            <div id="msLangText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
+                                        <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">🧩</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 0.65rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 2px;">Cognitive</div>
+                                            <div id="msCogText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
+                                        <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(236, 72, 153, 0.15); color: #ec4899; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">👫</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 0.65rem; font-weight: 800; color: #ec4899; text-transform: uppercase; margin-bottom: 2px;">Social</div>
+                                            <div id="msSocText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 0 15px 15px 15px;">
+                                <button onclick="document.getElementById('milesFlipCard').classList.add('is-flipped')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN DEVELOPMENT SCANNER
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- BACK FACE (Absolute Overlap) -->
+                        <div class="vax-face-back" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg); display: flex; flex-direction: column; background: #0A0F1C; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
+                            <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3);">
+                                <h3 style="margin:0; font-size:1rem; color:#fff; font-weight: 800;">Development Scanner</h3>
+                                <button onclick="document.getElementById('milesFlipCard').classList.remove('is-flipped')" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">✖ CLOSE</button>
+                            </div>
+                            <div class="card-body" id="milestonesScannerContent" style="padding: 15px; overflow-y: auto; flex-grow: 1;">
+                                <div style="text-align: center; color: rgba(255,255,255,0.4); margin-top: 20px; font-size: 0.8rem;">Scanner Engine Active</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. RX STAGING QUEUE -->
+            <div class="bento-card card-rx-staging" id="bentoRxCompact" style="perspective: 1000px; cursor: pointer;" onclick="toggleWorkspace(true)">
+                <div class="card-inner" style="position: relative; width: 100%; height: 100%;">
+                    <div class="card-front" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column;">
+                        <div class="card-header" style="position: relative; z-index: 5; display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4)); transform: translateZ(30px);">📝</div>
+                                <div style="transform: translateZ(20px);">
+                                    <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">RX STAGING</h3>
+                                    <span id="rxStagingSubtitle" style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Awaiting Payload</span>
+                                </div>
+                            </div>
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand-cyan); box-shadow: 0 0 8px var(--brand-cyan);"></div>
+                        </div>
+                        <div style="padding: 0 15px;">
+                            <div id="rxStagingStatus" style="display: none; padding: 4px 8px; border-radius: 6px; border: 1px solid transparent; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; width: max-content;"></div>
+                        </div>
+                        <div class="card-body" style="padding: 10px 15px 15px 15px; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; flex-grow: 1;">
+                            <div id="compactRxPreviewContainer" style="width: 100%;">
+                                <div style="height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.4;">
+                                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Queue Empty</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- END OF BENTO GRID -->
+<!-- TRUE DECK NAVIGATOR (The Glowing Dots) -->
+<div class="deck-navigator" id="globalDeckNavigator"></div>
+
+</div> <!-- 

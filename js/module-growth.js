@@ -195,7 +195,8 @@ window.calcGrowth = function() {
     let htOnTheGoObj = document.getElementById('htCmOnTheGo');
     const ht = hudHt || parseFloat( (htOnTheGoObj && htOnTheGoObj.value) ? htOnTheGoObj.value : (htObj ? htObj.value : 0) );
     
-    let totalM = hudMos || (typeof activePatientId !== 'undefined' && activePatientId ? globalPatientsStore[activePatientId].totalMonths : 0);
+    // SAFE FALLBACK: Check if globalPatientsStore[activePatientId] actually exists before reading totalMonths
+    let totalM = hudMos || (typeof activePatientId !== 'undefined' && activePatientId && globalPatientsStore[activePatientId] ? globalPatientsStore[activePatientId].totalMonths : 0);
     let pGender = hudGen || (document.getElementById('gender') ? document.getElementById('gender').value : 'male');
     
     if(!ht || isNaN(ht) || !wt || isNaN(wt)) {
