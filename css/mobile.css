@@ -351,12 +351,28 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 
 
 /* =========================================
-   SPATIAL DECK NAVIGATOR (Holographic Carousel)
+   1. ULTRA-SLIM BOTTOM NAVIGATION
    ========================================= */
+.main-nav {
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 10px !important;
+    background: rgba(10, 15, 25, 0.6) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    height: auto !important; 
+    box-shadow: 0 -10px 20px rgba(0,0,0,0.4) !important;
+}
 
+.nav-item { gap: 2px !important; padding: 4px 0 !important; }
+.nav-item svg { width: 20px !important; height: 20px !important; }
+.nav-item span { font-size: 0.65rem !important; }
+
+/* =========================================
+   2. SPATIAL DECK NAVIGATOR (Holographic Carousel)
+   ========================================= */
 .deck-navigator {
     position: fixed !important;
-    bottom: calc(75px + env(safe-area-inset-bottom)) !important; /* Floats right above the nav */
+    bottom: calc(52px + env(safe-area-inset-bottom)) !important; /* Hugs the new slim nav */
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 100% !important;
@@ -364,27 +380,26 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 8px !important;
+    gap: 0px !important; 
     z-index: 8500 !important;
-    
-    /* Zero extra background, completely invisible container */
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 0 10px !important;
+    pointer-events: none !important; /* Let clicks pass through empty space */
 }
 
 /* Glowing Lit Arrows */
 .deck-arrow.glowing-arrow {
     color: var(--brand-cyan) !important;
-    font-size: 36px !important;
+    font-size: 32px !important;
     font-weight: 300 !important;
     line-height: 0.8 !important;
     cursor: pointer !important;
     transition: transform 0.2s ease !important;
-    padding: 0 5px !important;
+    padding: 0 10px !important;
     user-select: none !important;
     text-shadow: 0 0 12px rgba(0, 229, 255, 0.8) !important;
+    pointer-events: auto !important; /* Re-enable clicks for the arrows */
 }
 .deck-arrow:active { transform: scale(0.8) !important; }
 
@@ -392,9 +407,9 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 .deck-nav-wrapper {
     flex-grow: 1 !important;
     overflow: hidden !important;
-    /* This creates the perfect left/right fade-out effect! */
     mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+    pointer-events: auto !important; /* Re-enable clicks for the text */
 }
 
 .deck-nav-track {
@@ -403,7 +418,8 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
     gap: 25px !important;
     overflow-x: auto !important;
     scrollbar-width: none !important;
-    padding: 10px 40vw !important; /* Forces scroll space so first/last items can reach the center */
+    scroll-behavior: smooth !important;
+    padding: 5px 40vw !important; 
 }
 .deck-nav-track::-webkit-scrollbar { display: none !important; }
 
@@ -436,21 +452,19 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 }
 
 /* =========================================
-   MOBILE SPATIAL EXPANSION
+   3. MAXIMUM CARDS (78% Viewport)
    ========================================= */
-
-/* Because the navigator no longer has a bulky background, 
-   we can let the 3D room and cards stretch further down the screen! */
 .cortex-spatial-stage {
-    height: 72vh !important; 
+    height: 78vh !important; 
+    min-height: 550px !important;
     margin-bottom: 0 !important; 
 }
 
 .cortex-spatial-stage .bento-card {
-    height: 64vh !important; 
-    max-height: 600px !important;
+    height: 100% !important; 
+    max-height: 80vh !important; 
 }
 
 .main-content {
-    padding-bottom: 120px !important; 
+    padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; 
 }

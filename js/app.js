@@ -404,18 +404,23 @@ document.addEventListener('click', function(e) {
 // ==========================================
 
 window.broadcastGlobalParameters = function() {
-    const ageMos = parseInt(document.getElementById('hudAge').value) || 0;
-    const wt = parseFloat(document.getElementById('hudWeight').value) || 0;
-    const ht = parseFloat(document.getElementById('hudHeight').value) || 0;
+    // 🚀 THE FIX: Use optional chaining (?.) so it never crashes if an ID is missing
+    const ageMos = parseInt(document.getElementById('hudAge')?.value) || 0;
+    const wt = parseFloat(document.getElementById('hudWeight')?.value) || 0;
+    
+    // Check for both hudHeight AND hudHt safely
+    const htEl = document.getElementById('hudHeight') || document.getElementById('hudHt');
+    const ht = htEl ? parseFloat(htEl.value) : 0;
     
     let hcInput = document.getElementById('hudHc');
     let macInput = document.getElementById('hudMac');
     const hc = hcInput ? parseFloat(hcInput.value) || 0 : 0;
     const mac = macInput ? parseFloat(macInput.value) || 0 : 0;
-    const gender = document.getElementById('hudGender').value || 'male';
+    const gender = document.getElementById('hudGender')?.value || 'male';
 
     const neoView = document.getElementById('hudNeonatalContext');
     const pedView = document.getElementById('hudPediatricContext');
+    
     if (neoView && pedView) {
         if (ageMos > 0 && ageMos < 1) { 
             neoView.style.display = 'flex'; pedView.style.display = 'none'; 
@@ -424,13 +429,14 @@ window.broadcastGlobalParameters = function() {
         }
     }
 
-    renderHudGrowth(wt, ht, ageMos, gender);
-    renderHudAnthro(hc, mac, ageMos);
-    renderHudVitals(ageMos);
-    renderHudFluids(wt, ageMos);
+    // Safely fire all the downstream rendering engines
+    if(typeof renderHudGrowth === 'function') renderHudGrowth(wt, ht, ageMos, gender);
+    if(typeof renderHudAnthro === 'function') window.renderHudAnthro(hc, mac, ageMos);
+    if(typeof renderHudVitals === 'function') renderHudVitals(ageMos);
+    if(typeof renderHudFluids === 'function') renderHudFluids(wt, ageMos);
     if(typeof window.renderMilestonesAndRedFlags === 'function') window.renderMilestonesAndRedFlags(ageMos);
     if(typeof window.renderVaccinesDue === 'function') window.renderVaccinesDue(ageMos);
-    renderHudSmartCards(wt);
+    if(typeof renderHudSmartCards === 'function') renderHudSmartCards(wt);
     
     if(typeof runHudQuickDose === 'function') runHudQuickDose();
 };
