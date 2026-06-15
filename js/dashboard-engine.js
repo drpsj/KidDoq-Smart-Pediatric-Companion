@@ -73,27 +73,6 @@ function autoApproximateVitals(totalMonths) {
     return wt.toFixed(1);
 }
 
-// --- UPDATED DOSE LAYER TOGGLE ---
-function toggleDoseLayer2() {
-    const layer2 = document.getElementById('layer2FullCalc');
-    const hint = document.querySelector('.expand-hint');
-    const instantCards = document.getElementById('hudSmartDoseCards'); // The target to hide
-
-    if (layer2.classList.contains('cortex-collapsed')) {
-        // Opening Formulary
-        layer2.classList.remove('cortex-collapsed');
-        if (hint) hint.innerText = "Close Formulary ⌃";
-        // Smoothly hide Instant Doses
-        if (instantCards) instantCards.style.display = 'none';
-    } else {
-        // Closing Formulary
-        layer2.classList.add('cortex-collapsed');
-        if (hint) hint.innerText = "Full Formulary ⌄";
-        // Restore Instant Doses
-        if (instantCards) instantCards.style.display = 'flex';
-    }
-}
-
 // 1. GENDER TOGGLE
 function toggleAnchorGender() {
     const sel = document.getElementById('hudGender');
@@ -114,7 +93,7 @@ function toggleAnchorGender() {
     if(typeof broadcastGlobalParameters === 'function') broadcastGlobalParameters();
 }
 
-/// ==========================================
+// ==========================================
 // 🚀 MASTER TELEMETRY ENGINE (Resilient Scoping)
 // ==========================================
 window.syncAllDashboards = function() {
@@ -129,7 +108,6 @@ window.syncAllDashboards = function() {
     try { if(typeof renderAnthropometry === 'function') renderAnthropometry(); } catch(e) {}
     try { if(typeof renderMilestonesAndRedFlags === 'function') renderMilestonesAndRedFlags(tm); } catch(e) {}
     try { if(typeof renderVaccinesDue === 'function') renderVaccinesDue(tm); } catch(e) {}
-    try { if(typeof runCortexTelemetry === 'function') runCortexTelemetry(tm); } catch(e) {}
     
     // 🚀 SURGICAL PATCH: Trigger the Vitals & Fluids Engine
     try { if(typeof renderVitalsAndFluids === 'function') renderVitalsAndFluids(tm, wt); } catch(e) {}
@@ -242,52 +220,6 @@ window.attachDirectScrub = function(zoneId, type) {
     });
 };
 
-// 3. INTELLIGENT TELEMETRY (Living Interface Depth)
-function runCortexTelemetry(totalMonths) {
-    // Instantly calculate vaccines based on age
-    if(typeof renderVaccinesDue === 'function') renderVaccinesDue(totalMonths);
-    
-    // 🚀 SURGICAL PATCH: Corrected the ID to match your HTML
-    const growth = document.getElementById('growthSnapshotCard');
-    const nutrition = document.getElementById('bentoNutrition');
-    const vitals = document.getElementById('bentoVitals');
-    const vaccines = document.getElementById('bentoVaccines');
-    
-    if(!vitals || !growth || !nutrition || !vaccines) return;
-
-    // Helper: Pushes cards forward (Focus) or backward (Recede)
-    const setSpatialDepth = (card, isFocus) => {
-        if(isFocus) {
-            card.style.transform = 'scale(1)';
-            card.style.opacity = '1';
-        } else {
-            card.style.transform = 'scale(0.95)';
-            card.style.opacity = '0.5';
-        }
-    };
-
-    // ... (rest of your sorting logic remains unchanged)
-
-    if (totalMonths <= 1) { 
-        // Neonate: Focus on Vitals & Growth
-        vitals.style.order = 1; setSpatialDepth(vitals, true);
-        growth.style.order = 2; setSpatialDepth(growth, true);
-        nutrition.style.order = 3; setSpatialDepth(nutrition, false);
-        vaccines.style.order = 4; setSpatialDepth(vaccines, false);
-    } else if (totalMonths > 1 && totalMonths <= 60) { 
-        // Infant/Toddler: Focus on Vaccines, Growth, Nutrition
-        vaccines.style.order = 1; setSpatialDepth(vaccines, true);
-        growth.style.order = 2; setSpatialDepth(growth, true);
-        nutrition.style.order = 3; setSpatialDepth(nutrition, true);
-        vitals.style.order = 4; setSpatialDepth(vitals, false);
-    } else { 
-        // Adolescent: Focus on Vitals (Asthma/BP) & Growth
-        vitals.style.order = 1; setSpatialDepth(vitals, true);
-        growth.style.order = 2; setSpatialDepth(growth, true);
-        nutrition.style.order = 3; setSpatialDepth(nutrition, false);
-        vaccines.style.order = 4; setSpatialDepth(vaccines, false);
-    }
-}
 
 // 4. HERO DOSE ENGINE (Spatial Glass & Kinetic UI)
 function renderInstantDoses(weight) {
@@ -401,7 +333,6 @@ function renderInstantDoses(weight) {
                             </div>
                         </div>
 
-                        <!-- NEW ADD TO RX BUTTON -->
                         <button onclick="addToRxQueue('${d.name}', '${d.form}', '${d.calc} ${d.unit}', '${d.freq}')" 
                             style="width: 100%; margin-top: 10px; padding: 8px 0; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.1); color: var(--brand-cyan); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;"
                             onmouseover="this.style.background='rgba(0, 229, 255, 0.2)'"
@@ -473,78 +404,6 @@ window.filterFormulary = function(query) {
     });
 };
 
-// 🚀 UPGRADED TOGGLE ENGINE (Now reveals the Search bar)
-window.toggleFormularyGrid = function() {
-    const container = document.getElementById('hudSmartDoseCards');
-    const btn = document.getElementById('formularyToggleBtn');
-    const searchInput = document.getElementById('formularySearch');
-    if(!container || !btn) return;
-    
-    if(container.classList.contains('formulary-collapsed')) {
-        container.classList.remove('formulary-collapsed');
-        container.classList.add('formulary-expanded');
-        btn.innerHTML = 'COLLAPSE GRID ✖';
-        btn.style.background = 'rgba(255, 51, 102, 0.15)'; 
-        btn.style.borderColor = 'rgba(255, 51, 102, 0.4)';
-        btn.style.color = '#ff3366';
-        
-        // Show Search Bar
-        if(searchInput) {
-            searchInput.style.display = 'block';
-            setTimeout(() => searchInput.focus(), 300);
-        }
-    } else {
-        container.classList.remove('formulary-expanded');
-        container.classList.add('formulary-collapsed');
-        btn.innerHTML = 'EXPAND GRID ⛶';
-        btn.style.background = 'rgba(0, 229, 255, 0.15)'; 
-        btn.style.borderColor = 'rgba(0, 229, 255, 0.4)';
-        btn.style.color = 'var(--brand-cyan)';
-        
-        // Hide & Reset Search Bar
-        if(searchInput) {
-            searchInput.style.display = 'none';
-            searchInput.value = '';
-            filterFormulary(''); 
-        }
-    }
-};
-
-// ==========================================
-// 5. HIGH-FIDELITY VACCINE ENGINE (Self-Contained)
-// ==========================================
-
-// 🚀 The Local Slider Engine (Syncs with the global app)
-window.vaxSliderScrub = function(val) {
-    const newTotal = parseInt(val) || 0;
-    const newYrs = Math.floor(newTotal / 12);
-    const newMos = newTotal % 12;
-
-    // 1. Update the Global Anchor Pill
-    const yrInput = document.getElementById('hudAgeYrs');
-    const moInput = document.getElementById('hudAgeMos');
-    if (yrInput) yrInput.value = newYrs;
-    if (moInput) moInput.value = newMos;
-
-    let ageStr = '';
-    if (newYrs > 0) ageStr += newYrs + 'Y ';
-    if (newMos > 0 || newYrs === 0) ageStr += newMos + 'M';
-    const disp = document.getElementById('anchorAgeDisplay');
-    if (disp) disp.innerText = ageStr;
-
-    // 2. Fire Global Telemetry so the whole app reacts to the slider!
-    if(typeof autoApproximateVitals === 'function') {
-        const autoWt = autoApproximateVitals(newTotal);
-        if(typeof renderInstantDoses === 'function') renderInstantDoses(autoWt);
-        if(typeof renderGrowthSnapshot === 'function') renderGrowthSnapshot(newTotal, autoWt);
-        if(typeof renderVitalsAndFluids === 'function') renderVitalsAndFluids(newTotal, autoWt);
-    }
-    if(typeof renderAnthropometry === 'function') renderAnthropometry();
-    if(typeof renderMilestonesAndRedFlags === 'function') renderMilestonesAndRedFlags(newTotal);
-    
-    // 3. Re-render this card
-    renderVaccinesDue(newTotal);
-};
 
 // ==========================================
 // 5. HIGH-FIDELITY VACCINE ENGINE (Premium Library)
@@ -890,21 +749,18 @@ window.renderVitalsAndFluids = function(totalMonths, weightInKg) {
             <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Clinical Assessment</div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                 
-                <!-- HR Input -->
                 <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: center; transition: all 0.3s ease;">
                     <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); font-weight: 800;">HR <span style="font-weight:600">(${hrMin}-${hrMax})</span></div>
                     <input type="number" placeholder="--" data-min="${hrMin}" data-max="${hrMax}" data-type="hr" oninput="window.evaluateVital(this)" style="width: 100%; text-align: center; background: transparent; border: none; font-size: 1.4rem; font-weight: 800; color: #fff; outline: none; margin-top: 4px; padding: 0; transition: color 0.3s;">
                     <div class="vital-status" style="font-size: 0.65rem; font-weight: 800; margin-top: 6px; min-height: 12px; transition: color 0.3s;"></div>
                 </div>
 
-                <!-- RR Input -->
                 <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: center; transition: all 0.3s ease;">
                     <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); font-weight: 800;">RR <span style="font-weight:600">(${rrMin}-${rrMax})</span></div>
                     <input type="number" placeholder="--" data-min="${rrMin}" data-max="${rrMax}" data-type="rr" oninput="window.evaluateVital(this)" style="width: 100%; text-align: center; background: transparent; border: none; font-size: 1.4rem; font-weight: 800; color: #fff; outline: none; margin-top: 4px; padding: 0; transition: color 0.3s;">
                     <div class="vital-status" style="font-size: 0.65rem; font-weight: 800; margin-top: 6px; min-height: 12px; transition: color 0.3s;"></div>
                 </div>
 
-                <!-- Sys BP Input -->
                 <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: center; transition: all 0.3s ease;">
                     <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); font-weight: 800;">Sys BP <span style="font-weight:600">(${bpMin}-${bpMax})</span></div>
                     <input type="number" placeholder="--" data-min="${bpMin}" data-max="${bpMax}" data-type="bp" oninput="window.evaluateVital(this)" style="width: 100%; text-align: center; background: transparent; border: none; font-size: 1.4rem; font-weight: 800; color: #fff; outline: none; margin-top: 4px; padding: 0; transition: color 0.3s;">
@@ -1468,7 +1324,6 @@ window.runGlobalSearch = function(query) {
                     <div style="font-size: 0.7rem; font-weight: 800; color: ${color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${displayFreq}</div>
                 </div>
 
-                <!-- NEW ADD TO RX BUTTON -->
                 <button onclick="addToRxQueue('${drug.name}', '${formStr}', '${math.reqVol.toFixed(1)} ${unit}', '${drug.defaultFreq}')" 
                     style="width: 100%; margin-top: 10px; padding: 8px 0; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.1); color: var(--brand-cyan); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;"
                     onmouseover="this.style.background='rgba(0, 229, 255, 0.2)'"
@@ -1646,7 +1501,6 @@ function calculateERFluids() {
     const maintPerHour = (maint / 24).toFixed(1);
 
     output.innerHTML = `
-        <!-- Resuscitation Bolus -->
         <div style="background: rgba(255, 59, 59, 0.1); border-left: 4px solid var(--danger); padding: 15px; border-radius: 12px; box-shadow: inset 0 0 15px rgba(255, 59, 59, 0.05);">
             <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">1. STAT Bolus (20 mL/kg)</div>
             <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 5px;">
@@ -1656,7 +1510,6 @@ function calculateERFluids() {
             <div style="font-size: 0.75rem; color: var(--warning); margin-top: 4px;">Push over 20-30 mins. Repeat if shock persists.</div>
         </div>
 
-        <!-- Deficit -->
         <div style="background: rgba(255, 176, 32, 0.1); border-left: 4px solid var(--warning); padding: 15px; border-radius: 12px;">
             <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">2. Fluid Deficit</div>
             <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 5px;">
@@ -1666,7 +1519,6 @@ function calculateERFluids() {
             <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 4px;">Replace 1/2 over first 8 hrs, 1/2 over next 16 hrs.</div>
         </div>
 
-        <!-- Daily Maintenance -->
         <div style="background: rgba(0, 229, 255, 0.1); border-left: 4px solid var(--brand-cyan); padding: 15px; border-radius: 12px;">
             <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">3. Maintenance</div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
@@ -1963,79 +1815,76 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.bento-card, .hero-icon, .card-icon').forEach(el => {
         sleepObserver.observe(el);
     });
-
-    // 3D Cinematic Swipe Engine (Infinite Loop Patch)
+// 3D Cinematic Swipe Engine (Holographic Text Carousel)
 window.initHoloDeck = function() {
-    if (window.innerWidth > 1023) return;
+    if (window.innerWidth > 1023) return; 
+    
     const grid = document.querySelector('.cortex-spatial-stage');
-    const navigator = document.getElementById('globalDeckNavigator');
     if(!grid) return;
+
+    let navigator = document.getElementById('globalDeckNavigator');
+    if (!navigator) {
+        navigator = document.createElement('div');
+        navigator.id = 'globalDeckNavigator';
+        navigator.className = 'deck-navigator';
+        document.body.appendChild(navigator); 
+    }
 
     const cards = Array.from(grid.querySelectorAll('.bento-card')).filter(c => c.style.display !== 'none');
     if(cards.length === 0) return;
 
     let currentIndex = 0;
-    const total = cards.length; // Store total for circular wrap math
+    const total = cards.length; 
 
-    // Function to assign 3D classes based on circular distance
     function update3DDeck() {
         cards.forEach((card, index) => {
-            // Strip old slots
             card.className = card.className.replace(/slot-[a-z-]+/g, '').trim(); 
             
-            // INFINITE LOOP MATH: Calculates shortest circular distance between cards
             let offset = (index - currentIndex) % total;
             if (offset > Math.floor(total / 2)) offset -= total;
             else if (offset < -Math.floor(total / 2)) offset += total;
 
-            // Deal slots based on infinite offset
-            // 🚀 SURGICAL FIX: Removed all inline 'card.style.opacity' thrashing!
-            if (offset === 0) {
-                card.classList.add('slot-active');
-            } else if (offset === -1) {
-                card.classList.add('slot-prev');
-            } else if (offset === 1) {
-                card.classList.add('slot-next');
-            } else if (offset === -2) {
-                card.classList.add('slot-far-prev');
-            } else if (offset === 2) {
-                card.classList.add('slot-far-next');
-            } else {
-                card.classList.add('slot-hidden'); 
-            }
+            if (offset === 0) card.classList.add('slot-active');
+            else if (offset === -1) card.classList.add('slot-prev');
+            else if (offset === 1) card.classList.add('slot-next');
+            else if (offset === -2) card.classList.add('slot-far-prev');
+            else if (offset === 2) card.classList.add('slot-far-next');
+            else card.classList.add('slot-hidden'); 
         });
 
-        // Update navigator dots
         if (navigator) {
             const items = navigator.querySelectorAll('.deck-nav-item');
             items.forEach(d => d.classList.remove('active'));
             if(items[currentIndex]) {
                 items[currentIndex].classList.add('active');
-                // Scroll the track to keep active item in view
+                // Perfectly centers the active glowing text in the rail
                 items[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
     }
 
-    // Build Navigator Icons based on image spec
+    // Build the Carousel UI
     if (navigator) {
-        let navHtml = '<div class="deck-arrow" id="deckArrowLeft">⟨</div><div class="deck-nav-track">';
+        let navHtml = `
+            <div class="deck-arrow glowing-arrow" id="deckArrowLeft">‹</div>
+            <div class="deck-nav-wrapper">
+                <div class="deck-nav-track" id="deckNavTrack">`;
+        
         cards.forEach((card, i) => {
             const titleEl = card.querySelector('h3');
-            const title = titleEl ? titleEl.innerText : 'Module';
-            
+            const title = titleEl ? titleEl.innerText.toUpperCase() : 'MODULE';
             const iconMatch = card.innerHTML.match(/(?:>)([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/);
             const icon = iconMatch ? iconMatch[1] : '⚕️';
             
+            // Icon + Title Inline
             navHtml += `<div class="deck-nav-item ${i === 0 ? 'active' : ''}" data-index="${i}">
-                            <div class="deck-nav-icon">${icon}</div>
-                            <div class="deck-nav-label">${title}</div>
+                            <span class="nav-ico">${icon}</span> <span class="nav-txt">${title}</span>
                         </div>`;
         });
-        navHtml += '</div><div class="deck-arrow" id="deckArrowRight">⟩</div>';
+        
+        navHtml += `</div></div><div class="deck-arrow glowing-arrow" id="deckArrowRight">›</div>`;
         navigator.innerHTML = navHtml;
         
-        // Bind arrow clicks (Unclamped Infinite Wrap)
         document.getElementById('deckArrowLeft').addEventListener('click', () => {
             currentIndex = (currentIndex - 1 + total) % total; 
             update3DDeck();
@@ -2045,7 +1894,6 @@ window.initHoloDeck = function() {
             update3DDeck();
         });
         
-        // Bind direct clicks on the icons themselves
         navigator.querySelectorAll('.deck-nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 currentIndex = parseInt(e.currentTarget.getAttribute('data-index'));
@@ -2054,30 +1902,20 @@ window.initHoloDeck = function() {
         });
     }
 
-    // Touch Swipe Logic (Unclamped Infinite Wrap)
+    // Touch Swipe Logic
     let startX = 0;
-    grid.addEventListener('touchstart', (e) => { 
-        startX = e.touches[0].clientX; 
-    }, { passive: true });
+    grid.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
     
     grid.addEventListener('touchend', (e) => {
         let endX = e.changedTouches[0].clientX;
         let diff = startX - endX;
-
-        if (diff > 40) {
-            // Swipe Left -> Next Card (Wraps back to 0)
-            currentIndex = (currentIndex + 1) % total; 
-            update3DDeck();
-        } else if (diff < -40) {
-            // Swipe Right -> Prev Card (Wraps back to end)
-            currentIndex = (currentIndex - 1 + total) % total; 
-            update3DDeck();
-        }
+        if (diff > 40) { currentIndex = (currentIndex + 1) % total; update3DDeck(); } 
+        else if (diff < -40) { currentIndex = (currentIndex - 1 + total) % total; update3DDeck(); }
     });
 
-    // Initialize first view
-    update3DDeck();
-}
+    // Run once on boot to set initial state
+    setTimeout(() => update3DDeck(), 50);
+};
 
     // Initialize the engine
     window.initHoloDeck(); 

@@ -21,44 +21,67 @@
     }
 };
 
-        // --- 3D SPATIAL TOGGLE LOGIC ---
-        window.toggleWorkspace = function(show) {
-            const sheet = document.getElementById('rxSmartClipboard');
-            const backdrop = document.getElementById('workspaceBackdrop');
-            const bentoGrid = document.querySelector('.cortex-bento-grid'); 
+        // --- 3D SPATIAL TOGGLE LOGIC (Upgraded with Auto-Fetch) ---
+window.toggleWorkspace = async function(show) {
+    const container = document.getElementById('workspaceContainer');
 
-            if(show) {
-                if(sheet) {
-                    sheet.style.transform = 'translate(-50%, -50%) scale(1)';
-                    sheet.style.opacity = '1';
-                    sheet.style.pointerEvents = 'auto';
-                }
-                if(backdrop) { backdrop.style.opacity = '1'; backdrop.style.pointerEvents = 'auto'; }
-                
-                if(bentoGrid) {
-                    bentoGrid.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    bentoGrid.style.transform = 'translateZ(-150px) scale(0.9)';
-                    bentoGrid.style.opacity = '0.4'; 
-                    bentoGrid.style.pointerEvents = 'none';
-                    bentoGrid.style.filter = 'blur(5px)';
-                }
-            } else {
-                if(sheet) {
-                    sheet.style.transform = 'translate(-50%, 50%) scale(0.9)';
-                    sheet.style.opacity = '0';
-                    sheet.style.pointerEvents = 'none';
-                }
-                if(backdrop) { backdrop.style.opacity = '0'; backdrop.style.pointerEvents = 'none'; }
-                
-                if(bentoGrid) {
-                    bentoGrid.style.transform = 'translateZ(0) scale(1)';
-                    bentoGrid.style.opacity = '1'; 
-                    bentoGrid.style.pointerEvents = 'auto';
-                    bentoGrid.style.filter = 'blur(0)';
-                }
-            }
-        };
+    // 1. LAZY LOADING ENGINE: Fetch the HTML only if we are opening it AND it's empty
+    if (show && container && container.innerHTML.trim() === '') {
+        try {
+            // Update the path if your file is inside the 'views' folder (e.g., 'views/workspace-view.html')
+            const response = await fetch(container.dataset.external || 'workspace-view.html');
+            if (!response.ok) throw new Error("Network response was not ok");
+            const html = await response.text();
+            container.innerHTML = html;
+            
+            // Re-bind the close button background click if needed
+            const newBackdrop = document.getElementById('workspaceBackdrop');
+            if (newBackdrop) newBackdrop.onclick = () => toggleWorkspace(false);
+            
+        } catch (err) {
+            console.error("Failed to load Workspace module:", err);
+            if(typeof showSystemToast === 'function') showSystemToast("⚠️ Error loading Rx Clipboard.");
+            return; // Abort the opening sequence if the fetch fails
+        }
+    }
 
+    // 2. GRAB ELEMENTS (They are guaranteed to exist in the DOM now)
+    const sheet = document.getElementById('rxSmartClipboard');
+    const backdrop = document.getElementById('workspaceBackdrop');
+    const bentoGrid = document.querySelector('.cortex-bento-grid'); 
+
+    // 3. EXECUTE ANIMATIONS
+    if(show) {
+        if(sheet) {
+            sheet.style.transform = 'translate(-50%, -50%) scale(1)';
+            sheet.style.opacity = '1';
+            sheet.style.pointerEvents = 'auto';
+        }
+        if(backdrop) { backdrop.style.opacity = '1'; backdrop.style.pointerEvents = 'auto'; }
+        
+        if(bentoGrid) {
+            bentoGrid.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            bentoGrid.style.transform = 'translateZ(-150px) scale(0.9)';
+            bentoGrid.style.opacity = '0.4'; 
+            bentoGrid.style.pointerEvents = 'none';
+            bentoGrid.style.filter = 'blur(5px)';
+        }
+    } else {
+        if(sheet) {
+            sheet.style.transform = 'translate(-50%, 50%) scale(0.9)';
+            sheet.style.opacity = '0';
+            sheet.style.pointerEvents = 'none';
+        }
+        if(backdrop) { backdrop.style.opacity = '0'; backdrop.style.pointerEvents = 'none'; }
+        
+        if(bentoGrid) {
+            bentoGrid.style.transform = 'translateZ(0) scale(1)';
+            bentoGrid.style.opacity = '1'; 
+            bentoGrid.style.pointerEvents = 'auto';
+            bentoGrid.style.filter = 'blur(0)';
+        }
+    }
+};
         // --- SMART PROTOCOL ENGINE ---
         window.applySmartProtocol = function(type) {
             let wt = window.globalPatientWeight || parseFloat(document.getElementById('hudWeight')?.value) || 10; 

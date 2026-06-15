@@ -351,32 +351,106 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 
 
 /* =========================================
-   SPATIAL DECK NAVIGATOR TRACK (Transparent Bottom Bar)
+   SPATIAL DECK NAVIGATOR (Holographic Carousel)
    ========================================= */
+
 .deck-navigator {
-    position: absolute !important; bottom: 0 !important; left: 0 !important; width: 100vw !important; margin: 0 !important;
-    display: flex !important; align-items: center !important; justify-content: center !important; gap: 15px !important; z-index: 200 !important;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%) !important;
-    padding: 20px 0 30px 0 !important; border: none !important;
+    position: fixed !important;
+    bottom: calc(75px + env(safe-area-inset-bottom)) !important; /* Floats right above the nav */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 100% !important;
+    max-width: 450px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    z-index: 8500 !important;
+    
+    /* Zero extra background, completely invisible container */
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 10px !important;
 }
-.deck-arrow { color: rgba(255, 255, 255, 0.3) !important; font-size: 28px !important; padding: 5px 15px !important; cursor: pointer !important; transition: color 0.3s ease, transform 0.2s ease !important; }
-.deck-arrow:active { color: #00E5FF !important; transform: scale(0.9) !important; }
+
+/* Glowing Lit Arrows */
+.deck-arrow.glowing-arrow {
+    color: var(--brand-cyan) !important;
+    font-size: 36px !important;
+    font-weight: 300 !important;
+    line-height: 0.8 !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease !important;
+    padding: 0 5px !important;
+    user-select: none !important;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.8) !important;
+}
+.deck-arrow:active { transform: scale(0.8) !important; }
+
+/* The fading window that holds the sliding text */
+.deck-nav-wrapper {
+    flex-grow: 1 !important;
+    overflow: hidden !important;
+    /* This creates the perfect left/right fade-out effect! */
+    mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
 .deck-nav-track {
-    display: flex !important; gap: 25px !important; overflow-x: auto !important; scrollbar-width: none !important; scroll-behavior: smooth !important; max-width: 60vw !important;
-    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    display: flex !important;
+    align-items: center !important;
+    gap: 25px !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    padding: 10px 40vw !important; /* Forces scroll space so first/last items can reach the center */
 }
 .deck-nav-track::-webkit-scrollbar { display: none !important; }
+
+/* Inactive State: Spaced out, faded, unlit */
 .deck-nav-item {
-    display: flex !important; flex-direction: column !important; align-items: center !important; gap: 4px !important; color: rgba(255, 255, 255, 0.2) !important;
-    font-size: 11px !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 1px !important; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important; white-space: nowrap !important; padding: 5px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    opacity: 0.5 !important;
 }
-.deck-nav-icon { font-size: 14px !important; margin-bottom: 2px !important; }
-.deck-nav-item.active { color: #00E5FF !important; transform: scale(1.15) !important; text-shadow: 0 0 15px rgba(0, 229, 255, 0.6) !important; }
+
+/* Active State: Centered, lit, glowing, opaque */
+.deck-nav-item.active {
+    color: var(--brand-cyan) !important;
+    opacity: 1 !important;
+    transform: scale(1.15) !important;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.8) !important;
+}
+
+.deck-nav-item.active .nav-ico {
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.8)) !important;
+}
 
 /* =========================================
-   MOBILE SPATIAL FIXES (Phones Only)
+   MOBILE SPATIAL EXPANSION
    ========================================= */
 
+/* Because the navigator no longer has a bulky background, 
+   we can let the 3D room and cards stretch further down the screen! */
+.cortex-spatial-stage {
+    height: 72vh !important; 
+    margin-bottom: 0 !important; 
+}
+
+.cortex-spatial-stage .bento-card {
+    height: 64vh !important; 
+    max-height: 600px !important;
+}
+
 .main-content {
-    padding-bottom: 70px !important; 
+    padding-bottom: 120px !important; 
 }

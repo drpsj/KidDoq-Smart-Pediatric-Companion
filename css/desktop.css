@@ -8,14 +8,7 @@
 
 /* Transforms bottom tabs to left sidebar */
 .app-shell { flex-direction: row !important; }
-
-/* Transforms bottom tabs to left sidebar */
-.app-shell { flex-direction: row !important; }
 .main-content { padding-bottom: 40px !important; }
-
-.app-shell { 
-    flex-direction: row !important; 
-}
 
 /* Sleek Collapsed Sidebar by Default */
 .main-nav { 
@@ -181,18 +174,21 @@
 /* Desktop Sticky Pill Configuration */
 .cortex-sticky-anchor {
     position: sticky !important;
-    top: 15px !important;
+    top: 20px !important;
     z-index: 5000 !important;
     display: flex !important;
     justify-content: center !important;
-    margin-bottom: 0 !important; /* Removed huge gap */
+    margin-bottom: 50px !important; 
     background: transparent !important;
 }
 
 /* Keep Greeting tighter beneath the pill */
 .cortex-greeting-wrapper {
+    display: block !important;
+    width: 100% !important;
+    clear: both !important;
+    padding-top: 30px !important; 
     margin-bottom: 20px !important;
-    margin-top: 10px !important; /* Tighter spacing */
     border-bottom: 1px solid var(--border-soft) !important;
     padding-bottom: 15px !important;
 }
@@ -202,6 +198,7 @@
     display: flex !important;
     justify-content: space-between !important;
     align-items: flex-end !important;
+    text-align: left !important;
 }
 
 /* Float the parameter drawer */
@@ -236,6 +233,11 @@
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
     gap: 20px !important;
     width: 100% !important;
+    align-items: start !important; /* Forces shrink-wrap on desktop */
+}
+.cortex-bento-grid > .bento-card {
+    height: max-content !important;
+    min-height: auto !important;
 }
 
 /* =========================================
@@ -428,45 +430,4 @@
 @keyframes gentleFloat {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
     50% { transform: translateY(-4px) rotate(8deg); }
-}
-
-/* =========================================
-   DESKTOP-EXCLUSIVE BENTO GRID
-   ========================================= */
-.cortex-bento-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
-    gap: 20px !important;
-    align-items: start !important; /* Forces shrink-wrap on desktop */
-    width: 100% !important;
-}
-
-.cortex-bento-grid > .bento-card {
-    height: max-content !important;
-    min-height: auto !important;
-}
-
-/* =========================================
-   DESKTOP SPATIAL FIXES (Widescreen Only)
-   ========================================= */
-
-.cortex-sticky-anchor {
-    position: sticky !important;
-    top: 20px !important;
-    display: block !important; 
-    width: 100% !important;
-    margin-bottom: 50px !important; 
-}
-
-.cortex-greeting-wrapper {
-    display: block !important;
-    width: 100% !important;
-    clear: both !important;
-    padding-top: 30px !important; 
-}
-
-.cortex-greeting {
-    justify-content: space-between !important;
-    align-items: flex-end !important;
-    text-align: left !important; 
 }
