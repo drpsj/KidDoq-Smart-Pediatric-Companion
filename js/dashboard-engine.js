@@ -953,35 +953,79 @@ window.renderAnthropometry = function() {
 // 6. HIGH-FIDELITY MILESTONES DATA ENGINE (Timeline Architecture)
 // ==========================================
 window.renderMilestonesAndRedFlags = function(totalMonths) {
-    // 1. Telemetry Sync Engine
     let tm = parseFloat(totalMonths);
-    if (isNaN(tm) || tm === 0) {
-        const ageDisplay = document.getElementById('anchorAgeDisplay');
-        if (ageDisplay) {
-            let ageText = ageDisplay.textContent || "0Y 0M";
-            tm = ((parseInt((ageText.match(/(\d+)Y/) || [])[1]) || 0) * 12) + (parseInt((ageText.match(/(\d+)M/) || [])[1]) || 0);
-        }
-    }
     if (isNaN(tm)) {
-        tm = ((parseInt(document.getElementById('hudAgeYrs')?.value) || 0) * 12) + (parseInt(document.getElementById('hudAgeMos')?.value) || 0);
+        const y = parseInt(document.getElementById('hudAgeYrs')?.value) || 0;
+        const m = parseInt(document.getElementById('hudAgeMos')?.value) || 0;
+        tm = (y * 12) + m;
     }
 
-    // 2. Local Independent Reference Database
     const msDb = window.milestonesDb || {
-        2: [ { id: "m2_1", domain: "Social", text: "Social smile.", sig: "Social engagement delay" }, { id: "m2_2", domain: "Motor", text: "Holds head up briefly.", sig: "Gross motor delay / Hypotonia" } ],
-        4: [ { id: "m4_1", domain: "Motor", text: "Rolls front to back.", sig: "Gross motor delay" }, { id: "m4_2", domain: "Lang", text: "Babbles/Coos.", sig: "Speech / Hearing loss" } ],
-        6: [ { id: "m6_1", domain: "Motor", text: "Sits with support.", sig: "Gross motor delay" }, { id: "m6_2", domain: "Lang", text: "Responds to sounds.", sig: "Hearing / Neuro evaluation" } ],
-        9: [ { id: "m9_1", domain: "Motor", text: "Pincer grasp.", sig: "Fine motor delay" }, { id: "m9_2", domain: "Motor", text: "Pulls to stand.", sig: "Gross motor delay" }, { id: "m9_3", domain: "Lang", text: "Responds to name.", sig: "Hearing / ASD risk" } ],
-        12: [ { id: "m12_1", domain: "Lang", text: "1-2 words.", sig: "Speech delay / Hearing loss" }, { id: "m12_2", domain: "Motor", text: "Cruises/Walks.", sig: "Gross motor delay" }, { id: "m12_3", domain: "Social", text: "Points to objects.", sig: "ASD risk" } ],
-        18: [ { id: "m18_1", domain: "Motor", text: "Walks alone.", sig: "Neuro evaluation required" }, { id: "m18_2", domain: "Lang", text: "10-15 words.", sig: "Speech delay" } ],
-        24: [ { id: "m24_1", domain: "Lang", text: "2-word sentences.", sig: "Speech / Cognitive delay" }, { id: "m24_2", domain: "Motor", text: "Runs well.", sig: "Gross motor delay" } ]
+        2: [ 
+            { id: "m2_1", domain: "Social", text: "Social smile, looks at your face.", sig: "Vision issue / Lack of engagement" }, 
+            { id: "m2_2", domain: "Lang", text: "Coos, makes gurgling sounds.", sig: "Hearing loss risk" },
+            { id: "m2_3", domain: "Motor", text: "Holds head up when on tummy.", sig: "Hypotonia / Motor delay" } 
+        ],
+        4: [ 
+            { id: "m4_1", domain: "Social", text: "Copies smiling or frowning.", sig: "Social / Emotional delay" }, 
+            { id: "m4_2", domain: "Lang", text: "Babbles with expression.", sig: "Hearing / Speech delay" },
+            { id: "m4_3", domain: "Motor", text: "Rolls tummy to back, holds toy.", sig: "Gross/Fine motor delay" } 
+        ],
+        6: [ 
+            { id: "m6_1", domain: "Social", text: "Recognizes familiar faces.", sig: "Cognitive delay / Vision risk" }, 
+            { id: "m6_2", domain: "Lang", text: "Responds to name, strings vowels.", sig: "Hearing loss / ASD risk" },
+            { id: "m6_3", domain: "Motor", text: "Sits without support (tripod).", sig: "Gross motor delay" } 
+        ],
+        9: [ 
+            { id: "m9_1", domain: "Social", text: "Stranger anxiety, has favorite toys.", sig: "Social delay / Attachment risk" }, 
+            { id: "m9_2", domain: "Lang", text: "Understands 'no', points fingers.", sig: "Receptive language delay" },
+            { id: "m9_3", domain: "Motor", text: "Pulls to stand, pincer grasp.", sig: "Neuromuscular issue" } 
+        ],
+        12: [ 
+            { id: "m12_1", domain: "Social", text: "Plays peek-a-boo, waves bye-bye.", sig: "ASD risk / Social delay" }, 
+            { id: "m12_2", domain: "Lang", text: "Says 1-2 words (mama, dada).", sig: "Expressive language delay" },
+            { id: "m12_3", domain: "Motor", text: "Cruises, takes a few independent steps.", sig: "Gross motor delay" } 
+        ],
+        15: [ 
+            { id: "m15_1", domain: "Social", text: "Copies other children, shows empathy.", sig: "Social engagement risk" }, 
+            { id: "m15_2", domain: "Lang", text: "3-5 words, follows 1-step command.", sig: "Expressive / Receptive delay" },
+            { id: "m15_3", domain: "Motor", text: "Walks alone well.", sig: "Neurological evaluation required" } 
+        ],
+        18: [ 
+            { id: "m18_1", domain: "Social", text: "Points to show things to others.", sig: "High ASD risk marker" }, 
+            { id: "m18_2", domain: "Lang", text: "10-25 words, points to body parts.", sig: "Speech delay" },
+            { id: "m18_3", domain: "Motor", text: "Walks up steps (with help), uses spoon.", sig: "Motor coordination issue" } 
+        ],
+        24: [ 
+            { id: "m24_1", domain: "Social", text: "Parallel play with other children.", sig: "Social isolation / ASD risk" }, 
+            { id: "m24_2", domain: "Lang", text: "2-word phrases. 50+ words.", sig: "Expressive speech delay" },
+            { id: "m24_3", domain: "Motor", text: "Kicks a ball, runs well.", sig: "Gross motor delay" } 
+        ],
+        30: [ 
+            { id: "m30_1", domain: "Social", text: "Engages in pretend play.", sig: "Cognitive delay / ASD risk" }, 
+            { id: "m30_2", domain: "Lang", text: "Uses pronouns (I, me, you).", sig: "Expressive delay" },
+            { id: "m30_3", domain: "Motor", text: "Jumps in place with both feet.", sig: "Gross motor delay" } 
+        ],
+        36: [ 
+            { id: "m36_1", domain: "Social", text: "Shows affection for friends unprompted.", sig: "Social / Emotional delay" }, 
+            { id: "m36_2", domain: "Lang", text: "3-word sentences, states name/age.", sig: "Speech delay" },
+            { id: "m36_3", domain: "Motor", text: "Pedals a tricycle, climbs well.", sig: "Motor delay / Hypotonia" } 
+        ],
+        48: [ 
+            { id: "m48_1", domain: "Social", text: "Cooperates with other children.", sig: "Social adaptation delay" }, 
+            { id: "m48_2", domain: "Lang", text: "Tells a simple story, 100% intelligible.", sig: "Expressive language delay" },
+            { id: "m48_3", domain: "Motor", text: "Hops & stands on one foot.", sig: "Coordination / Cerebellar issue" } 
+        ],
+        60: [ 
+            { id: "m60_1", domain: "Social", text: "Wants to please friends, follows rules.", sig: "Behavioral / Social delay" }, 
+            { id: "m60_2", domain: "Lang", text: "Speaks clearly, uses future tense.", sig: "Language delay" },
+            { id: "m60_3", domain: "Motor", text: "Swings, climbs, draws well.", sig: "Fine/Gross motor delay" } 
+        ]
     };
 
     const availableMonths = [2, 4, 6, 9, 12, 15, 18, 24, 30, 36, 48, 60];
-    
-    // Calculate Current and Next Milestones
-    let targetMonth = 0;   // Used for the Front Face
-    let nextMonth = null;  // Used for the Back Face upcoming milestone
+    let targetMonth = 0;   
+    let nextMonth = null;  
     
     for (let i = 0; i < availableMonths.length; i++) {
         if (availableMonths[i] <= tm) {
@@ -991,19 +1035,15 @@ window.renderMilestonesAndRedFlags = function(totalMonths) {
             break;
         }
     }
-
-    // ==========================================
-    // 3. FRONT FACE DATA BINDING (Intelligence Core)
-    // ==========================================
+    
+    // Front Face Render
     const badge = document.getElementById('msAgeBadge');
-    const countBadge = document.getElementById('msRadarCount');
     const langEl = document.getElementById('msLangText');
     const cogEl = document.getElementById('msCogText');
     const socEl = document.getElementById('msSocText');
 
     if (badge) badge.innerText = (targetMonth > 0 ? targetMonth + 'M CHECKPOINT' : 'INITIALIZING');
-    let targets = Array.isArray(msDb[targetMonth]) ? msDb[targetMonth] : [];
-    if (countBadge) countBadge.innerText = targets.length || 0;
+    let targets = Array.isArray(msDb[targetMonth]) ? msDb[targetMonth] : (msDb[2] || []);
 
     if (targets && targets.length > 0) {
         const langItem = targets.find(m => m.domain === 'Lang' || m.domain === 'Language');
@@ -1013,36 +1053,23 @@ window.renderMilestonesAndRedFlags = function(totalMonths) {
         if (langEl) langEl.innerText = langItem ? langItem.text : "Monitoring...";
         if (cogEl) cogEl.innerText = cogItem ? cogItem.text : "Monitoring...";
         if (socEl) socEl.innerText = socItem ? socItem.text : "Monitoring...";
-    } else {
-        if (langEl) langEl.innerText = "Awaiting parameters...";
-        if (cogEl) cogEl.innerText = "Awaiting parameters...";
-        if (socEl) socEl.innerText = "Awaiting parameters...";
     }
 
-    // ==========================================
-    // 4. BACK FACE DATA BINDING (Timeline Scanner)
-    // ==========================================
+    // Back Face Scanner Render
     const scannerContent = document.getElementById('milestonesScannerContent');
     if (!scannerContent) return;
 
-    if (tm === 0) {
-        scannerContent.innerHTML = `<div style="color:var(--text-muted); text-align:center; padding: 20px; font-size:0.85rem;">Scrub active age matrix to compile timeline.</div>`;
-        return;
-    }
-
-    // A. Top Summary Dashboard
     let backFaceHTML = `
         <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-start; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
             <div style="display: flex; gap: 12px; align-items: center;">
-                <div style="width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--brand-cyan); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--brand-cyan); background: rgba(0,229,255,0.05); box-shadow: inset 0 0 10px rgba(0,229,255,0.2);">👶</div>
+                <div style="width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--brand-cyan); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--brand-cyan); background: rgba(0,229,255,0.05);">👶</div>
                 <div>
-                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Current Age</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Current Age</div>
                     <div style="font-size: 1.3rem; color: #fff; font-weight: 900; line-height: 1;">${tm} MONTHS</div>
-                    <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 2px;">Adjusted Age Map</div>
                 </div>
             </div>
             <div style="text-align: right;">
-                <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 5px;">Domains</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Domains</div>
                 <div style="display: flex; gap: 4px; justify-content: flex-end;">
                     <span style="font-size: 0.6rem; color: var(--brand-cyan); padding: 2px 6px; border-radius: 4px; font-weight: 800; background: rgba(0,229,255,0.1);">Motor</span>
                     <span style="font-size: 0.6rem; color: #a855f7; padding: 2px 6px; border-radius: 4px; font-weight: 800; background: rgba(168, 85, 247, 0.1);">Lang</span>
@@ -1050,68 +1077,42 @@ window.renderMilestonesAndRedFlags = function(totalMonths) {
                 </div>
             </div>
         </div>
-        
         <div style="position: relative; padding-left: 28px; padding-bottom: 20px;">
             <div style="position: absolute; top: 15px; bottom: 0; left: 8px; width: 2px; background: linear-gradient(to bottom, rgba(0,229,255,0.3) 0%, rgba(255,255,255,0.05) 100%); z-index: 1;"></div>
     `;
 
-    let listsRendered = 0;
-
-    // B. Build the Timeline Nodes
     availableMonths.forEach(month => {
-        // Only render past/current milestones, PLUS the immediate next upcoming milestone
         if (month <= tm || month === nextMonth) {
-            if (!Array.isArray(msDb[month]) || msDb[month].length === 0) return;
-            listsRendered++;
-
+            if (!Array.isArray(msDb[month])) return;
             const isFuture = month > tm;
-            const isCurrent = month === targetMonth;
+            const isCurrent = month === targetMonth || (tm < 2 && month === 2);
             
-            // Timeline Node Styling
             const nodeColor = isFuture ? 'rgba(255,255,255,0.2)' : 'var(--brand-cyan)';
             const nodeBg = isCurrent ? 'var(--brand-cyan)' : (isFuture ? '#0A0F1C' : 'rgba(0,229,255,0.2)');
             const nodeBorder = isCurrent ? '3px solid rgba(0,229,255,0.4)' : (isFuture ? '2px solid rgba(255,255,255,0.2)' : '2px solid var(--brand-cyan)');
-            const nodeGlow = isCurrent ? 'box-shadow: 0 0 15px var(--brand-cyan);' : '';
-            const textColor = isFuture ? 'rgba(255,255,255,0.4)' : (isCurrent ? '#fff' : 'rgba(255,255,255,0.8)');
-
+            
             backFaceHTML += `
                 <div style="position: relative; z-index: 2; margin-top: ${isCurrent ? '25px' : '15px'}; margin-bottom: 15px;">
-                    <div style="position: absolute; left: -25px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: ${nodeBg}; border: ${nodeBorder}; ${nodeGlow}"></div>
-                    <div style="font-size: 0.8rem; font-weight: 900; color: ${nodeColor}; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
+                    <div style="position: absolute; left: -25px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: ${nodeBg}; border: ${nodeBorder};"></div>
+                    <div style="font-size: 0.8rem; font-weight: 900; color: ${nodeColor}; letter-spacing: 1px; text-transform: uppercase;">
                         ${month} MONTHS 
-                        ${isCurrent ? '<span style="color:var(--brand-cyan); background:rgba(0,229,255,0.1); padding:2px 8px; border-radius:10px; border:1px solid rgba(0,229,255,0.2); font-size:0.6rem;">CURRENT TARGET</span>' : ''}
-                        ${isFuture ? '<span style="color:rgba(255,255,255,0.4); font-size:0.6rem;">UPCOMING</span>' : ''}
+                        ${isCurrent ? '<span style="color:var(--brand-cyan); background:rgba(0,229,255,0.1); padding:2px 8px; border-radius:10px; border:1px solid rgba(0,229,255,0.2); font-size:0.6rem; margin-left: 8px;">TARGET</span>' : ''}
                     </div>
                 </div>
             `;
 
-            // C. Build the Milestone Cards for this month
             msDb[month].forEach(ms => {
-                // Color Mapping per Domain
-                let domColor = 'var(--brand-cyan)';
-                let domBg = 'rgba(0,229,255,0.08)';
-                let domIcon = '🏃';
-                
-                if (ms.domain === 'Language' || ms.domain === 'Lang') {
-                    domColor = '#a855f7'; domBg = 'rgba(168, 85, 247, 0.08)'; domIcon = '🗣';
-                } else if (ms.domain === 'Social') {
-                    domColor = 'var(--brand-pink)'; domBg = 'rgba(255, 51, 102, 0.08)'; domIcon = '👫';
-                }
+                let domColor = 'var(--brand-cyan)'; let domBg = 'rgba(0,229,255,0.08)'; let domIcon = '🏃';
+                if (ms.domain === 'Language' || ms.domain === 'Lang') { domColor = '#a855f7'; domBg = 'rgba(168, 85, 247, 0.08)'; domIcon = '🗣'; } 
+                else if (ms.domain === 'Social') { domColor = 'var(--brand-pink)'; domBg = 'rgba(255, 51, 102, 0.08)'; domIcon = '👫'; }
 
-                // Card Architecture
                 backFaceHTML += `
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px; transition: all 0.2s; ${isFuture ? 'opacity: 0.5;' : ''} ${isCurrent ? 'border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);' : ''}">
-                        
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: ${domBg}; color: ${domColor}; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.02);">
-                            ${domIcon}
-                        </div>
-
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px; ${isFuture ? 'opacity: 0.5;' : ''} ${isCurrent ? 'border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);' : ''}">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: ${domBg}; color: ${domColor}; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; flex-shrink: 0;">${domIcon}</div>
                         <div style="flex-grow: 1;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-                                <div style="font-size: 0.95rem; font-weight: 800; color: ${textColor}; line-height: 1.2;">${ms.text}</div>
-                                <div style="font-size: 0.55rem; font-weight: 900; color: ${domColor}; border: 1px solid ${domColor}; border-radius: 4px; padding: 2px 6px; text-transform: uppercase; letter-spacing: 0.5px;">${ms.domain}</div>
+                                <div style="font-size: 0.95rem; font-weight: 800; color: #fff; line-height: 1.2;">${ms.text}</div>
                             </div>
-                            
                             <div style="font-size: 0.75rem; color: #f59e0b; background: rgba(245, 158, 11, 0.05); border-left: 2px solid #f59e0b; padding: 5px 8px; border-radius: 0 6px 6px 0; display: inline-block;">
                                 <span style="font-weight: 600; color: rgba(255,255,255,0.5);">Risk if absent:</span> <span style="font-weight: 700;">${ms.sig}</span>
                             </div>
@@ -1122,12 +1123,7 @@ window.renderMilestonesAndRedFlags = function(totalMonths) {
         }
     });
 
-    if (listsRendered === 0) {
-        backFaceHTML += `<div style="color:var(--text-muted); text-align:center; padding: 20px; font-size:0.85rem;">No milestones mapped for this age bracket yet.</div>`;
-    }
-
-    backFaceHTML += `</div>`; // Close timeline wrapper
-
+    backFaceHTML += `</div>`;
     scannerContent.innerHTML = backFaceHTML;
 };
 

@@ -311,11 +311,6 @@
                     </div>
                     <div id="whoTriageTray" class="triage-tray-hidden"></div>
                 </div>
-                <div style="padding: 0 15px 15px 15px;">
-                    <button onclick="if(window.openClinicalTool) window.openClinicalTool('growthFeatureView')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN GROWTH CHARTS
-                    </button>
-                </div>
             </div>
 
             <!-- 2. NUTRITION INTELLIGENCE -->
@@ -332,11 +327,6 @@
                 </div>
                 <div class="card-body" style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
                     <div id="hudAnthroOutput" class="hud-empty-state" style="border:none;">Open top drawer (⌄) to enter HC & MAC.</div>
-                </div>
-                <div style="padding: 0 15px 15px 15px;">
-                    <button onclick="if(window.openClinicalTool) window.openClinicalTool('nutritionFeatureView')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN NUTRITION TRACKER
-                    </button>
                 </div>
             </div>
 
@@ -358,11 +348,6 @@
                     <div id="hudFluidsOutput" style="margin-bottom: 15px;"></div>
                     <div id="hudVitalsOutput" data-age-bracket=""><div class="hud-empty-state" style="border:none; padding: 0;">Enter Age to calibrate normal ranges.</div></div>
                 </div>
-                <div style="padding: 0 15px 15px 15px;">
-                    <button onclick="if(window.openClinicalTool) window.openClinicalTool('erFeatureView')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN ER & RESUSCITATION
-                    </button>
-                </div>
             </div>
 
             <!-- 4. VACCINES INTELLIGENCE -->
@@ -383,83 +368,82 @@
                 </div>
             </div>
 
-            <!-- 5. MILESTONES INTELLIGENCE (With strict class mapping and structural locks) -->
-            <div class="bento-card card-milestones" id="bentoMilestones" style="padding: 0; min-height: 420px; display: flex; flex-direction: column; overflow: visible;">
-                <div class="vax-flip-container" style="flex-grow: 1; position: relative; width: 100%;">
-                    <div class="vax-flip-card" id="milesFlipCard" style="position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
-                        
-                        <!-- FRONT FACE (Native Document Flow) -->
-                        <div class="vax-face-front" style="position: relative; width: 100%; height: 100%; z-index: 2; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; background: transparent;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <div style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));">🧠</div>
-                                    <div>
-                                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">MILESTONES</h3>
-                                        <span style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Developmental Intelligence</span>
-                                    </div>
-                                </div>
-                                <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand-cyan); box-shadow: 0 0 8px var(--brand-cyan);"></div>
-                            </div>
-
-                            <div class="card-body" style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 15px;">
-                                <div style="display: flex; align-items: center; justify-content: center; position: relative; padding: 10px 0; margin-bottom: 5px;">
-                                    <div style="position: relative; width: 75px; height: 75px; margin: 0 auto;">
-                                        <svg viewBox="0 0 100 100" style="position: absolute; width: 100%; height: 100%; transform: rotate(-90deg);">
-                                            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"></circle>
-                                            <circle class="radar-arc" cx="50" cy="50" r="42" fill="none" stroke="var(--brand-cyan)" stroke-width="4" stroke-dasharray="264" stroke-dashoffset="0" stroke-linecap="round"></circle>
-                                        </svg>
-                                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                            <span class="stat-value" style="font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1;"><span id="msRadarCount">3</span><span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">/3</span></span>
-                                        </div>
-                                    </div>
-                                    <div id="msAgeBadge" style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; font-weight: 800; color: var(--brand-cyan); background: rgba(0,229,255,0.1); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(0,229,255,0.2); letter-spacing: 1px; white-space: nowrap;">-- CHECKPOINT</div>
-                                </div>
-
-                                <div style="display: flex; flex-direction: column; gap: 8px;">
-                                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
-                                        <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">🗣</div>
-                                        <div style="flex: 1;">
-                                            <div style="font-size: 0.65rem; font-weight: 800; color: #a855f7; text-transform: uppercase; margin-bottom: 2px;">Language</div>
-                                            <div id="msLangText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
-                                        <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">🧩</div>
-                                        <div style="flex: 1;">
-                                            <div style="font-size: 0.65rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 2px;">Cognitive</div>
-                                            <div id="msCogText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
-                                        <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(236, 72, 153, 0.15); color: #ec4899; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">👫</div>
-                                        <div style="flex: 1;">
-                                            <div style="font-size: 0.65rem; font-weight: 800; color: #ec4899; text-transform: uppercase; margin-bottom: 2px;">Social</div>
-                                            <div id="msSocText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="padding: 0 15px 15px 15px;">
-                                <button onclick="document.getElementById('milesFlipCard').classList.add('is-flipped')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> OPEN DEVELOPMENT SCANNER
-                                </button>
-                            </div>
+            <!-- 5. MILESTONES INTELLIGENCE (Bulletproof 3D Fix) -->
+<div class="bento-card card-milestones" id="bentoMilestones" style="padding: 0; display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+    <div class="vax-flip-container" style="flex: 1 1 auto; min-height: 0; position: relative; width: 100%;">
+        <div class="vax-flip-card" id="milesFlipCard" style="position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+            
+            <!-- FRONT FACE -->
+            <div class="vax-face-front" style="position: relative; width: 100%; height: 100%; z-index: 2; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; transform: rotateY(0deg) translateZ(1px);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));">🧠</div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">MILESTONES</h3>
+                            <span style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase;">Developmental Intelligence</span>
                         </div>
-
-                        <!-- BACK FACE (Absolute Overlap) -->
-                        <div class="vax-face-back" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg); display: flex; flex-direction: column; background: #0A0F1C; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
-                            <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3);">
-                                <h3 style="margin:0; font-size:1rem; color:#fff; font-weight: 800;">Development Scanner</h3>
-                                <button onclick="document.getElementById('milesFlipCard').classList.remove('is-flipped')" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">✖ CLOSE</button>
-                            </div>
-                            <div class="card-body" id="milestonesScannerContent" style="padding: 15px; overflow-y: auto; flex-grow: 1;">
-                                <div style="text-align: center; color: rgba(255,255,255,0.4); margin-top: 20px; font-size: 0.8rem;">Scanner Engine Active</div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
+
+                <div class="card-body" style="padding: 15px; flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; min-height: 0;">
+                    <div style="display: flex; align-items: center; justify-content: center; position: relative; padding: 10px 0; flex-shrink: 0;">
+                        <div style="position: relative; width: 75px; height: 75px; margin: 0 auto;">
+                            <svg viewBox="0 0 100 100" style="position: absolute; width: 100%; height: 100%; transform: rotate(-90deg);">
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"></circle>
+                                <circle class="radar-arc" cx="50" cy="50" r="42" fill="none" stroke="var(--brand-cyan)" stroke-width="4" stroke-dasharray="264" stroke-dashoffset="0"></circle>
+                            </svg>
+                            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <span class="stat-value" style="font-size: 1.4rem; font-weight: 800; color: #fff;"><span id="msRadarCount">3</span><span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">/3</span></span>
+                            </div>
+                        </div>
+                        <div id="msAgeBadge" style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; font-weight: 800; color: var(--brand-cyan); background: rgba(0,229,255,0.1); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(0,229,255,0.2);">-- CHECKPOINT</div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
+                            <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">🗣</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.65rem; font-weight: 800; color: #a855f7; text-transform: uppercase;">Language</div>
+                                <div id="msLangText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
+                            <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">🧩</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.65rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">Cognitive/Motor</div>
+                                <div id="msCogText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px;">
+                            <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(236, 72, 153, 0.15); color: #ec4899; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px;">👫</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.65rem; font-weight: 800; color: #ec4899; text-transform: uppercase;">Social</div>
+                                <div id="msSocText" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Awaiting input...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding: 0 15px 15px 15px; flex-shrink: 0;">
+                    <button onclick="document.getElementById('milesFlipCard').classList.add('is-flipped'); window.renderMilestonesAndRedFlags();" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); color: var(--brand-cyan); font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 12px; border-radius: 10px; cursor: pointer;">
+                        OPEN DEVELOPMENT SCANNER
+                    </button>
+                </div>
             </div>
+
+            <!-- BACK FACE (Bulletproof absolute anchoring) -->
+            <div class="vax-face-back" style="position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg) translateZ(1px); display: flex; flex-direction: column; background: #0A0F1C; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3);">
+                    <h3 style="margin:0; font-size:1rem; color:#fff; font-weight: 800;">Development Scanner</h3>
+                    <button onclick="document.getElementById('milesFlipCard').classList.remove('is-flipped')" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; cursor: pointer;">✖ CLOSE</button>
+                </div>
+                <div class="card-body" id="milestonesScannerContent" style="padding: 15px; overflow-y: auto; flex: 1 1 auto; min-height: 0;">
+                    <!-- JS Injects Here -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
             <!-- 6. RX STAGING QUEUE -->
             <div class="bento-card card-rx-staging" id="bentoRxCompact" style="perspective: 1000px; cursor: pointer;" onclick="toggleWorkspace(true)">

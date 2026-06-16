@@ -266,16 +266,6 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
    SPATIAL 3D COMMAND CENTER (VISION PRO STYLE)
    ========================================= */
 
-/* 1. THE SPATIAL STAGE (The 3D Room) */
-.cortex-spatial-stage {
-    perspective: 1200px !important; perspective-origin: 50% 50% !important; transform-style: preserve-3d !important;
-    position: relative !important; width: 100% !important; margin-top: 20px !important; margin-bottom: 20px !important;
-    margin-left: auto !important; margin-right: auto !important; left: auto !important; height: 68vh !important;
-    display: flex !important; justify-content: center !important; align-items: center !important; overflow: hidden !important; 
-    background-color: transparent !important; background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 40px 40px; animation: spatialDrift 20s linear infinite !important;
-}
-
 @keyframes spatialDrift { 0% { background-position: 0px 0px; } 100% { background-position: 40px 40px; } }
 
 .cortex-spatial-stage::before {
@@ -452,48 +442,151 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 }
 
 /* =========================================
-   3. MAXIMUM CARDS (78% Viewport)
+   3. DEFINITIVE 3D ROOM & CARD SIZING
    ========================================= */
 .cortex-spatial-stage {
-    height: 78vh !important; 
-    min-height: 550px !important;
-    margin-bottom: 0 !important; 
+    /* 3D Engine Setup */
+    perspective: 1200px !important; 
+    perspective-origin: 50% 50% !important; 
+    transform-style: preserve-3d !important;
+    position: relative !important; 
+    width: 100% !important;
+    display: flex !important; 
+    justify-content: center !important; 
+    align-items: center !important; 
+    
+    /* 🚀 THE FIX: Changed to visible so glowing borders don't get chopped off */
+    overflow: visible !important; 
+    
+    /* Grid Background */
+    background-color: transparent !important; 
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px; 
+    animation: spatialDrift 20s linear infinite !important;
+    
+    /* The Definitive Viewport Window */
+    height: calc(100vh - 240px) !important; 
+    min-height: 450px !important;
+    margin: 15px auto 0 auto !important; 
 }
 
+/* Force the card to strictly obey the definitive room size */
 .cortex-spatial-stage .bento-card {
-    height: 100% !important; 
-    max-height: 80vh !important; 
-}
-
-.main-content {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; 
+    /* 🚀 THE FIX: Compressed from 95% to 85% to account for the deleted footer */
+    height: 85% !important; 
+    max-height: 100% !important; 
+    overflow: hidden !important; 
+    min-height: 0 !important; 
 }
 
 /* =========================================
-   4. STRICT CARD BOUNDARIES & SCROLLING
+   4. INTERNAL SCROLLING ENGINE
    ========================================= */
-
-/* 1. Force the card frame to stay rigid and clip escaping content */
-.cortex-spatial-stage .bento-card {
-    height: 100% !important; 
-    max-height: 80vh !important; 
-    overflow: hidden !important; /* 🚀 Clips any content trying to bleed out */
-    min-height: 0 !important; /* 🚀 Forces the browser to strictly obey the max-height */
-}
-
-/* 2. Turn the inside of the card into a scrollable zone */
+/* Turn the inside of the card into a scrollable zone */
 .cortex-spatial-stage .bento-card .card-body,
 .cortex-spatial-stage .bento-card .vax-face-front,
 .cortex-spatial-stage .bento-card .vax-face-back {
     flex-grow: 1 !important;
-    overflow-y: auto !important; /* 🚀 Enables internal vertical scrolling */
+    overflow-y: auto !important; 
     min-height: 0 !important;
-    padding-bottom: 20px !important; /* Adds breathing room at the bottom of the scroll */
+    padding-bottom: 20px !important; 
     
     /* Hides the ugly scrollbar for a cleaner glass aesthetic */
     scrollbar-width: none !important; 
+    -webkit-overflow-scrolling: touch !important;
 }
 
 .cortex-spatial-stage .bento-card .card-body::-webkit-scrollbar { 
     display: none !important; 
+}
+
+/* =========================================
+   MILESTONES 3D FLIP & FLEX SCROLL FIX
+   ========================================= */
+.vax-flip-container, .vax-flip-card {
+    min-height: 0 !important; /* Forces flex children to respect parent bounds */
+}
+
+.vax-face-front, .vax-face-back {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important; 
+    max-height: 100% !important;
+}
+
+/* Ensure the radar pulse and buttons compress gracefully on small screens */
+#bentoMilestones .card-body {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+    justify-content: flex-start !important; /* Changed from center to prevent top-cutoff */
+}
+
+/* Radar SVG Squish Safeguard */
+#bentoMilestones .card-body > div:first-child {
+    flex-shrink: 1;
+    max-height: 85px; 
+}
+
+/* =========================================
+   MILESTONES SCANNER BLANK SCREEN FIX
+   ========================================= */
+
+/* 1. Restore exact height tracking so the absolute container doesn't collapse */
+.vax-flip-card {
+    height: 100% !important;
+}
+
+/* 2. Force the absolute back face to anchor to all 4 edges */
+.vax-face-back {
+    inset: 0 !important; 
+    height: 100% !important;
+}
+
+/* 3. Restrict the previous Radar squish fix to the Front Face ONLY */
+#bentoMilestones .vax-face-front .card-body > div:first-child {
+    flex-shrink: 1;
+    max-height: 85px; 
+}
+#bentoMilestones .vax-face-back .card-body > div:first-child {
+    max-height: none !important;
+}
+
+/* 4. Ensure the kinetic flip animation executes properly */
+.vax-flip-card.is-flipped {
+    transform: rotateY(180deg) !important;
+}
+
+/* =========================================
+   MILESTONES 3D BLANK BACK-FACE FIX
+   ========================================= */
+.vax-face-back {
+    /* 1. Safely contain the background without triggering the 3D WebKit bug */
+    overflow: visible !important; 
+    clip-path: inset(0px round 20px); 
+    -webkit-clip-path: inset(0px round 20px);
+    
+    /* 2. Force the GPU to paint the text on top of the card */
+    transform: rotateY(180deg) translateZ(1px) !important;
+    -webkit-transform: rotateY(180deg) translateZ(1px) !important;
+}
+
+.vax-face-front {
+    /* Keep the front face mathematically balanced */
+    transform: rotateY(0deg) translateZ(1px) !important;
+    -webkit-transform: rotateY(0deg) translateZ(1px) !important;
+}
+
+/* Force the absolute back face to anchor to all 4 edges and render */
+.vax-face-back {
+    inset: 0 !important; 
+    height: 100% !important;
+    overflow: visible !important; 
+    clip-path: inset(0px round 20px); 
+    -webkit-clip-path: inset(0px round 20px);
+    transform: rotateY(180deg) translateZ(1px) !important;
+    -webkit-transform: rotateY(180deg) translateZ(1px) !important;
+}
+.vax-flip-card {
+    height: 100% !important;
 }
