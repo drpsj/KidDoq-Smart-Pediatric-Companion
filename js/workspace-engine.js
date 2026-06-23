@@ -1,10 +1,9 @@
 
-        let workspaceRxList = [];
+        window.workspaceRxList = window.workspaceRxList || [];
 
         window.addToRxQueue = function(drugName, formulation, dose, frequency) {
-    if (typeof workspaceRxList === 'undefined') window.workspaceRxList = [];
     
-    workspaceRxList.push({
+    window.workspaceRxList.push({
         name: drugName,
         formulation: formulation || '',
         dose: dose || '',
@@ -28,8 +27,9 @@ window.toggleWorkspace = async function(show) {
     // 1. LAZY LOADING ENGINE: Fetch the HTML only if we are opening it AND it's empty
     if (show && container && container.innerHTML.trim() === '') {
         try {
-            // Update the path if your file is inside the 'views' folder (e.g., 'views/workspace-view.html')
-            const response = await fetch(container.dataset.external || 'workspace-view.html');
+            // Updated path to look inside the views folder and bypass the cache!
+                        // HARDCODED PATH: Force the browser to look inside the views folder, ignoring HTML overrides
+            const response = await fetch('views/workspace-view.html?v=' + new Date().getTime());
             if (!response.ok) throw new Error("Network response was not ok");
             const html = await response.text();
             container.innerHTML = html;
@@ -128,7 +128,7 @@ window.toggleWorkspace = async function(show) {
         };
 
         function pushToWorkspaceRx(medObject) {
-            workspaceRxList.push(medObject);
+            window.workspaceRxList.push(medObject);
             renderWorkspaceRx();
         }
 
@@ -168,7 +168,7 @@ window.toggleWorkspace = async function(show) {
             const list = document.getElementById('clipboardRxList');
             if (!list) return; 
             
-            if (workspaceRxList.length === 0) {
+            if (window.workspaceRxList.length === 0) {
                 list.innerHTML = '<div class="hud-empty-state" style="border: 1px dashed rgba(0,229,255,0.2); padding: 40px 0; font-size: 0.85rem; margin: 0; background: rgba(0,229,255,0.02); border-radius: 16px; color: rgba(255,255,255,0.4);">Payload Empty. Calculate a dose to begin.</div>';
             } else {
                 list.innerHTML = '';
@@ -255,7 +255,7 @@ window.toggleWorkspace = async function(show) {
             const statusBadge = document.getElementById('rxStagingStatus');
 
             if (previewContainer && cardHeaderSubtitle && cardItself) {
-                if (workspaceRxList.length === 0) {
+                if (window.workspaceRxList.length === 0) {
                     // EMPY STATE
                     cardHeaderSubtitle.innerText = "AWAITING PAYLOAD";
                     cardHeaderSubtitle.style.color = "var(--text-muted)";
@@ -271,7 +271,7 @@ window.toggleWorkspace = async function(show) {
 
                 } else {
                     // ACTIVE QUEUE STATE
-                    cardHeaderSubtitle.innerText = `${workspaceRxList.length} ITEM${workspaceRxList.length > 1 ? 'S' : ''} QUEUED`;
+                    cardHeaderSubtitle.innerText = `${window.workspaceRxList.length} ITEM${window.workspaceRxList.length > 1 ? 'S' : ''} QUEUED`;
                     cardHeaderSubtitle.style.color = "var(--brand-cyan)";
 
                     // Evaluate Staging Completeness
@@ -307,7 +307,7 @@ window.toggleWorkspace = async function(show) {
 
                     // Render the Chips
                     let html = `<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">`;
-                    const limit = Math.min(3, workspaceRxList.length);
+                    const limit = Math.min(3, window.workspaceRxList.length);
                     
                     for(let i = 0; i < limit; i++) {
                         let safeName = workspaceRxList[i].name || "Drug";
@@ -322,10 +322,10 @@ window.toggleWorkspace = async function(show) {
                         `;
                     }
                     
-                    if (workspaceRxList.length > 3) {
+                    if (window.workspaceRxList.length > 3) {
                         html += `
                             <div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: 6px; padding: 6px; text-align: center; margin-top: 4px;">
-                                <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">RX QUEUE: ${workspaceRxList.length} TOTAL ITEMS</div>
+                                <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">RX QUEUE: ${window.workspaceRxList.length} TOTAL ITEMS</div>
                             </div>
                         `;
                     }
@@ -375,7 +375,7 @@ window.toggleWorkspace = async function(show) {
     const symp = sympEl ? sympEl.value : '';
     const adv = advEl ? advEl.value : '';
     
-    if (workspaceRxList.length === 0 && !symp && !adv) return alert("Payload is empty. Aborting.");
+    if (window.workspaceRxList.length === 0 && !symp && !adv) return alert("Payload is empty. Aborting.");
 
     const btn = document.getElementById('deployRxBtn');
     if(!btn) return;
@@ -473,3 +473,164 @@ window.toggleWorkspace = async function(show) {
 };
         
         window.printWorkspaceRx = executeDeploySequence;
+
+        // ==========================================
+// INTEGRATED RX FOOTER TELEMETRY
+// ==========================================
+window.updateIntegratedRxFooter = function() {
+    const footer = document.getElementById('integratedRxFooter');
+    const countBadge = document.getElementById('rxFooterCount');
+    const statusText = document.getElementById('rxFooterStatus');
+    const previewArea = document.getElementById('rxFooterPreview');
+    
+    if (!footer || !countBadge) return;
+    
+    // Safely grab the queue from the workspace engine
+    const queue = typeof workspaceRxList !== 'undefined' ? workspaceRxList : [];
+    const count = queue.length;
+    
+    countBadge.innerText = count;
+    
+    // State 1: Empty Queue
+    if (count === 0) {
+        statusText.innerText = "Empty";
+        statusText.style.color = "var(--text-muted)";
+        countBadge.style.background = "var(--bg-surface)";
+        countBadge.style.color = "var(--text-muted)";
+        countBadge.style.borderColor = "rgba(255,255,255,0.2)";
+        footer.style.borderTop = "1px solid rgba(255,255,255,0.05)";
+        footer.style.background = "rgba(0,0,0,0.3)";
+        previewArea.style.display = "none";
+        return;
+    }
+    
+    // Detect missing durations
+    let needsDuration = queue.some(d => !d.duration || d.duration.trim() === '');
+    
+    // State 2 & 3: Pending Details vs Ready
+    if (needsDuration) {
+        statusText.innerText = "Duration Required";
+        statusText.style.color = "var(--warning)"; 
+        countBadge.style.color = "var(--warning)";
+        countBadge.style.borderColor = "var(--warning)";
+        footer.style.borderTop = "1px solid rgba(255, 214, 0, 0.4)";
+        footer.style.background = "linear-gradient(to bottom, rgba(255, 214, 0, 0.05), rgba(0,0,0,0.4))";
+    } else {
+        statusText.innerText = "Ready for Deployment";
+        statusText.style.color = "var(--success)"; 
+        countBadge.style.color = "var(--brand-cyan)";
+        countBadge.style.borderColor = "var(--brand-cyan)";
+        footer.style.borderTop = "1px solid rgba(0, 229, 255, 0.4)";
+        footer.style.background = "linear-gradient(to bottom, rgba(0, 229, 255, 0.05), rgba(0,0,0,0.4))";
+    }
+    
+    // Generate the 2-3 Med Preview
+    let previewHtml = queue.slice(0, 2).map(d => 
+        `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;">
+            <span style="color:var(--brand-cyan);">•</span> ${d.name} ${d.dose ? `<span style="opacity:0.6;">(${d.dose})</span>` : ''}
+        </div>`
+    ).join('');
+    
+    if (count > 2) {
+        previewHtml += `<div style="font-style: italic; opacity: 0.5; margin-top: 4px; padding-left: 8px;">+ ${count - 2} more pending...</div>`;
+    }
+    
+    previewArea.innerHTML = previewHtml;
+    previewArea.style.display = "block";
+};
+
+// Intercept the original render function so the footer updates instantly every time you add/remove a drug
+if (typeof window.renderWorkspaceRx === 'function') {
+    const originalRenderWorkspaceRx = window.renderWorkspaceRx;
+    window.renderWorkspaceRx = function() {
+        originalRenderWorkspaceRx();
+        window.updateIntegratedRxFooter();
+    };
+}
+
+// Fire once on load to establish the empty state
+setTimeout(() => {
+    if(typeof updateIntegratedRxFooter === 'function') updateIntegratedRxFooter();
+}, 500);
+
+// ==========================================
+// NUCLEAR RX QUEUE BRIDGE (Bypasses all old logic)
+// ==========================================
+
+// 1. Bulletproof Observer (Checks for the button even after dynamic loading)
+let doseObserverAttached = false;
+setInterval(() => {
+    if (doseObserverAttached) return;
+    const targetNode = document.getElementById('hudQuickDoseRes');
+    const bridgeBtn = document.getElementById('doseBridgeContainer');
+    
+    if (targetNode && bridgeBtn) {
+        new MutationObserver(function() {
+            if (targetNode.innerText.trim().length > 5) bridgeBtn.style.display = 'block';
+            else bridgeBtn.style.display = 'none';
+        }).observe(targetNode, { childList: true, subtree: true, characterData: true });
+        doseObserverAttached = true;
+    }
+}, 1000);
+
+// 2. The Nuclear Push Function
+window.grabStructuredDose = function(btnElement) {
+    const drugId = document.getElementById('hudQuickForm').value;
+    const wtInput = document.getElementById('hudWeight');
+    const wt = wtInput ? parseFloat(wtInput.value) : 0;
+
+    if (!drugId || wt <= 0) {
+        alert("Missing active drug or weight.");
+        return;
+    }
+
+    // Get Drug Data
+    let db = (typeof window.getUnifiedDB === 'function') ? window.getUnifiedDB() : window.drugsDb;
+    if (!db) return;
+    const drug = db.find(d => d.id === drugId);
+    if (!drug) return;
+
+    // Calculate Math
+    let math = ClinicalMath.computeDose(drug, wt);
+    let unit = ClinicalMath.getUnit(drug);
+    const displayFreq = typeof window.translateFreqToLocal === 'function' ? window.translateFreqToLocal(drug.defaultFreq) : drug.defaultFreq;
+
+    // Build the Object
+    const medObject = {
+        name: drug.name,
+        formulation: drug.conc ? `${drug.conc}mg/${drug.vol}${unit.replace('s','')}` : `${drug.doseMg}mg`,
+        dose: `${math.reqVol.toFixed(1)} ${unit}`,
+        frequency: displayFreq || "SOS",
+        duration: "" // Intentionally blank for UI warning
+    };
+
+        // 🔥 THE NUCLEAR PUSH: Directly inject into the global array
+    window.workspaceRxList = window.workspaceRxList || [];
+    window.workspaceRxList.push(medObject);
+
+    // Visual Feedback
+    if (btnElement) {
+        const originalHTML = btnElement.innerHTML;
+        btnElement.innerHTML = "✅ Rx Staged Successfully!";
+        btnElement.style.background = "rgba(46, 213, 115, 0.2)";
+        btnElement.style.borderColor = "#2ed573";
+        btnElement.style.color = "#2ed573";
+        
+        setTimeout(() => {
+            btnElement.innerHTML = originalHTML;
+            btnElement.style.background = "rgba(0, 229, 255, 0.1)";
+            btnElement.style.borderColor = "var(--brand-cyan)";
+            btnElement.style.color = "var(--brand-cyan)";
+        }, 2000);
+    }
+
+    // 🔥 FORCE FOOTER UPDATE IMMEDIATELY
+    if (typeof window.updateIntegratedRxFooter === 'function') {
+        window.updateIntegratedRxFooter();
+    }
+    
+    // Refresh sidebar list if it happens to be open
+    if (typeof window.renderWorkspaceRx === 'function') {
+        window.renderWorkspaceRx();
+    }
+};

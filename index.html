@@ -1464,7 +1464,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const container = document.getElementById('dashboardContainer');
     
     if (container) {
-        fetch('views/dashboard-view.html')
+        fetch('views/dashboard-view.html?v=' + new Date().getTime())
             .then(response => {
                 if (!response.ok) throw new Error("Could not find the dashboard file!");
                 return response.text();

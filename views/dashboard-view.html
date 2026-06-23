@@ -153,64 +153,6 @@
                                 ➕ Push Clean Order to Clipboard
                             </button>
                         </div>
-
-                        <script>
-                            // 1. The Observer: Reveals the button when a dose appears
-                            setTimeout(() => {
-                                const targetNode = document.getElementById('hudQuickDoseRes');
-                                const bridgeBtn = document.getElementById('doseBridgeContainer');
-                                if(targetNode) {
-                                    const doseResObserver = new MutationObserver(function() {
-                                        if (targetNode.innerText.trim().length > 5) bridgeBtn.style.display = 'block';
-                                        else bridgeBtn.style.display = 'none';
-                                    });
-                                    doseResObserver.observe(targetNode, { childList: true, subtree: true, characterData: true });
-                                }
-                            }, 1000);
-
-                            // 2. The Smart Data Bridge: Now with NO default duration
-                            window.grabStructuredDose = function(btnElement) {
-                                const drugId = document.getElementById('hudQuickForm').value;
-                                const wtInput = document.getElementById('hudWeight');
-                                const wt = wtInput ? parseFloat(wtInput.value) : 0;
-
-                                if (!drugId || wt <= 0) return alert("Missing active drug or weight.");
-
-                                let db = (typeof window.getUnifiedDB === 'function') ? window.getUnifiedDB() : window.drugsDb;
-                                const drug = db.find(d => d.id === drugId);
-                                if (!drug) return;
-
-                                let math = ClinicalMath.computeDose(drug, wt);
-                                let unit = ClinicalMath.getUnit(drug);
-                                const displayFreq = typeof window.translateFreqToLocal === 'function' ? window.translateFreqToLocal(drug.defaultFreq) : drug.defaultFreq;
-
-                                // 4. Construct the strict 5-part clinical order (Duration is strictly empty!)
-                                const medObject = {
-                                    name: drug.name,
-                                    formulation: drug.conc ? `${drug.conc}mg/${drug.vol}${unit.replace('s','')}` : `${drug.doseMg}mg`,
-                                    dose: `${math.reqVol.toFixed(1)} ${unit}`,
-                                    frequency: displayFreq || "SOS",
-                                    duration: "" // Wiped the 3 Days default!
-                                };
-                                
-                                if(window.pushToDashboardCart) {
-                                    window.pushToDashboardCart(medObject);
-                                    
-                                    const originalHTML = btnElement.innerHTML;
-                                    btnElement.innerHTML = "✅ Secure Order Staged!";
-                                    btnElement.style.background = "rgba(46, 213, 115, 0.2)";
-                                    btnElement.style.borderColor = "#2ed573";
-                                    btnElement.style.color = "#2ed573";
-                                    
-                                    setTimeout(() => {
-                                        btnElement.innerHTML = originalHTML;
-                                        btnElement.style.background = "rgba(0, 229, 255, 0.1)";
-                                        btnElement.style.borderColor = "var(--brand-cyan)";
-                                        btnElement.style.color = "var(--brand-cyan)";
-                                    }, 2000);
-                                }
-                            };
-                        </script>
                         
                         <div id="trustBadgesFooter" style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); gap: 10px;">
                             <div style="flex: 1; display: flex; gap: 8px; align-items: flex-start;">
@@ -239,34 +181,26 @@
                     </div>
                 </div> 
 
-                <!-- LAYER 2: FULL CALCULATOR (Hidden by default) -->
-                <div id="layer2FullCalc" class="hero-layer-2 cortex-collapsed">
-                    <div style="border-top: 1px solid var(--border-soft); margin: 15px 0; padding-top: 15px;">
-                        <div class="row-inputs" style="margin-bottom: 12px;">
+                <div id="integratedRxFooter" onclick="toggleWorkspace(true)" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); padding: 12px 15px; cursor: pointer; transition: all 0.3s ease; border-bottom-left-radius: inherit; border-bottom-right-radius: inherit;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 1.4rem; filter: drop-shadow(0 0 6px rgba(0,229,255,0.3));">📝</div>
                             <div>
-                                <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">Category</label>
-                                <select id="hudQuickCat" onchange="populateHudDrugs()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); font-weight:bold;">
-                                    <option value="">-- Select --</option>
-                                    <option value="antibiotics">Antibiotics</option>
-                                    <option value="antipyretics">Antipyretics / Pain</option>
-                                    <option value="antihistamines">Allergy / Cold</option>
-                                    <option value="respiratory">Respiratory</option>
-                                    <option value="git">Gastrointestinal</option>
-                                    <option value="vitamins">Vitamins & Minerals</option>
-                                    <option value="emergency">ER & Resuscitation</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">Formulation</label>
-                                <select id="hudQuickForm" onchange="runHudQuickDose()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border-soft); font-weight:bold;">
-                                    <option value="">-- Choose --</option>
-                                </select>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: 800; color: #fff; letter-spacing: 0.5px;">RX QUEUE</h4>
+                                    <span id="rxFooterCount" style="background: var(--bg-surface); border: 1px solid var(--brand-cyan); color: var(--brand-cyan); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 800;">0</span>
+                                </div>
+                                <div id="rxFooterStatus" style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;">Empty</div>
                             </div>
                         </div>
-                        <div id="hudQuickDoseRes"></div>
+                        <div style="color: var(--brand-cyan); font-size: 1.2rem; opacity: 0.7;">&rarr;</div>
                     </div>
+                    
+                    <div id="rxFooterPreview" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); font-weight: 600; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); display: none;">
+                        </div>
                 </div>
-            </div>
+
+            </div> 
 
             <!-- 2. BENTO COMMAND GRID -->
             <!-- ========================================== -->
@@ -444,34 +378,6 @@
         </div>
     </div>
 </div>
-
-            <!-- 6. RX STAGING QUEUE -->
-            <div class="bento-card card-rx-staging" id="bentoRxCompact" style="perspective: 1000px; cursor: pointer;" onclick="toggleWorkspace(true)">
-                <div class="card-inner" style="position: relative; width: 100%; height: 100%;">
-                    <div class="card-front" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column;">
-                        <div class="card-header" style="position: relative; z-index: 5; display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 15px 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <div style="color: var(--brand-cyan); font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,229,255,0.4)); transform: translateZ(30px);">📝</div>
-                                <div style="transform: translateZ(20px);">
-                                    <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">RX STAGING</h3>
-                                    <span id="rxStagingSubtitle" style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Awaiting Payload</span>
-                                </div>
-                            </div>
-                            <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand-cyan); box-shadow: 0 0 8px var(--brand-cyan);"></div>
-                        </div>
-                        <div style="padding: 0 15px;">
-                            <div id="rxStagingStatus" style="display: none; padding: 4px 8px; border-radius: 6px; border: 1px solid transparent; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; width: max-content;"></div>
-                        </div>
-                        <div class="card-body" style="padding: 10px 15px 15px 15px; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; flex-grow: 1;">
-                            <div id="compactRxPreviewContainer" style="width: 100%;">
-                                <div style="height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.4;">
-                                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Queue Empty</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
         </div> <!-- END OF BENTO GRID -->
 <!-- TRUE DECK NAVIGATOR (The Glowing Dots) -->

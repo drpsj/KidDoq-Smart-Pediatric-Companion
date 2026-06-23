@@ -112,9 +112,10 @@ window.syncAllDashboards = function() {
     // 🚀 SURGICAL PATCH: Trigger the Vitals & Fluids Engine
     try { if(typeof renderVitalsAndFluids === 'function') renderVitalsAndFluids(tm, wt); } catch(e) {}
 
-    // 🚀 RECONNECT ORIGINAL VITALS ENGINE
-    try { if(typeof autoApproximateVitals === 'function') autoApproximateVitals(tm); } catch(e) {}
-    try { if(typeof window.autoApproximateVitals === 'function') window.autoApproximateVitals(tm); } catch(e) {}
+    // 🚀 SURGICAL FIX: Live-sync the Rx Staging / Prescription preview
+    try { if(typeof renderRxStaging === 'function') renderRxStaging(wt); } catch(e) {}
+
+    // (Vitals approximation removed from here to prevent overriding manual weight scrubs)
 };
 
 window.manualEditAge = function() {
@@ -1367,66 +1368,24 @@ window.runHudQuickDose = function() {
     `;
 };
 
-// --- DYNAMIC DASHBOARD WIDGET ENGINE ---
+// --- DYNAMIC DASHBOARD WIDGET ENGINE (NUCLEAR OVERRIDE) ---
 (() => {
-    const availableWidgets = [
-        { id: 'bentoRxCompact', icon: '📝', name: 'Rx Staging Queue' },
-        { id: 'growthSnapshotCard', icon: '📈', name: 'Growth Z-Scores' },
-        { id: 'bentoNutrition', icon: '🛡️', name: 'Nutrition & Anthro' },
-        { id: 'bentoVitals', icon: '💓', name: 'Vitals & Fluids' },
-        { id: 'bentoVaccines', icon: '💉', name: 'Vaccines Due' },
-        { id: 'bentoMilestones', icon: '🧠', name: 'Milestones' }
-    ];
-
-    // Load saved preferences or default to showing everything
-    let savedWidgets = JSON.parse(localStorage.getItem('kiddoq_active_widgets')) || [
-        'bentoRxCompact', 'growthSnapshotCard', 'bentoNutrition', 'bentoVitals', 'bentoVaccines', 'bentoMilestones'
-    ];
-
-    // 1. Show/Hide cards on the Dashboard
     window.renderDashboardWidgets = function() {
-        availableWidgets.forEach(widget => {
-            const el = document.getElementById(widget.id);
-            if (el) {
-                if (savedWidgets.includes(widget.id)) {
-                    el.style.display = ''; // Reverts to default CSS layout
-                } else {
-                    el.style.display = 'none'; // Hides it completely
-                }
-            }
-        });
-        
-        // Re-run the 3D HoloDeck swipe logic so it recalculates visible cards!
+        const stage = document.querySelector('.cortex-spatial-stage');
+        if (stage) {
+            const allCards = stage.querySelectorAll('.bento-card');
+            allCards.forEach(card => {
+                card.style.display = 'flex';
+                card.style.visibility = 'visible';
+                card.style.opacity = '1';
+            });
+        }
         if (typeof window.initHoloDeck === 'function') window.initHoloDeck();
     };
 
-    // 2. Build the toggles inside the Settings Tab
-    window.renderSettingsWidgetList = function() {
-        const list = document.getElementById('settingsQuickToolsList');
-        if (!list) return;
-        
-        let html = '';
-        availableWidgets.forEach(widget => {
-            const isChecked = savedWidgets.includes(widget.id) ? 'checked' : '';
-            html += `
-                <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; color:var(--text-main); font-weight:600; padding:10px 12px; background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--border-soft); cursor:pointer; transition:all 0.2s;">
-                    <input type="checkbox" value="${widget.id}" class="widget-checkbox" ${isChecked} onchange="saveWidgetSettings()" style="width:18px; height:18px; accent-color:var(--brand-cyan);">
-                    <span style="font-size:1.2rem;">${widget.icon}</span> ${widget.name}
-                </label>
-            `;
-        });
-        list.innerHTML = html;
-    };
-
-    // 3. Save when a toggle is clicked
-    window.saveWidgetSettings = function() {
-        const checkboxes = document.querySelectorAll('.widget-checkbox:checked');
-        savedWidgets = Array.from(checkboxes).map(cb => cb.value);
-        localStorage.setItem('kiddoq_active_widgets', JSON.stringify(savedWidgets));
-        
-        renderDashboardWidgets();
-        if(typeof showSystemToast === 'function') showSystemToast("✅ Dashboard updated!");
-    };
+    // Safely disable the settings toggles so they can't re-hide your cards
+    window.renderSettingsWidgetList = function() {}; 
+    window.saveWidgetSettings = function() {}; 
 })();
 
 // 12. DYNAMIC CONTEXT ENGINE (Time, Name, Encounters)
@@ -1671,8 +1630,8 @@ window.generateRxPreview = function() {
 
     // Unify Rx List directly from the live array
     let medsText = "";
-    if (typeof workspaceRxList !== 'undefined' && workspaceRxList.length > 0) {
-        medsText = workspaceRxList.map(item => `${item.name || "Drug"} (${item.formulation || ""})\n-> ${item.dose || "0 mL"} • ${item.frequency || "SOS"} • ${item.duration || ""}`).join("\n\n");
+    if (typeof window.workspaceRxList !== 'undefined' && window.workspaceRxList.length > 0) {
+        medsText = window.workspaceRxList.map(item => `${item.name || "Drug"} (${item.formulation || ""})\n-> ${item.dose || "0 mL"} • ${item.frequency || "SOS"} • ${item.duration || ""}`).join("\n\n");
     } else {
         medsText = document.getElementById('rxMeds') ? document.getElementById('rxMeds').value : '';
     }
@@ -1811,141 +1770,107 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.bento-card, .hero-icon, .card-icon').forEach(el => {
         sleepObserver.observe(el);
     });
-// 3D Cinematic Swipe Engine (Holographic Text Carousel)
-window.initHoloDeck = function() {
-    if (window.innerWidth > 1023) return; 
-    
-    const grid = document.querySelector('.cortex-spatial-stage');
-    if(!grid) return;
+// ==========================================
+// 6TH BENTO CARD: RX STAGING PREVIEW ENGINE
+// ==========================================
+window.renderRxStaging = function(weight) {
+    const container = document.getElementById('compactRxPreviewContainer');
+    const subtitle = document.getElementById('rxStagingSubtitle');
+    const status = document.getElementById('rxStagingStatus');
+    if (!container) return;
 
-    let navigator = document.getElementById('globalDeckNavigator');
-    if (!navigator) {
-        navigator = document.createElement('div');
-        navigator.id = 'globalDeckNavigator';
-        navigator.className = 'deck-navigator';
-        document.body.appendChild(navigator); 
+    // Pull from the active workspace queue
+    let rxList = typeof window.workspaceRxList !== 'undefined' ? window.workspaceRxList : [];
+    
+    // EMPTY STATE
+    if (rxList.length === 0) {
+        if(subtitle) subtitle.innerText = "AWAITING PAYLOAD"; 
+        if(status) status.style.display = "none";
+        container.innerHTML = `
+            <div style="height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.4;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Queue Empty</div>
+            </div>`;
+        return;
     }
 
-    const cards = Array.from(grid.querySelectorAll('.bento-card')).filter(c => c.style.display !== 'none');
+    // ACTIVE STATE
+    if(subtitle) subtitle.innerText = `${rxList.length} ITEM(S) STAGED`; 
+    
+    let wt = parseFloat(weight) || parseFloat(document.getElementById('hudWeight')?.value) || 0;
+    if(status) {
+        status.style.display = "block";
+        status.innerText = wt > 0 ? `WEIGHT SYNCED: ${wt} KG` : `AWAITING WEIGHT`;
+        status.style.color = wt > 0 ? "var(--success)" : "var(--warning)";
+        status.style.background = wt > 0 ? "rgba(0, 250, 154, 0.1)" : "rgba(255, 176, 32, 0.1)";
+    }
+
+    let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+    rxList.slice(0, 3).forEach(item => {
+        html += `
+        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;">
+                <div style="font-size: 0.8rem; font-weight: 800; color: #fff;">${item.name}</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">${item.formulation || 'Custom'}</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.85rem; font-weight: 800; color: var(--brand-cyan);">${item.dose}</div>
+                <div style="font-size: 0.6rem; font-weight: 700; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px;">${item.frequency}</div>
+            </div>
+        </div>`;
+    });
+    
+    if (rxList.length > 3) {
+        html += `<div style="text-align: center; font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; padding: 4px; background: rgba(0,229,255,0.05); border-radius: 6px; border: 1px dashed rgba(0,229,255,0.2);">+ ${rxList.length - 3} MORE ITEMS (TAP TO OPEN)</div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+};
+window.renderWorkspaceRx = window.renderRxStaging;
+
+// =========================================
+// THE NATIVE OPTICAL ENGINE (Zero Touch Math)
+// =========================================
+window.initHoloDeck = function() {
+    const stage = document.querySelector('.cortex-spatial-stage');
+    if(!stage) return;
+    
+    stage.classList.remove('cortex-booting');
+    
+    // 1. Sync DOM tightly
+    let allCards = Array.from(stage.querySelectorAll('.bento-card'));
+    allCards.forEach(c => c.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'slot-hidden'));
+
+    // Only map cards that are physically visible (prevents ghost math)
+    const cards = allCards.filter(c => window.getComputedStyle(c).display !== 'none');
     if(cards.length === 0) return;
 
-    let currentIndex = 0;
-    const total = cards.length; 
+    // 2. INFINITE SCROLL ENGINE (Removed to support standard flat grid)
 
-    function update3DDeck() {
-        cards.forEach((card, index) => {
-            card.className = card.className.replace(/slot-[a-z-]+/g, '').trim(); 
-            
-            let offset = (index - currentIndex) % total;
-            if (offset > Math.floor(total / 2)) offset -= total;
-            else if (offset < -Math.floor(total / 2)) offset += total;
-
-            if (offset === 0) card.classList.add('slot-active');
-            else if (offset === -1) card.classList.add('slot-prev');
-            else if (offset === 1) card.classList.add('slot-next');
-            else if (offset === -2) card.classList.add('slot-far-prev');
-            else if (offset === 2) card.classList.add('slot-far-next');
-            else card.classList.add('slot-hidden'); 
-        });
-
-        if (navigator) {
-            const items = navigator.querySelectorAll('.deck-nav-item');
-            items.forEach(d => d.classList.remove('active'));
-            if(items[currentIndex]) {
-                items[currentIndex].classList.add('active');
-                // Perfectly centers the active glowing text in the rail
-                items[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-        }
-    }
-
-    // Build the Carousel UI
+    // 3. Build Track (Glowing Dots bound securely by ID)
+    let navigator = document.getElementById('globalDeckNavigator');
     if (navigator) {
-        let navHtml = `
-            <div class="deck-arrow glowing-arrow" id="deckArrowLeft">‹</div>
-            <div class="deck-nav-wrapper">
-                <div class="deck-nav-track" id="deckNavTrack">`;
-        
-        cards.forEach((card, i) => {
+        let navHtml = `<div class="deck-nav-wrapper" style="pointer-events: auto;"><div class="deck-nav-track" id="deckNavTrack">`;
+        cards.forEach((card) => {
             const titleEl = card.querySelector('h3');
-            const title = titleEl ? titleEl.innerText.toUpperCase() : 'MODULE';
-            const iconMatch = card.innerHTML.match(/(?:>)([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/);
-            const icon = iconMatch ? iconMatch[1] : '⚕️';
-            
-            // Icon + Title Inline
-            navHtml += `<div class="deck-nav-item ${i === 0 ? 'active' : ''}" data-index="${i}">
-                            <span class="nav-ico">${icon}</span> <span class="nav-txt">${title}</span>
-                        </div>`;
+            const title = titleEl ? titleEl.innerText.toUpperCase() : 'INTELLIGENCE';
+            navHtml += `<div class="deck-nav-item" data-id="${card.id}" style="pointer-events: auto;"><span class="nav-txt">${title}</span></div>`;
         });
-        
-        navHtml += `</div></div><div class="deck-arrow glowing-arrow" id="deckArrowRight">›</div>`;
+        navHtml += `</div></div>`;
         navigator.innerHTML = navHtml;
-        
-        document.getElementById('deckArrowLeft').addEventListener('click', () => {
-            currentIndex = (currentIndex - 1 + total) % total; 
-            update3DDeck();
-        });
-        document.getElementById('deckArrowRight').addEventListener('click', () => {
-            currentIndex = (currentIndex + 1) % total;
-            update3DDeck();
-        });
-        
+
         navigator.querySelectorAll('.deck-nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                currentIndex = parseInt(e.currentTarget.getAttribute('data-index'));
-                update3DDeck();
+            item.addEventListener('click', () => {
+                const targetCard = document.getElementById(item.getAttribute('data-id'));
+                if(targetCard) targetCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             });
         });
     }
 
-    // Touch Swipe Logic
-    let startX = 0;
-    grid.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
-    
-    grid.addEventListener('touchend', (e) => {
-        let endX = e.changedTouches[0].clientX;
-        let diff = startX - endX;
-        if (diff > 40) { currentIndex = (currentIndex + 1) % total; update3DDeck(); } 
-        else if (diff < -40) { currentIndex = (currentIndex - 1 + total) % total; update3DDeck(); }
-    });
-
-    // Run once on boot to set initial state
-    setTimeout(() => update3DDeck(), 50);
+    // 4. Optical State Detection (Removed to support flat grid visibility)
+    if (window._deckObserver) window._deckObserver.disconnect();
 };
 
-    // Initialize the engine
-    window.initHoloDeck(); 
+// Permanently kill Desktop 3D Hover loop
+window.init3DPhysics = function() {}; 
 
-    // 🚀 SURGICAL FIX: Snap cards instantly, then unlock physics after 50ms
-    setTimeout(() => {
-        const stage = document.querySelector('.cortex-spatial-stage');
-        if (stage) stage.classList.remove('cortex-booting');
-    }, 150); 
-
-    // Desktop 3D Hover Engine
-    window.init3DPhysics = function() {
-        if (window.innerWidth < 1024) return;
-        document.addEventListener('mousemove', (e) => {
-            const card = e.target.closest('.bento-card, .vax-flip-card');
-            if (window.innerWidth > 1023 && window._active3DCard && window._active3DCard !== card) {
-                window._active3DCard.style.setProperty('transition', 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 'important');
-                window._active3DCard.style.setProperty('transform', `perspective(1200px) translateY(0px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`, 'important');
-                window._active3DCard = null;
-            }
-            if (card && window.innerWidth > 1023) {
-                window._active3DCard = card;
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left; 
-                const y = e.clientY - rect.top; 
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = ((y - centerY) / centerY) * -8; 
-                const rotateY = ((x - centerX) / centerX) * 8;
-                card.style.setProperty('transition', 'transform 0.1s linear, box-shadow 0.4s ease, border-color 0.4s ease', 'important');
-                card.style.setProperty('transform', `perspective(1200px) translateY(-4px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`, 'important');
-            }
-        });
-    }
-    window.init3DPhysics();
-    window.addEventListener('load', init3DPhysics);
-});
+}); // <-- Closes the DOMContentLoaded wrapper for the entire file. Do not remove.

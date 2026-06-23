@@ -163,7 +163,7 @@ input, select, textarea { font-size: 16px !important; }
 
 /* THE DRAWER */
 #cortexDrawer { padding: 0 16px 16px 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; transform-origin: top; transition: all 0.3s ease; }
-#cortexDrawer.cortex-collapsed { display: none; }
+#cortexDrawer.cortex-collapsed { visibility: hidden; pointer-events: none; }
 .expanded-chevron { transform: rotate(180deg); }
 
 .cortex-sticky-anchor {
@@ -263,330 +263,96 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 
 
 /* =========================================
-   SPATIAL 3D COMMAND CENTER (VISION PRO STYLE)
+   NATIVE INTELLIGENCE CARDS (SCROLL SNAP)
    ========================================= */
 
-@keyframes spatialDrift { 0% { background-position: 0px 0px; } 100% { background-position: 40px 40px; } }
-
-.cortex-spatial-stage::before {
-    content: ''; position: absolute; bottom: -20%; left: 50%; width: 150vw; height: 80vh; 
-    background: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px), radial-gradient(ellipse at center, rgba(0, 229, 255, 0.1) 0%, transparent 65%);
-    background-size: 30px 30px, 30px 30px, 100% 100%; pointer-events: none; z-index: 0; transform-origin: center bottom;
-    animation: gpuGridPan 2s linear infinite; will-change: transform;
-    -webkit-mask-image: radial-gradient(ellipse at center, transparent 30%, black 70%) !important; mask-image: radial-gradient(ellipse at center, transparent 30%, black 70%) !important;
-}
-@keyframes gpuGridPan { 0% { transform: translateX(-50%) rotateX(75deg) translateY(0px); } 100% { transform: translateX(-50%) rotateX(75deg) translateY(30px); } }
-
-.cortex-spatial-stage::after {
-    content: ''; position: absolute; top: 50%; left: 50%; width: 130vw; height: 130vw; border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.03); box-shadow: inset 0 0 50px rgba(0, 229, 255, 0.05), 0 0 0 80px rgba(255, 255, 255, 0.01), 0 0 0 160px rgba(0, 229, 255, 0.02);
-    transform-style: preserve-3d; transform: translate(-50%, -50%) rotateX(60deg) translateZ(-200px); pointer-events: none; z-index: -1;
-    animation: slowOrbit 60s linear infinite;
-}
-@keyframes slowOrbit { 0% { transform: translate(-50%, -50%) rotateX(60deg) translateZ(-200px) rotateZ(0deg); } 100% { transform: translate(-50%, -50%) rotateX(60deg) translateZ(-200px) rotateZ(360deg); } }
-
-/* =========================================
-   THE ORBITAL PHYSICS ENGINE (Vision Pro Style)
-   ========================================= */
-
-/* 2. BASE CARDS */
-.cortex-spatial-stage .bento-card {
-    box-sizing: border-box !important; border-radius: 24px !important; background-clip: padding-box !important;
-    position: absolute !important; top: 50% !important; left: 50% !important; margin: 0 !important; transform-origin: center center !important;
-    height: 60vh !important; max-height: 520px !important; width: 72vw !important; max-width: 340px !important;
-    overflow: hidden !important; touch-action: pan-y !important; pointer-events: none !important;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease, filter 0.6s ease !important;
-    will-change: transform, opacity, filter !important; scrollbar-width: none;
-}
-.cortex-spatial-stage .bento-card::-webkit-scrollbar { display: none; }
-
-/* 🚀 SURGICAL FIX: Prevents the initial fly-in animation lag on load */
-.cortex-spatial-stage.cortex-booting .bento-card {
-    transition: none !important;
-    animation: none !important;
-}
-
-/* 3. THE FOCUS PULSE ENERGY SYSTEM (Mobile Bug Fix) */
-@keyframes focusPulse {
-    0%   { box-shadow: 0 0 10px rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.2); }
-    50%  { box-shadow: 0 0 10px rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.2); }
-    70%  { box-shadow: 0 0 60px rgba(0, 229, 255, 1), inset 0 0 40px rgba(0, 229, 255, 0.6); border-color: rgb(0, 255, 255); }
-    100% { box-shadow: 0 0 35px rgba(0, 229, 255, 0.4), inset 0 0 30px rgba(0, 229, 255, 0.15); border-color: rgba(0, 229, 255, 0.8); }
-}
-
-/* 4. SLOT: ACTIVE (The Focal Workstation) */
-.cortex-spatial-stage .bento-card.slot-active {
-    transform: translate3d(-50%, -50%, 60px) rotateY(0deg) scale(1) !important;
-    opacity: 1 !important; z-index: 100 !important; pointer-events: auto !important;
-    filter: blur(0px) brightness(1) grayscale(0%) !important;
-    background: rgba(10, 15, 25, 0.1) !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important;
-    outline: none !important; box-shadow: 0 0 35px rgba(0, 229, 255, 0.4), inset 0 0 30px rgba(0, 229, 255, 0.15) !important;
-    border: 1px solid rgba(0, 229, 255, 0.8) !important; animation: focusPulse 0.8s ease-out forwards !important;
-}
-
-/* 5. SLOT: PREV & NEXT (The Waiting Periphery) */
-.cortex-spatial-stage .bento-card.slot-prev, .cortex-spatial-stage .bento-card.slot-next {
-    opacity: 0.8 !important; z-index: 50 !important; filter: blur(5px) brightness(0.4) grayscale(30%) !important;
-    background: rgba(10, 15, 25, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; box-shadow: none !important; animation: none !important;
-}
-
-.cortex-spatial-stage .bento-card.slot-prev { transform: translate3d(calc(-50% - 24vw), -50%, -220px) rotateY(28deg) scale(0.9) !important; }
-.cortex-spatial-stage .bento-card.slot-next { transform: translate3d(calc(-50% + 24vw), -50%, -220px) rotateY(-28deg) scale(0.9) !important; }
-
-/* 6. SLOT: THE DEEP VOID (Hidden) */
-.cortex-spatial-stage .bento-card.slot-far-prev, .cortex-spatial-stage .bento-card.slot-far-next, .cortex-spatial-stage .bento-card.slot-hidden {
-    opacity: 0 !important; z-index: 10 !important; filter: blur(10px) brightness(0) !important;
-    transform: translate3d(-50%, -50%, -500px) rotateY(0deg) scale(0.8) !important; pointer-events: none !important;
-}
-
-
-/* =========================================
-   1. ULTRA-SLIM BOTTOM NAVIGATION
-   ========================================= */
-.main-nav {
-    padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 10px !important;
-    background: rgba(10, 15, 25, 0.6) !important;
-    backdrop-filter: blur(25px) !important;
-    -webkit-backdrop-filter: blur(25px) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-    height: auto !important; 
-    box-shadow: 0 -10px 20px rgba(0,0,0,0.4) !important;
-}
-
-.nav-item { gap: 2px !important; padding: 4px 0 !important; }
-.nav-item svg { width: 20px !important; height: 20px !important; }
-.nav-item span { font-size: 0.65rem !important; }
-
-/* =========================================
-   2. SPATIAL DECK NAVIGATOR (Holographic Carousel)
-   ========================================= */
-.deck-navigator {
-    position: fixed !important;
-    bottom: calc(52px + env(safe-area-inset-bottom)) !important; /* Hugs the new slim nav */
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 100% !important;
-    max-width: 450px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0px !important; 
-    z-index: 8500 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    pointer-events: none !important; /* Let clicks pass through empty space */
-}
-
-/* Glowing Lit Arrows */
-.deck-arrow.glowing-arrow {
-    color: var(--brand-cyan) !important;
-    font-size: 32px !important;
-    font-weight: 300 !important;
-    line-height: 0.8 !important;
-    cursor: pointer !important;
-    transition: transform 0.2s ease !important;
-    padding: 0 10px !important;
-    user-select: none !important;
-    text-shadow: 0 0 12px rgba(0, 229, 255, 0.8) !important;
-    pointer-events: auto !important; /* Re-enable clicks for the arrows */
-}
-.deck-arrow:active { transform: scale(0.8) !important; }
-
-/* The fading window that holds the sliding text */
-.deck-nav-wrapper {
-    flex-grow: 1 !important;
-    overflow: hidden !important;
-    mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
-    pointer-events: auto !important; /* Re-enable clicks for the text */
-}
-
-.deck-nav-track {
-    display: flex !important;
-    align-items: center !important;
-    gap: 25px !important;
-    overflow-x: auto !important;
-    scrollbar-width: none !important;
-    scroll-behavior: smooth !important;
-    padding: 5px 40vw !important; 
-}
-.deck-nav-track::-webkit-scrollbar { display: none !important; }
-
-/* Inactive State: Spaced out, faded, unlit */
-.deck-nav-item {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    color: rgba(255, 255, 255, 0.4) !important;
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 1px !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    white-space: nowrap !important;
-    cursor: pointer !important;
-    flex-shrink: 0 !important;
-    opacity: 0.5 !important;
-}
-
-/* Active State: Centered, lit, glowing, opaque */
-.deck-nav-item.active {
-    color: var(--brand-cyan) !important;
-    opacity: 1 !important;
-    transform: scale(1.15) !important;
-    text-shadow: 0 0 10px rgba(0, 229, 255, 0.8) !important;
-}
-
-.deck-nav-item.active .nav-ico {
-    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.8)) !important;
-}
-
-/* =========================================
-   3. DEFINITIVE 3D ROOM & CARD SIZING
-   ========================================= */
+/* 1. The Native Hardware-Accelerated Rail */
 .cortex-spatial-stage {
-    /* 3D Engine Setup */
-    perspective: 1200px !important; 
-    perspective-origin: 50% 50% !important; 
-    transform-style: preserve-3d !important;
-    position: relative !important; 
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important; /* SURGICAL FIX: Forces cards to start at the left edge, preventing clipping */
+    align-items: stretch !important; /* Allows cards to fill the vertical space */
+    gap: 16px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory !important;
+    scroll-behavior: smooth !important;
+    
     width: 100% !important;
-    display: flex !important; 
-    justify-content: center !important; 
-    align-items: center !important; 
+    padding: 10px 5vw 30px 5vw !important; 
     
-    /* 🚀 THE FIX: Changed to visible so glowing borders don't get chopped off */
-    overflow: visible !important; 
+    perspective: none !important; 
+    transform-style: flat !important;
+    height: 68vh !important; 
+    min-height: 480px !important;
+    margin: 0 !important;
     
-    /* Grid Background */
-    background-color: transparent !important; 
-    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 40px 40px; 
-    animation: spatialDrift 20s linear infinite !important;
-    
-    /* The Definitive Viewport Window */
-    height: calc(100vh - 240px) !important; 
-    min-height: 450px !important;
-    margin: 15px auto 0 auto !important; 
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
 }
+.cortex-spatial-stage::-webkit-scrollbar { display: none !important; }
+.cortex-spatial-stage::after, .cortex-spatial-stage::before { display: none !important; }
 
-/* Force the card to strictly obey the definitive room size */
+/* 2. The Magnetic Glass Cards */
 .cortex-spatial-stage .bento-card {
-    /* 🚀 THE FIX: Compressed from 95% to 85% to account for the deleted footer */
-    height: 85% !important; 
-    max-height: 100% !important; 
-    overflow: hidden !important; 
-    min-height: 0 !important; 
+    display: flex !important; /* SURGICAL FIX: Prevents JS from collapsing the card */
+    flex-direction: column !important;
+    visibility: visible !important;
+    
+    position: relative !important;
+    top: auto !important; left: auto !important; transform: none !important;
+    
+    flex: 0 0 88vw !important; /* Strict sizing prevents flex-shrink from crushing the cards */
+    width: 88vw !important;
+    max-width: 420px !important;
+    height: auto !important;
+    margin: 0 !important;
+    
+    scroll-snap-align: center !important; 
+    scroll-snap-stop: always !important; 
+    
+    opacity: 0.5 !important;
+    transition: opacity 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease !important;
+    
+    background: rgba(10, 15, 25, 0.4) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    pointer-events: auto !important;
 }
 
-/* =========================================
-   4. INTERNAL SCROLLING ENGINE
-   ========================================= */
-/* Turn the inside of the card into a scrollable zone */
+/* SURGICAL FIX: Allow JS widget engine to hide cards without CSS overriding it */
+.cortex-spatial-stage .bento-card[style*="display: none"] {
+    display: none !important;
+}
+
+/* 3. Optical Active State (Triggered by IntersectionObserver) */
+.cortex-spatial-stage .bento-card.is-in-view {
+    opacity: 1 !important;
+    background: rgba(10, 15, 25, 0.2) !important;
+    border: 1px solid rgba(0, 229, 255, 0.5) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0, 229, 255, 0.1) !important;
+}
+
+/* 4. Independent Vertical Scrolling Internals */
 .cortex-spatial-stage .bento-card .card-body,
 .cortex-spatial-stage .bento-card .vax-face-front,
 .cortex-spatial-stage .bento-card .vax-face-back {
-    flex-grow: 1 !important;
     overflow-y: auto !important; 
-    min-height: 0 !important;
-    padding-bottom: 20px !important; 
-    
-    /* Hides the ugly scrollbar for a cleaner glass aesthetic */
-    scrollbar-width: none !important; 
     -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important; /* Locks vertical swipe from pulling the whole app */
+    flex-grow: 1 !important;
+    padding-bottom: 20px !important;
+    scrollbar-width: none !important;
 }
 
-.cortex-spatial-stage .bento-card .card-body::-webkit-scrollbar { 
-    display: none !important; 
-}
+/* 5. Milestones Flip Compatibility */
+.vax-flip-card { height: 100% !important; min-height: 0 !important; }
+.vax-face-front, .vax-face-back { height: 100% !important; max-height: 100% !important; display: flex !important; flex-direction: column !important; }
+.vax-face-back { position: absolute !important; inset: 0 !important; transform: rotateY(180deg) !important; backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; }
+.vax-flip-card.is-flipped { transform: rotateY(180deg) !important; }
 
-/* =========================================
-   MILESTONES 3D FLIP & FLEX SCROLL FIX
-   ========================================= */
-.vax-flip-container, .vax-flip-card {
-    min-height: 0 !important; /* Forces flex children to respect parent bounds */
-}
-
-.vax-face-front, .vax-face-back {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100% !important; 
-    max-height: 100% !important;
-}
-
-/* Ensure the radar pulse and buttons compress gracefully on small screens */
-#bentoMilestones .card-body {
-    flex: 1 1 auto !important;
-    overflow-y: auto !important;
-    min-height: 0 !important;
-    justify-content: flex-start !important; /* Changed from center to prevent top-cutoff */
-}
-
-/* Radar SVG Squish Safeguard */
-#bentoMilestones .card-body > div:first-child {
-    flex-shrink: 1;
-    max-height: 85px; 
-}
-
-/* =========================================
-   MILESTONES SCANNER BLANK SCREEN FIX
-   ========================================= */
-
-/* 1. Restore exact height tracking so the absolute container doesn't collapse */
-.vax-flip-card {
-    height: 100% !important;
-}
-
-/* 2. Force the absolute back face to anchor to all 4 edges */
-.vax-face-back {
-    inset: 0 !important; 
-    height: 100% !important;
-}
-
-/* 3. Restrict the previous Radar squish fix to the Front Face ONLY */
-#bentoMilestones .vax-face-front .card-body > div:first-child {
-    flex-shrink: 1;
-    max-height: 85px; 
-}
-#bentoMilestones .vax-face-back .card-body > div:first-child {
-    max-height: none !important;
-}
-
-/* 4. Ensure the kinetic flip animation executes properly */
-.vax-flip-card.is-flipped {
-    transform: rotateY(180deg) !important;
-}
-
-/* =========================================
-   MILESTONES 3D BLANK BACK-FACE FIX
-   ========================================= */
-.vax-face-back {
-    /* 1. Safely contain the background without triggering the 3D WebKit bug */
-    overflow: visible !important; 
-    clip-path: inset(0px round 20px); 
-    -webkit-clip-path: inset(0px round 20px);
-    
-    /* 2. Force the GPU to paint the text on top of the card */
-    transform: rotateY(180deg) translateZ(1px) !important;
-    -webkit-transform: rotateY(180deg) translateZ(1px) !important;
-}
-
-.vax-face-front {
-    /* Keep the front face mathematically balanced */
-    transform: rotateY(0deg) translateZ(1px) !important;
-    -webkit-transform: rotateY(0deg) translateZ(1px) !important;
-}
-
-/* Force the absolute back face to anchor to all 4 edges and render */
-.vax-face-back {
-    inset: 0 !important; 
-    height: 100% !important;
-    overflow: visible !important; 
-    clip-path: inset(0px round 20px); 
-    -webkit-clip-path: inset(0px round 20px);
-    transform: rotateY(180deg) translateZ(1px) !important;
-    -webkit-transform: rotateY(180deg) translateZ(1px) !important;
-}
-.vax-flip-card {
-    height: 100% !important;
+/* FIX: Force hide the card if JS explicitly sets display to none, overriding the flex !important */
+.cortex-spatial-stage .bento-card[style*="display: none"] {
+    display: none !important;
 }

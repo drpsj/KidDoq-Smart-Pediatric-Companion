@@ -228,7 +228,7 @@
 }
 
 /* Expanded Bento Grid flows normally below */
-.cortex-bento-grid {
+.cortex-spatial-stage {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
     gap: 20px !important;
