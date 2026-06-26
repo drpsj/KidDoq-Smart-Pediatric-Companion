@@ -325,15 +325,6 @@ function renderInstantDoses(weight) {
                             <div style="font-size: 0.7rem; font-weight: 800; color: ${d.color} !important; background: rgba(0,0,0,0.5) !important; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05) !important;">${displayFreq}</div>
                         </div>
 
-                        <div class="math-hud-layer">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: rgba(255,255,255,0.5); font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">
-                                <span>Target Mass</span><span>Formula</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #fff; font-weight: 800;">
-                                <span style="color: ${d.color};">${d.targetMg} mg</span><span>${wt} kg × ${parseFloat(d.dose)}</span>
-                            </div>
-                        </div>
-
                         <button onclick="addToRxQueue('${d.name}', '${d.form}', '${d.calc} ${d.unit}', '${d.freq}')" 
                             style="width: 100%; margin-top: 10px; padding: 8px 0; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.1); color: var(--brand-cyan); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;"
                             onmouseover="this.style.background='rgba(0, 229, 255, 0.2)'"
@@ -1593,42 +1584,48 @@ function pullVitalsToRx() {
     
     // Inject them into the prescription container's dataset
     const container = document.getElementById('rxOutputContainer');
-    container.dataset.wt = wt;
-    container.dataset.age = ageStr;
+    if (container) {
+        container.dataset.wt = wt;
+        container.dataset.age = ageStr;
+    }
     
-    // Animate the button to show success
-    const btn = event.currentTarget;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `<span>✅</span> Vitals Synced!`;
-    btn.style.background = 'rgba(0, 250, 154, 0.2)';
-    btn.style.borderColor = 'var(--success)';
-    btn.style.color = 'var(--success)';
-    
-    setTimeout(() => {
-        btn.innerHTML = originalText;
-        btn.style.background = 'rgba(106, 112, 255, 0.15)';
-        btn.style.borderColor = 'rgba(106, 112, 255, 0.4)';
-        btn.style.color = 'var(--brand-cyan)';
-    }, 1500);
+    // Animate the button to show success safely
+    const btn = window.event ? window.event.currentTarget : null;
+    if (btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span>✅</span> Vitals Synced!`;
+        btn.style.background = 'rgba(0, 250, 154, 0.2)';
+        btn.style.borderColor = 'var(--success)';
+        btn.style.color = 'var(--success)';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = 'rgba(106, 112, 255, 0.15)';
+            btn.style.borderColor = 'rgba(106, 112, 255, 0.4)';
+            btn.style.color = 'var(--brand-cyan)';
+        }, 1500);
 
-    generateRxPreview();
-}
+        generateRxPreview();
+    } // <-- This closes the "if (btn)" block
+} // 🚀 ADD THIS MISSING BRACE HERE to close pullVitalsToRx()
 
 // --- UPGRADED RENDERER: Routes to Summary Tab ---
 window.generateRxPreview = function() {
     const container = document.getElementById('liveSummaryPreview') || document.getElementById('rxOutputContainer');
     if(!container) return; 
 
-    // 1. Pull directly from Spatial Staging memory first
-    let cc = document.getElementById('wsSymptoms') ? document.getElementById('wsSymptoms').value : '';
-    let advice = document.getElementById('wsAdvice') ? document.getElementById('wsAdvice').value : '';
+    // 1. Pull directly from Spatial Staging memory first (and convert newlines to HTML breaks)
+    let cc = document.getElementById('wsSymptoms') ? document.getElementById('wsSymptoms').value.replace(/\n/g, '<br>') : '';
+    let advice = document.getElementById('wsAdvice') ? document.getElementById('wsAdvice').value.replace(/\n/g, '<br>') : '';
+    let temp = document.getElementById('wsTemp') ? document.getElementById('wsTemp').value : '';
     let dx = document.getElementById('rxDiagnosis') ? document.getElementById('rxDiagnosis').value : '';
     
     // Fallback to legacy DOM nodes if Spatial is empty
     if (!cc) cc = document.getElementById('rxCc') ? document.getElementById('rxCc').value : '';
     if (!advice) advice = document.getElementById('rxAdvice') ? document.getElementById('rxAdvice').value : '';
+    if (!temp) temp = document.getElementById('rxTemp') ? document.getElementById('rxTemp').value : '';
 
-    // Unify Rx List directly from the live array
+    // Unify Rx List directly from the global array
     let medsText = "";
     if (typeof window.workspaceRxList !== 'undefined' && window.workspaceRxList.length > 0) {
         medsText = window.workspaceRxList.map(item => `${item.name || "Drug"} (${item.formulation || ""})\n-> ${item.dose || "0 mL"} • ${item.frequency || "SOS"} • ${item.duration || ""}`).join("\n\n");
@@ -1666,6 +1663,7 @@ window.generateRxPreview = function() {
                 </div>
             </div>
             
+            ${temp ? `<div style="margin-bottom: 8px;"><strong style="color: #2B6CB0; font-size: 0.9rem;">Temp:</strong> <span style="font-weight: 600; font-size: 0.95rem; color: #E53E3E;">${temp}</span></div>` : ''}
             ${cc ? `<div style="margin-bottom: 8px;"><strong style="color: #2B6CB0; font-size: 0.9rem;">C/O:</strong> <span style="font-weight: 600; font-size: 0.95rem;">${cc}</span></div>` : ''}
             ${dx ? `<div style="margin-bottom: 15px;"><strong style="color: #2B6CB0; font-size: 0.9rem;">Dx:</strong> <span style="font-weight: 600; font-size: 0.95rem;">${dx}</span></div>` : ''}
             
@@ -1825,7 +1823,6 @@ window.renderRxStaging = function(weight) {
     html += '</div>';
     container.innerHTML = html;
 };
-window.renderWorkspaceRx = window.renderRxStaging;
 
 // =========================================
 // THE NATIVE OPTICAL ENGINE (Zero Touch Math)

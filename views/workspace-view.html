@@ -14,23 +14,49 @@
         </div>
 
         <div style="padding: 20px; overflow-y: auto; flex-grow: 1; padding-bottom: 100px; display: flex; flex-direction: column; gap: 20px;">
+            
+            <div id="inlineRxPreview" style="display: none; background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 10px;"></div>
 
             <div id="clipboardRxList" style="display: flex; flex-direction: column; gap: 16px;">
                 <div class="hud-empty-state" style="border: 1px dashed rgba(0,229,255,0.2); padding: 40px 0; font-size: 0.85rem; margin: 0; background: rgba(0, 229, 255, 0.02); border-radius: 16px; color: rgba(255,255,255,0.4);">Payload Empty. Calculate a dose to begin.</div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+            <div style="margin-top: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(0, 229, 255, 0.15); border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-size: 0.75rem; color: var(--brand-cyan); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                    <i class="ph-duotone ph-thermometer"></i> TEMPERATURE
+                </div>
+                <div style="position: relative;">
+                    <input list="tempOptionsList" id="wsTemp" oninput="if(typeof window.autoGenerateAdvice === 'function') window.autoGenerateAdvice()" placeholder="Febrile, 101°F..." style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0, 229, 255, 0.3); color: #fff; font-family: 'SF Mono', ui-monospace, monospace; font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; width: 140px; outline: none; transition: border 0.3s;" onfocus="this.style.borderColor='var(--brand-cyan)'" onblur="this.style.borderColor='rgba(0, 229, 255, 0.3)'">
+                    <datalist id="tempOptionsList">
+                        <option value="Afebrile">
+                        <option value="Febrile">
+                        <option value="98.6°F">
+                        <option value="99°F">
+                        <option value="100°F">
+                        <option value="101°F">
+                        <option value="102°F">
+                        <option value="103°F">
+                        <option value="37°C">
+                        <option value="38°C">
+                        <option value="39°C">
+                    </datalist>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 51, 102, 0.15); border-radius: 16px; padding: 15px; position: relative;">
                     <div style="font-size: 0.7rem; color: var(--brand-pink); text-transform: uppercase; font-weight: 900; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px;"><i class="ph-duotone ph-activity"></i> SYMPTOMS LOG</div>
                     
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="display: flex; gap: 3px; align-items: center; height: 16px;">
+                    <div id="dictationContainer" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease;">
+                        <div id="dictationWaves" style="display: flex; gap: 3px; align-items: center; height: 16px; opacity: 0.3; transition: opacity 0.3s ease;">
                             <div class="wave-bar" style="animation-delay: 0.1s;"></div><div class="wave-bar" style="animation-delay: 0.3s; height: 10px;"></div><div class="wave-bar" style="animation-delay: 0.5s; height: 6px;"></div><div class="wave-bar" style="animation-delay: 0.2s; height: 12px;"></div><div class="wave-bar" style="animation-delay: 0.4s; height: 8px;"></div>
                         </div>
-                        <div style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--brand-pink); color: var(--brand-pink); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,51,102,0.2);"><i class="ph-fill ph-microphone"></i></div>
+                        <div id="dictationBtn" onclick="toggleDictation()" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--brand-pink); color: var(--brand-pink); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,51,102,0.2); cursor: pointer; transition: all 0.2s ease;">
+                            <i class="ph-fill ph-microphone"></i>
+                        </div>
                     </div>
                     
-                    <textarea id="wsSymptoms" placeholder="Tap to dictate or type..." style="width: 100%; background: transparent; border: none; color: var(--text-main); font-family: 'SF Mono', ui-monospace, monospace; font-size: 0.85rem; min-height: 40px; resize: none; outline: none; line-height: 1.5;"></textarea>
+                    <textarea id="wsSymptoms" oninput="if(typeof window.autoGenerateAdvice === 'function') window.autoGenerateAdvice()" placeholder="Tap to dictate or type..." style="width: 100%; background: transparent; border: none; color: var(--text-main); font-family: 'SF Mono', ui-monospace, monospace; font-size: 0.85rem; min-height: 40px; resize: none; outline: none; line-height: 1.5;"></textarea>
                 </div>
 
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 176, 32, 0.15); border-radius: 16px; padding: 15px; position: relative; overflow: hidden;">
