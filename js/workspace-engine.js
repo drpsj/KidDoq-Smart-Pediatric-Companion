@@ -462,12 +462,12 @@ window.executeDeploySequence = function() {
             let pWt = document.getElementById('hudWeight') && document.getElementById('hudWeight').value ? document.getElementById('hudWeight').value + ' kg' : (p && p.weight ? `${p.weight} kg` : "-");
             let dateStr = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 
-            // Build Rx List
+            // Build Rx List (Added page-break avoidance)
             let rxListHtml = "";
             window.workspaceRxList.forEach((rx, idx) => {
                 let dur = rx.duration ? ` for ${rx.duration}` : "";
                 rxListHtml += `
-                    <div style="margin-bottom:18px;">
+                    <div style="margin-bottom:18px; page-break-inside: avoid;">
                         <div style="font-weight:bold; font-size:1.1rem; color:#0f172a;">${idx+1}. ${rx.name} ${rx.dose ? `<span style="font-size:0.9rem; font-weight:normal; color:#555;">(${rx.dose})</span>` : ''}</div>
                         <div style="font-size:0.95rem; color:#334155; margin-top:3px;">
                             <strong>Sig:</strong> <span style="font-weight:bold;">${rx.frequency}</span>${dur}
@@ -500,7 +500,7 @@ window.executeDeploySequence = function() {
                         <div><b>Date:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:60px; display:inline-block;">${dateStr}</span></div>
                     </div>
 
-                    <div style="display:flex; gap:15px; flex-grow: 1;">
+                                        <div id="rxClinicalInfo" style="display:flex; gap:15px; flex-grow: 1;">
                         <div style="flex: 0 0 35%; border-right:1px solid #e2e8f0; padding-right:10px;">
                             ${temp ? `<div style="margin-bottom:10px;"><b>Temp:</b> <span style="color:#E53E3E; font-weight:bold;">${temp}</span></div>` : ''}
                             ${symp ? `<div style="margin-bottom:10px;"><b>C/O:</b><br><span style="font-size:0.85rem;">${symp.replace(/\n/g, '<br>')}</span></div>` : ''}
@@ -513,7 +513,7 @@ window.executeDeploySequence = function() {
                         </div>
                     </div>
 
-                    <div style="margin-top:auto; border-top:1px solid #cbd5e1; padding-top:15px; display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div id="rxFooter" style="margin-top:auto; border-top:1px solid #cbd5e1; padding-top:15px; display:flex; justify-content:space-between; align-items:flex-end; background: #fff;">
                         <div style="font-size: 0.75rem; color: #777;">
                             Reference: IAP Guidelines 2024 | WHO MGRS<br>
                             <em>Clinical reference only. Verify doses against standard protocols.</em>
@@ -557,14 +557,30 @@ window.executeDeploySequence = function() {
                         #inlineRxPreview, #inlineRxPreview * { visibility: visible !important; color: black !important; box-shadow: none !important; }
                         #inlineRxPreview { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; border: none !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: white !important; }
                         
-                        /* THE FIX: Calculate 100% height MINUS the 10mm top & bottom margins */
+                        /* 1. Kill Flexbox for the printer so the text can flow infinitely across multiple pages */
                         #rxPrintWrapper { 
-                            min-height: calc(100vh - 22mm) !important; 
-                            box-sizing: border-box !important; 
+                            display: block !important;
+                            min-height: auto !important; 
                             box-shadow: none !important; 
                             border: none !important; 
                             border-radius: 0 !important; 
                             margin: 0 !important; 
+                        }
+                        
+                        /* 2. Anchor the Footer to the absolute bottom of EVERY printed page */
+                        #rxFooter {
+                            position: fixed !important;
+                            bottom: 0 !important;
+                            left: 0 !important;
+                            width: 100% !important;
+                            padding-top: 15px !important;
+                            background: white !important;
+                            page-break-inside: avoid;
+                        }
+                        
+                        /* 3. Add padding to the bottom of the clinical text so it doesn't overlap the fixed footer */
+                        #rxClinicalInfo {
+                            padding-bottom: 130px !important; 
                         }
                         
                         .live-edit-field { border-bottom: none !important; }
