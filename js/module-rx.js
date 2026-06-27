@@ -177,8 +177,9 @@ window.appendAuditToHopi = function() {
 let pendingPrescriptionDrug = null;
 
 window.addPendingToRxCart = function() { 
-    if(!activePatientId || !pendingPrescriptionDrug) return; 
-    let p = AppStore.getPatient(activePatientId);
+    const currentPatientId = window.activePatientId || (typeof AppStore !== 'undefined' ? AppStore.getActivePatientId() : null);
+    if(!currentPatientId || !pendingPrescriptionDrug) return; 
+    let p = AppStore.getPatient(currentPatientId);
     if(!p.rxList) p.rxList = [];
     p.rxList.push(pendingPrescriptionDrug); 
     AppStore.savePatient(p); 

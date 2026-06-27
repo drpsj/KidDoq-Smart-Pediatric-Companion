@@ -2,10 +2,8 @@
         window.workspaceRxList = window.workspaceRxList || [];
 
         window.addToRxQueue = function(drugName, formulation, dose, frequency) {
-    // 1. Guarantee the global array exists at the exact moment of click
-    window.workspaceRxList = window.workspaceRxList || [];
-    
-    window.workspaceRxList.push({
+    // Send directly to the unified bridge to avoid duplicate update logic
+    pushToWorkspaceRx({
         name: drugName,
         formulation: formulation || '',
         dose: dose || '',
@@ -13,12 +11,7 @@
         duration: '' // Leaves duration blank so the Staging Card glows amber
     });
     
-    // 2. 🚀 THE FIX: Brute-force update ALL dashboard interfaces directly
-    if (typeof window.renderWorkspaceRx === 'function') window.renderWorkspaceRx();
-    if (typeof window.renderRxStaging === 'function') window.renderRxStaging();
-    if (typeof window.updateIntegratedRxFooter === 'function') window.updateIntegratedRxFooter();
-    
-    // 3. Visual feedback
+    // Visual feedback
     if (typeof showSystemToast === 'function') {
         showSystemToast(`✅ ${drugName} Added to Rx Queue`);
     }
@@ -73,6 +66,12 @@ window.toggleWorkspace = async function(show) {
             bentoGrid.style.pointerEvents = 'none';
             bentoGrid.style.filter = 'blur(5px)';
         }
+        
+        // 🚀 SURGICAL FIX: Boot the HoloDeck only AFTER workspace animation completes
+        setTimeout(() => {
+            if (typeof window.initSpatialDeck === 'function') window.initSpatialDeck();
+        }, 550);
+
     } else {
         if(sheet) {
             sheet.style.transform = 'translate(-50%, 50%) scale(0.9)';
@@ -306,47 +305,37 @@ window.editFrequency = function(index) {
         };
 
         window.clearWorkspace = function() {
-            window.workspaceRxList = [];
-            const symp = document.getElementById('wsSymptoms');
-            const adv = document.getElementById('wsAdvice');
-            const temp = document.getElementById('wsTemp');
-            if(symp) symp.value = '';
-            if(adv) adv.value = '';
-            if(temp) temp.value = '';
-            
-            ['fever', 'uri', 'ge'].forEach(id => {
-                const btn = document.getElementById('btnProto-' + id);
-                if(btn) {
-                    btn.style.background = 'rgba(0,0,0,0.4)';
-                    btn.style.borderColor = 'rgba(255,255,255,0.1)';
-                    btn.style.color = 'var(--text-muted)';
-                }
-            });
-            renderWorkspaceRx();
+    window.workspaceRxList = [];
+    const symp = document.getElementById('wsSymptoms');
+    const adv = document.getElementById('wsAdvice');
+    const temp = document.getElementById('wsTemp');
+    if(symp) symp.value = '';
+    if(adv) adv.value = '';
+    if(temp) temp.value = '';
+    
+    // Preserve your custom protocol buttons
+    ['fever', 'uri', 'ge'].forEach(id => {
+        const btn = document.getElementById('btnProto-' + id);
+        if(btn) {
+            btn.style.background = 'rgba(0,0,0,0.4)';
+            btn.style.borderColor = 'rgba(255,255,255,0.1)';
+            btn.style.color = 'var(--text-muted)';
+        }
+    });
+    
+    if (typeof renderWorkspaceRx === 'function') renderWorkspaceRx();
 
-                        // Reset buttons and view
     const deployBtn = document.getElementById('deployRxBtn');
     if (deployBtn) {
         deployBtn.innerHTML = `<span style="display: flex; align-items: center; gap: 8px;"><i class="ph-fill ph-paper-plane-tilt"></i> DEPLOY RX</span>`;
-        deployBtn.onclick = () => window.executeDeploySequence();
     }
     
-    const previewArea = document.getElementById('inlineRxPreview');
-    if (previewArea) {
-        previewArea.style.display = 'none';
-        previewArea.innerHTML = ''; // Wipe the old preview clean
-        
-        // Restore all the hidden input boxes precisely as they were
-        Array.from(previewArea.parentElement.children).forEach(child => {
-            if (child.id !== 'inlineRxPreview' && child.dataset.oldDisplay) {
-                child.style.display = child.dataset.oldDisplay;
-                delete child.dataset.oldDisplay; // Clean up memory
-            }
-        });
-    }
+    // Smoothly close the new Cinema Modal if it's open
+    const modal = document.getElementById('rxPrintModalOverlay');
+    if (modal) modal.style.display = 'none';
 };
 
-      // --- THE CINEMATIC DEPLOYMENT ENGINE (Unified & Bulletproofed) ---
+// --- THE CINEMATIC DEPLOYMENT ENGINE (Modal Architecture) ---
 window.executeDeploySequence = function() {
     const sympEl = document.getElementById('wsSymptoms');
     const advEl = document.getElementById('wsAdvice');
@@ -355,40 +344,20 @@ window.executeDeploySequence = function() {
     const adv = advEl ? advEl.value : '';
     const temp = tempEl ? tempEl.value : '';
     
-    // 1. Data Validation
     if (window.workspaceRxList.length === 0 && !symp && !adv && !temp) return alert("Payload is empty. Aborting.");
 
     const btn = document.getElementById('deployRxBtn');
     if(!btn) return;
     
-    // 2. Cinematic Loading State
-    const originalHTML = btn.innerHTML;
     document.body.classList.add('deploying-state');
     btn.innerHTML = `<span style="display: flex; align-items: center; gap: 8px;"><i class="ph-duotone ph-spinner ph-spin"></i> GENERATING PRESCRIPTION...</span>`;
     
     setTimeout(() => {
         document.body.classList.remove('deploying-state');
+        btn.innerHTML = `<span style="display: flex; align-items: center; gap: 8px;"><i class="ph-fill ph-paper-plane-tilt"></i> DEPLOY RX</span>`; // Reset original button
         
-        // 3. Safe DOM Injection for Legacy Data
-        const safeSet = (id, val) => {
-            let el = document.getElementById(id);
-            if (!el) {
-                el = document.createElement('textarea');
-                el.id = id;
-                el.style.display = 'none';
-                document.body.appendChild(el);
-            }
-            el.value = val;
-        };
-        safeSet('rxCc', symp);
-        safeSet('rxAdvice', adv);
-        safeSet('rxTemp', temp);
-        
-        // 4. Data Sync & GHOST MODE PROXY
         try {
             let activeId = typeof AppStore !== 'undefined' ? AppStore.getActivePatientId() : null;
-            
-            // Map the modern array to the legacy Print Engine format
             const mappedRxList = window.workspaceRxList.map(item => {
                 const doseStr = String(item.dose || "0 mL"); 
                 const doseParts = doseStr.split(' ');
@@ -403,202 +372,152 @@ window.executeDeploySequence = function() {
             });
 
             if (activeId) {
-                // NORMAL MODE: Save to actual patient database
                 const p = AppStore.getPatient(activeId);
-                if (p) {
-                    p.rxList = mappedRxList;
-                    AppStore.savePatient(p);
-                }
+                if (p) { p.rxList = mappedRxList; AppStore.savePatient(p); }
             } else {
-                // GHOST MODE: Bypass the "Open patient first" alert
                 window.activePatientId = "GHOST_RX"; 
-                
                 if (typeof AppStore !== 'undefined' && !AppStore._isGhostProxied) {
                     const originalGetPatient = AppStore.getPatient;
                     AppStore.getPatient = function(id) {
                         if (id === "GHOST_RX" || id === window.activePatientId) {
-                            return {
-                                id: "GHOST_RX",
-                                name: "Outpatient Visit", 
-                                weight: document.getElementById('hudWeight') ? document.getElementById('hudWeight').value : '',
-                                rxList: mappedRxList,
-                                phone: "",
-                                growthExplanation: ""
-                            };
+                            return { id: "GHOST_RX", name: "Outpatient Visit", weight: document.getElementById('hudWeight') ? document.getElementById('hudWeight').value : '', rxList: mappedRxList };
                         }
                         return originalGetPatient.call(AppStore, id);
                     };
-                    
                     const originalGetActive = AppStore.getActivePatientId;
-                    AppStore.getActivePatientId = function() {
-                        return window.activePatientId || originalGetActive.call(AppStore);
-                    };
-                    
+                    AppStore.getActivePatientId = function() { return window.activePatientId || originalGetActive.call(AppStore); };
                     AppStore._isGhostProxied = true;
                 }
             }
-        } catch (err) {
-            console.error("Failed to sync Rx", err);
-        }
+        } catch (err) { console.error("Failed to sync Rx", err); }
 
-        // 5. NATIVE FORMAL PREVIEW BUILDER 
-        const previewArea = document.getElementById('inlineRxPreview');
-        if (previewArea) {
-            let settings = JSON.parse(localStorage.getItem('clinic_settings')) || {};
-            let p = typeof AppStore !== 'undefined' ? AppStore.getPatient(window.activePatientId || AppStore.getActivePatientId()) : null;
-            
-            let logoHtml = settings.logo ? `<img src="${settings.logo}" style="max-height:80px; max-width:150px; object-fit:contain;">` : '';
-            let clinicName = settings.clinicName || "Outpatient Clinic";
-            let clinicAddress = settings.address || "";
-            let clinicPhone = settings.phone ? `Ph: ${settings.phone}` : "";
-            let docName = settings.docName || "Attending Physician";
-            let docQual = settings.qual || "MBBS";
-            let regNo = settings.regNo ? `Reg No: ${settings.regNo}` : "";
-            let sigHtml = settings.signature ? `<img src="${settings.signature}" style="max-height:60px;">` : `<div style="height:60px;"></div>`;
-            
-            let pName = p && p.name && p.name !== "Outpatient Visit" ? p.name : "Outpatient";
-            let pAge = p && p.ageYrs ? `${p.ageYrs}y` : (p && p.ageMos ? `${p.ageMos}m` : "-");
-            let pGender = p && p.gender ? p.gender : "-";
-            let pWt = document.getElementById('hudWeight') && document.getElementById('hudWeight').value ? document.getElementById('hudWeight').value + ' kg' : (p && p.weight ? `${p.weight} kg` : "-");
-            let dateStr = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        let settings = JSON.parse(localStorage.getItem('clinic_settings')) || {};
+        let p = typeof AppStore !== 'undefined' ? AppStore.getPatient(window.activePatientId || AppStore.getActivePatientId()) : null;
+        
+        let logoHtml = settings.logo ? `<img src="${settings.logo}" style="max-height:80px; max-width:150px; object-fit:contain;">` : '';
+        let clinicName = settings.clinicName || "Outpatient Clinic";
+        let clinicAddress = settings.address || "";
+        let clinicPhone = settings.phone ? `Ph: ${settings.phone}` : "";
+        let docName = settings.docName || "Attending Physician";
+        let docQual = settings.qual || "MBBS";
+        let regNo = settings.regNo ? `Reg No: ${settings.regNo}` : "";
+        let sigHtml = settings.signature ? `<img src="${settings.signature}" style="max-height:60px;">` : `<div style="height:60px;"></div>`;
+        
+        let pName = p && p.name && p.name !== "Outpatient Visit" ? p.name : "Outpatient";
+        let pAge = p && p.ageYrs ? `${p.ageYrs}y` : (p && p.ageMos ? `${p.ageMos}m` : "-");
+        let pGender = p && p.gender ? p.gender : "-";
+        let pWt = document.getElementById('hudWeight') && document.getElementById('hudWeight').value ? document.getElementById('hudWeight').value + ' kg' : (p && p.weight ? `${p.weight} kg` : "-");
+        let dateStr = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 
-            // Build Rx List (Added page-break avoidance)
-            let rxListHtml = "";
-            window.workspaceRxList.forEach((rx, idx) => {
-                let dur = rx.duration ? ` for ${rx.duration}` : "";
-                rxListHtml += `
-                    <div style="margin-bottom:18px; page-break-inside: avoid;">
-                        <div style="font-weight:bold; font-size:1.1rem; color:#0f172a;">${idx+1}. ${rx.name} ${rx.dose ? `<span style="font-size:0.9rem; font-weight:normal; color:#555;">(${rx.dose})</span>` : ''}</div>
-                        <div style="font-size:0.95rem; color:#334155; margin-top:3px;">
-                            <strong>Sig:</strong> <span style="font-weight:bold;">${rx.frequency}</span>${dur}
-                        </div>
-                    </div>
-                `;
-            });
-                        // The Formal HTML Template (Dynamic Paper-Responsive Layout)
-            let htmlContent = `
-                <div id="rxPrintWrapper" style="font-family: Arial, sans-serif; background: #fff; padding: 25px; color: #000; line-height:1.4; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; min-height: 70vh;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1e293b; padding-bottom:15px; margin-bottom:15px;">
-                        <div style="flex:0 0 auto; margin-right:20px;">
-                            ${logoHtml}
-                        </div>
-                        <div style="flex:1; text-align:left;">
-                            <h1 style="margin:0; font-size:1.8rem; color:#1e293b;">${clinicName}</h1>
-                            <div style="font-size:0.9rem; color:#444;">${clinicAddress} ${clinicAddress && clinicPhone ? '|' : ''} ${clinicPhone}</div>
-                        </div>
-                        <div style="flex:1; text-align:right;">
-                            <h2 style="margin:0; font-size:1.4rem; color:#000;">${docName}</h2>
-                            <div style="font-size:0.95rem; font-weight:bold; color:#333;">${docQual}</div>
-                            <div style="font-size:0.85rem; color:#555;">${regNo}</div>
-                        </div>
-                    </div>
-
-                    <div style="display:flex; justify-content:space-between; background:#f8fafc; border:1px solid #cbd5e1; padding:8px 12px; margin-bottom:15px; font-size:0.85rem; border-radius:6px;">
-                        <div><b>Name:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:60px; display:inline-block;">${pName}</span></div>
-                        <div><b>Age/Sex:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:40px; display:inline-block;">${pAge} / ${pGender}</span></div>
-                        <div><b>Wt:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:40px; display:inline-block;">${pWt}</span></div>
-                        <div><b>Date:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:60px; display:inline-block;">${dateStr}</span></div>
-                    </div>
-
-                                        <div id="rxClinicalInfo" style="display:flex; gap:15px; flex-grow: 1;">
-                        <div style="flex: 0 0 35%; border-right:1px solid #e2e8f0; padding-right:10px;">
-                            ${temp ? `<div style="margin-bottom:10px;"><b>Temp:</b> <span style="color:#E53E3E; font-weight:bold;">${temp}</span></div>` : ''}
-                            ${symp ? `<div style="margin-bottom:10px;"><b>C/O:</b><br><span style="font-size:0.85rem;">${symp.replace(/\n/g, '<br>')}</span></div>` : ''}
-                            ${adv ? `<div style="margin-bottom:10px;"><b>Advice:</b><br><span style="font-size:0.85rem;">${adv.replace(/\n/g, '<br>')}</span></div>` : ''}
-                        </div>
-
-                        <div style="flex: 1; padding-left:10px;">
-                            <div style="font-family:serif; font-size:2rem; font-weight:bold; color:#1e293b; margin-bottom:10px; line-height:1;">Rx</div>
-                            ${rxListHtml}
-                        </div>
-                    </div>
-
-                    <div id="rxFooter" style="margin-top:auto; border-top:1px solid #cbd5e1; padding-top:15px; display:flex; justify-content:space-between; align-items:flex-end; background: #fff;">
-                        <div style="font-size: 0.75rem; color: #777;">
-                            Reference: IAP Guidelines 2024 | WHO MGRS<br>
-                            <em>Clinical reference only. Verify doses against standard protocols.</em>
-                        </div>
-                        <div style="display:flex; gap: 20px; align-items: flex-end;">
-                            <div style="text-align: center;">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('Follow-up / Contact Clinic: ' + clinicPhone)}" style="width: 50px; height: 50px; display: block; margin: 0 auto 5px auto;">
-                                <div style="font-size: 8px; color: #777;">Scan for Follow-up</div>
-                            </div>
-                            <div style="text-align:center; min-width: 150px;">
-                                ${sigHtml}
-                                <div style="border-top:1px dashed #333; padding-top:4px; font-weight:bold; font-size:0.9rem;">${docName}</div>
-                            </div>
-                        </div>
+        let rxListHtml = "";
+        window.workspaceRxList.forEach((rx, idx) => {
+            let dur = rx.duration ? ` for ${rx.duration}` : "";
+            rxListHtml += `
+                <div style="margin-bottom:18px; page-break-inside: avoid;">
+                    <div style="font-weight:bold; font-size:1.1rem; color:#0f172a;">${idx+1}. ${rx.name} ${rx.dose ? `<span style="font-size:0.9rem; font-weight:normal; color:#555;">(${rx.dose})</span>` : ''}</div>
+                    <div style="font-size:0.95rem; color:#334155; margin-top:3px;">
+                        <strong>Sig:</strong> <span style="font-weight:bold;">${rx.frequency}</span>${dur}
                     </div>
                 </div>
             `;
+        });
 
-            previewArea.innerHTML = htmlContent; 
-            
-            // Hide everything else in the drawer except the preview
-            Array.from(previewArea.parentElement.children).forEach(child => {
-                if (child.id !== 'inlineRxPreview' && child.style.display !== 'none' && child.tagName !== 'STYLE') {
-                    child.dataset.oldDisplay = child.style.display || 'block';
-                    child.style.display = 'none';
-                }
-            });
-            
-                        previewArea.style.display = 'block';
-            previewArea.style.padding = '15px'; // Adds space around the floating paper 
+        // Generate the Master Overlay Layer
+        let modal = document.getElementById('rxPrintModalOverlay');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'rxPrintModalOverlay';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 999999; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto;';
+            document.body.appendChild(modal);
         }
 
-        // 6. CSS Print Injection (Non-Destructive)
-        if (btn) {
-            btn.innerHTML = `<span style="display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-printer"></i> PRINT RX</span>`;
-            btn.onclick = () => {
-                const style = document.createElement('style');
-                style.innerHTML = `
-                    @media print {
-                        body * { visibility: hidden !important; }
-                        #inlineRxPreview, #inlineRxPreview * { visibility: visible !important; color: black !important; box-shadow: none !important; }
-                        #inlineRxPreview { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; border: none !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: white !important; }
-                        
-                        /* 1. Kill Flexbox for the printer so the text can flow infinitely across multiple pages */
-                        #rxPrintWrapper { 
-                            display: block !important;
-                            min-height: auto !important; 
-                            box-shadow: none !important; 
-                            border: none !important; 
-                            border-radius: 0 !important; 
-                            margin: 0 !important; 
-                        }
-                        
-                        /* 2. Anchor the Footer to the absolute bottom of EVERY printed page */
-                        #rxFooter {
-                            position: fixed !important;
-                            bottom: 0 !important;
-                            left: 0 !important;
-                            width: 100% !important;
-                            padding-top: 15px !important;
-                            background: white !important;
-                            page-break-inside: avoid;
-                        }
-                        
-                        /* 3. Add padding to the bottom of the clinical text so it doesn't overlap the fixed footer */
-                        #rxClinicalInfo {
-                            padding-bottom: 130px !important; 
-                        }
-                        
-                        .live-edit-field { border-bottom: none !important; }
-                        @page { margin: 10mm; } 
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                window.print();
-                
-                setTimeout(() => { document.head.removeChild(style); window.location.reload(); }, 500);
-            };
+        let htmlContent = `
+            <div id="rxPrintWrapper" style="font-family: Arial, sans-serif; background: #fff; padding: 25px; color: #000; line-height:1.4; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; min-height: 70vh; width: 100%; max-width: 800px; margin: 0 auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1e293b; padding-bottom:15px; margin-bottom:15px;">
+                    <div style="flex:0 0 auto; margin-right:20px;">${logoHtml}</div>
+                    <div style="flex:1; text-align:left;">
+                        <h1 style="margin:0; font-size:1.8rem; color:#1e293b;">${clinicName}</h1>
+                        <div style="font-size:0.9rem; color:#444;">${clinicAddress} ${clinicAddress && clinicPhone ? '|' : ''} ${clinicPhone}</div>
+                    </div>
+                    <div style="flex:1; text-align:right;">
+                        <h2 style="margin:0; font-size:1.4rem; color:#000;">${docName}</h2>
+                        <div style="font-size:0.95rem; font-weight:bold; color:#333;">${docQual}</div>
+                        <div style="font-size:0.85rem; color:#555;">${regNo}</div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; background:#f8fafc; border:1px solid #cbd5e1; padding:8px 12px; margin-bottom:15px; font-size:0.85rem; border-radius:6px;">
+                    <div><b>Name:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:60px; display:inline-block;">${pName}</span></div>
+                    <div><b>Age/Sex:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:40px; display:inline-block;">${pAge} / ${pGender}</span></div>
+                    <div><b>Wt:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:40px; display:inline-block;">${pWt}</span></div>
+                    <div><b>Date:</b> <span contenteditable="true" class="live-edit-field" style="border-bottom:1px dashed #94a3b8; padding:0 4px; outline:none; min-width:60px; display:inline-block;">${dateStr}</span></div>
+                </div>
+
+                <div id="rxClinicalInfo" style="display:flex; gap:15px; flex-grow: 1;">
+                    <div style="flex: 0 0 35%; border-right:1px solid #e2e8f0; padding-right:10px;">
+                        ${temp ? `<div style="margin-bottom:10px;"><b>Temp:</b> <span style="color:#E53E3E; font-weight:bold;">${temp}</span></div>` : ''}
+                        ${symp ? `<div style="margin-bottom:10px;"><b>C/O:</b><br><span style="font-size:0.85rem;">${symp.replace(/\n/g, '<br>')}</span></div>` : ''}
+                        ${adv ? `<div style="margin-bottom:10px;"><b>Advice:</b><br><span style="font-size:0.85rem;">${adv.replace(/\n/g, '<br>')}</span></div>` : ''}
+                    </div>
+                    <div style="flex: 1; padding-left:10px;">
+                        <div style="font-family:serif; font-size:2rem; font-weight:bold; color:#1e293b; margin-bottom:10px; line-height:1;">Rx</div>
+                        ${rxListHtml}
+                    </div>
+                </div>
+
+                <div id="rxFooter" style="margin-top:auto; border-top:1px solid #cbd5e1; padding-top:15px; display:flex; justify-content:space-between; align-items:flex-end; background: #fff;">
+                    <div style="font-size: 0.75rem; color: #777;">
+                        Reference: IAP Guidelines 2024 | WHO MGRS<br>
+                        <em>Clinical reference only. Verify doses against standard protocols.</em>
+                    </div>
+                    <div style="display:flex; gap: 20px; align-items: flex-end;">
+                        <div style="text-align: center;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('Follow-up / Contact Clinic: ' + clinicPhone)}" style="width: 50px; height: 50px; display: block; margin: 0 auto 5px auto;">
+                            <div style="font-size: 8px; color: #777;">Scan for Follow-up</div>
+                        </div>
+                        <div style="text-align:center; min-width: 150px;">
+                            ${sigHtml}
+                            <div style="border-top:1px dashed #333; padding-top:4px; font-weight:bold; font-size:0.9rem;">${docName}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="rxModalButtons" style="display: flex; gap: 15px; margin-top: 25px; width: 100%; max-width: 800px; justify-content: flex-end;">
+                <button onclick="window.clearWorkspace()" style="padding: 12px 24px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: white; cursor: pointer; font-weight: bold;">CLOSE & CLEAR</button>
+                <button onclick="document.getElementById('rxPrintModalOverlay').style.display='none'" style="padding: 12px 24px; border-radius: 8px; border: none; background: #475569; color: white; cursor: pointer; font-weight: bold;">EDIT DRAFT</button>
+                <button onclick="window.print()" style="padding: 12px 24px; border-radius: 8px; border: none; background: #3b82f6; color: white; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-printer"></i> PRINT RX</button>
+            </div>
+        `;
+
+        modal.innerHTML = htmlContent;
+        modal.style.display = 'flex';
+
+        // Inject Dedicated Print Core
+        if (!document.getElementById('rxPrintStyle')) {
+            const style = document.createElement('style');
+            style.id = 'rxPrintStyle';
+            style.innerHTML = `
+                @media print {
+                    body * { visibility: hidden !important; }
+                    #rxPrintModalOverlay, #rxPrintModalOverlay * { visibility: visible !important; color: black !important; }
+                    #rxPrintModalOverlay { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; background: transparent !important; padding: 0 !important; overflow: visible !important; display: block !important; }
+                    
+                    #rxPrintWrapper { display: block !important; min-height: auto !important; box-shadow: none !important; border: none !important; border-radius: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; padding: 0 !important; }
+                    
+                    #rxFooter { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; padding-top: 15px !important; background: white !important; page-break-inside: avoid; }
+                    #rxClinicalInfo { padding-bottom: 130px !important; }
+                    .live-edit-field { border-bottom: none !important; }
+                    #rxModalButtons { display: none !important; }
+                    @page { margin: 10mm; } 
+                }
+            `;
+            document.head.appendChild(style);
         }
         
     }, 450); 
 };
 
-// Ensure legacy print triggers map correctly to the new engine
 window.printWorkspaceRx = window.executeDeploySequence;
 
         // ==========================================

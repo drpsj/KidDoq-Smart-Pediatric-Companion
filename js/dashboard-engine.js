@@ -26,7 +26,7 @@ window.toggleCortexDrawer = function() {
 };
 
 // 🚀 CNS AUTO-APPROXIMATION ENGINE (Upgraded)
-function autoApproximateVitals(totalMonths) {
+window.autoApproximateVitals = function(totalMonths) {
     const yrs = Math.floor(totalMonths / 12);
     
     // 1. Approximate Weight (Weech's Formula)
@@ -115,12 +115,23 @@ window.syncAllDashboards = function() {
     // 🚀 SURGICAL FIX: Live-sync the Rx Staging / Prescription preview
     try { if(typeof renderRxStaging === 'function') renderRxStaging(wt); } catch(e) {}
 
-    // (Vitals approximation removed from here to prevent overriding manual weight scrubs)
+    // 🚀 SURGICAL FIX: Force Cyan Pulse overriding !important CSS rules
+    document.querySelectorAll('.bento-card').forEach(card => {
+        card.style.setProperty('transition', 'box-shadow 0.2s ease, border-color 0.2s ease', 'important');
+        card.style.setProperty('border-color', 'var(--brand-cyan)', 'important');
+        card.style.setProperty('box-shadow', '0 0 30px rgba(0, 229, 255, 0.6), inset 0 0 20px rgba(0, 229, 255, 0.2)', 'important');
+        
+        setTimeout(() => {
+            // Revert back to the standard is-in-view glow
+            card.style.setProperty('border-color', 'rgba(0, 229, 255, 0.5)', 'important');
+            card.style.setProperty('box-shadow', '0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0, 229, 255, 0.1)', 'important');
+        }, 400);
+    });
 };
 
 window.manualEditAge = function() {
-    let currentY = parseInt(document.getElementById('hudAgeYrs').value) || 0;
-    let currentM = parseInt(document.getElementById('hudAgeMos').value) || 0;
+    let currentY = parseInt(document.getElementById('hudAgeYrs')?.value) || 0;
+    let currentM = parseInt(document.getElementById('hudAgeMos')?.value) || 0;
     let currentTotal = (currentY * 12) + currentM;
     
     let input = prompt("Enter Patient Age in TOTAL MONTHS (e.g., 18 for 1.5 yrs):", currentTotal);
@@ -144,7 +155,7 @@ window.manualEditAge = function() {
 };
 
 window.manualEditWeight = function() {
-    let currentWt = parseFloat(document.getElementById('hudWeight').value) || 0;
+    let currentWt = parseFloat(document.getElementById('hudWeight')?.value) || 0;
     let input = prompt("Enter Patient Weight (kg):", currentWt);
     if (input !== null && input !== "" && !isNaN(input)) {
         let newWt = parseFloat(input);
@@ -161,7 +172,8 @@ window.manualEditWeight = function() {
 // 2. DIRECT SCRUB ENGINE (Wired to Master Telemetry)
 window.attachDirectScrub = function(zoneId, type) {
     const zone = document.getElementById(zoneId);
-    if (!zone) return;
+    if (!zone || zone.dataset.scrubAttached) return; // Prevent duplicate listeners
+    zone.dataset.scrubAttached = "true";
     let startX = 0;
     let startVal = 0; 
     let startTotalMonths = 0;
@@ -434,6 +446,12 @@ window.renderVaccinesDue = function(totalMonths) {
         list = [{n: "BCG", d: "Birth Dose", s: "due"}, {n: "OPV 0", d: "Birth Dose", s: "due"}, {n: "Hepatitis B", d: "Birth Dose", s: "due"}];
     }
 
+    // 🚀 SURGICAL FIX: Update Vaccines Preview Card
+    const previewVax = document.getElementById('previewVax');
+    const wsPreviewVax = document.getElementById('workspacePreviewVax');
+    if (previewVax) previewVax.innerText = list.length > 0 ? list.length : '0';
+    if (wsPreviewVax) wsPreviewVax.innerText = list.length > 0 ? list.length : '0';
+
     const stages = ["BIRTH", "PRIMARY", "9 MOS", "BOOSTERS"];
 
     // PREMIUM ICONS: Library Import + Custom Physics
@@ -544,7 +562,8 @@ window.renderGrowthSnapshot = function(totalMonths, weightInKg) {
         
         const card = document.getElementById('growthSnapshotCard');
         if(card) {
-            card.className = 'bento-card'; 
+            // 🚀 SURGICAL FIX: Prevent wiping out the 'is-in-view' class
+            card.className = 'bento-card is-in-view'; 
             card.style.borderColor = 'rgba(255,255,255,0.1)';
         }
         return;
@@ -574,6 +593,11 @@ window.updateGrowthSnapshot = function(zScore, wt) {
 
     const formattedZ = (zScore > 0 ? '+' : '') + parseFloat(zScore).toFixed(2);
     zText.innerText = formattedZ;
+    
+    // 🚀 SURGICAL FIX: Push data to the Mini Preview Card
+    const previewZText = document.getElementById('previewZScore');
+    const previewSeverity = document.getElementById('previewSeverity');
+    if (previewZText) previewZText.innerText = formattedZ;
 
     card.classList.remove('growth-state-severe', 'growth-state-moderate', 'growth-state-mild', 'growth-state-normal', 'growth-state-high');
 
@@ -581,6 +605,7 @@ window.updateGrowthSnapshot = function(zScore, wt) {
     if (zScore <= -3.0) {
         card.classList.add('growth-state-severe');
         badgeIcon.innerText = '🚨'; badgeText.innerText = 'Severe (SAM)';
+        if(previewSeverity) { previewSeverity.innerText = 'SAM RISK'; previewSeverity.style.color = "var(--sev-severe)"; }
         cssVarColor = "var(--sev-severe)";
     } else if (zScore <= -2.0) {
         card.classList.add('growth-state-moderate');
@@ -593,6 +618,7 @@ window.updateGrowthSnapshot = function(zScore, wt) {
     } else if (zScore <= 2.0) {
         card.classList.add('growth-state-normal');
         badgeIcon.innerText = '✅'; badgeText.innerText = 'Normal';
+        if(previewSeverity) { previewSeverity.innerText = 'NORMAL'; previewSeverity.style.color = "var(--brand-cyan)"; }
         cssVarColor = "var(--sev-normal)";
     } else {
         card.classList.add('growth-state-high');
@@ -694,6 +720,12 @@ window.renderVitalsAndFluids = function(totalMonths, weightInKg) {
     else if (totalMonths >= 1) { ageLabel = "1-12 Mos"; hrMin=100; hrMax=190; rrMin=30; rrMax=53; bpMin=70; bpMax=105; }
     
     if(ageCtx) ageCtx.innerText = `NORMALS: ${ageLabel.toUpperCase()}`;
+
+    // 🚀 SURGICAL FIX: Update Vitals Preview Card
+    const previewHR = document.getElementById('previewHR');
+    const wsPreviewHR = document.getElementById('workspacePreviewHR');
+    if (previewHR) { previewHR.innerText = hrMax > 0 ? `${hrMin}-${hrMax}` : '--'; previewHR.style.fontSize = '1.3rem'; }
+    if (wsPreviewHR) { wsPreviewHR.innerText = hrMax > 0 ? `${hrMin}-${hrMax}` : '--'; wsPreviewHR.style.fontSize = '1.3rem'; }
 
     // --- 2. FLUIDS LOGIC (4-2-1 Rule Breakdown) ---
     if (wt <= 0) {
@@ -871,6 +903,12 @@ window.renderAnthropometry = function() {
             icon.innerText = '✅';
         }
 
+        // 🚀 SURGICAL FIX: Update Nutrition Preview Card
+        const previewMac = document.getElementById('previewMac');
+        const wsPreviewMac = document.getElementById('workspacePreviewMac');
+        if (previewMac) { previewMac.innerText = mac.toFixed(1); previewMac.style.color = colorHex; }
+        if (wsPreviewMac) { wsPreviewMac.innerText = mac.toFixed(1); wsPreviewMac.style.color = colorHex; }
+        
         // Apply Clinical Aura to the Card
         card.style.borderColor = `rgba(${colorHex.match(/\w\w/g).map(x=>parseInt(x,16)).join(',')}, 0.4)`;
         card.style.boxShadow = `inset 0 0 20px ${bgTint}, 0 8px 25px rgba(0,0,0,0.4)`;
@@ -1046,6 +1084,12 @@ window.renderMilestonesAndRedFlags = function(totalMonths) {
         if (cogEl) cogEl.innerText = cogItem ? cogItem.text : "Monitoring...";
         if (socEl) socEl.innerText = socItem ? socItem.text : "Monitoring...";
     }
+
+    // 🚀 SURGICAL FIX: Update Milestones Preview Card
+    const previewMiles = document.getElementById('previewMiles');
+    const wsPreviewMiles = document.getElementById('workspacePreviewMiles');
+    if (previewMiles) previewMiles.innerText = targetMonth > 0 ? `${targetMonth}M` : '--';
+    if (wsPreviewMiles) wsPreviewMiles.innerText = targetMonth > 0 ? `${targetMonth}M` : '--';
 
     // Back Face Scanner Render
     const scannerContent = document.getElementById('milestonesScannerContent');
@@ -1369,6 +1413,7 @@ window.runHudQuickDose = function() {
                 card.style.display = 'flex';
                 card.style.visibility = 'visible';
                 card.style.opacity = '1';
+                card.classList.add('is-in-view'); // 🚀 SURGICAL FIX: Forces the card to light up
             });
         }
         if (typeof window.initHoloDeck === 'function') window.initHoloDeck();
@@ -1745,6 +1790,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const velocityToggle = document.getElementById('velocityModeToggle');
     if(velocityToggle) velocityToggle.checked = window.isVelocityMode;
 
+    // 🚀 SURGICAL FIX: Initialize Silent Mode Telemetry
+    window.isSilentMode = localStorage.getItem('kiddoq_silent_mode') === 'true';
+    const silentToggle = document.getElementById('silentModeToggle');
+    if(silentToggle) silentToggle.checked = window.isSilentMode;
+
+    window.toggleSilentMode = function(isActive) {
+        window.isSilentMode = isActive;
+        localStorage.setItem('kiddoq_silent_mode', isActive);
+    };
+
     window.toggleVelocityMode = function(isActive) {
         window.isVelocityMode = isActive;
         localStorage.setItem('kiddoq_velocity', isActive);
@@ -1843,31 +1898,46 @@ window.initHoloDeck = function() {
 
     // 2. INFINITE SCROLL ENGINE (Removed to support standard flat grid)
 
-    // 3. Build Track (Glowing Dots bound securely by ID)
-    let navigator = document.getElementById('globalDeckNavigator');
-    if (navigator) {
-        let navHtml = `<div class="deck-nav-wrapper" style="pointer-events: auto;"><div class="deck-nav-track" id="deckNavTrack">`;
-        cards.forEach((card) => {
-            const titleEl = card.querySelector('h3');
-            const title = titleEl ? titleEl.innerText.toUpperCase() : 'INTELLIGENCE';
-            navHtml += `<div class="deck-nav-item" data-id="${card.id}" style="pointer-events: auto;"><span class="nav-txt">${title}</span></div>`;
-        });
-        navHtml += `</div></div>`;
-        navigator.innerHTML = navHtml;
+    // 3. Build Track (Removed for flat grid stability)
 
-        navigator.querySelectorAll('.deck-nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const targetCard = document.getElementById(item.getAttribute('data-id'));
-                if(targetCard) targetCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-            });
-        });
-    }
-
-    // 4. Optical State Detection (Removed to support flat grid visibility)
+       // 4. Optical State Detection (Replaced with Permanent Visibility)
     if (window._deckObserver) window._deckObserver.disconnect();
+    
+    // 🚀 SURGICAL FIX: Ensure all mapped cards get the glowing CSS class immediately
+    cards.forEach(card => card.classList.add('is-in-view'));
 };
 
 // Permanently kill Desktop 3D Hover loop
 window.init3DPhysics = function() {}; 
 
 }); // <-- Closes the DOMContentLoaded wrapper for the entire file. Do not remove.
+
+// =========================================================
+// WORKSPACE BRIDGE (Connects Dashboard to HoloDeck Module)
+// =========================================================
+
+window.launchWorkspace = function(targetCardId) {
+    // 1. Blur the dashboard (The Trailer)
+    const mainDashboard = document.getElementById('dashboardMainUI') || document.body;
+    mainDashboard.classList.add('dashboard-blurred');
+
+    // 2. Hand off control to the standalone engine (The Immersive Experience)
+    if (typeof HoloDeckEngine !== 'undefined') {
+        // 🚀 SURGICAL FIX: Use your actual overlay ID
+        HoloDeckEngine.mount('intelligenceWorkspaceOverlay', targetCardId);
+    } else {
+        console.error("HoloDeck Engine module is missing!");
+    }
+};
+
+window.closeWorkspace = function() {
+    // 1. Restore the dashboard
+    const mainDashboard = document.getElementById('dashboardMainUI') || document.body;
+    mainDashboard.classList.remove('dashboard-blurred');
+
+    // 2. Tell the engine to self-destruct its current instance
+    if (typeof HoloDeckEngine !== 'undefined') {
+        // 🚀 SURGICAL FIX: Use your actual overlay ID
+        HoloDeckEngine.destroy('intelligenceWorkspaceOverlay');
+    }
+};

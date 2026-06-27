@@ -707,10 +707,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const ageMosInput = document.getElementById('hudAgeMos');
     const weightInput = document.getElementById('hudWeight');
 
+    // 🚀 Reactive Input Engine: Syncs data and triggers a visual pulse
+    function handleVitalInput() {
+        if (typeof window.syncAllDashboards === 'function') window.syncAllDashboards();
+        
+        // Make the bento cards pulse cyan to confirm data processing
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.style.transition = 'box-shadow 0.2s ease, border-color 0.2s ease';
+            card.style.borderColor = 'var(--brand-cyan)';
+            card.style.boxShadow = '0 0 20px rgba(0, 229, 255, 0.4)';
+            
+            // Fade the pulse out after 400ms
+            setTimeout(() => {
+                card.style.borderColor = '';
+                card.style.boxShadow = '';
+            }, 400);
+        });
+    }
+
     // Listen for any immediate value changes ('input' is faster than 'change')
-    if (ageYrsInput) ageYrsInput.addEventListener('input', window.syncAllDashboards);
-    if (ageMosInput) ageMosInput.addEventListener('input', window.syncAllDashboards);
-    if (weightInput) weightInput.addEventListener('input', window.syncAllDashboards);
+    if (ageYrsInput) ageYrsInput.addEventListener('input', handleVitalInput);
+    if (ageMosInput) ageMosInput.addEventListener('input', handleVitalInput);
+    if (weightInput) weightInput.addEventListener('input', handleVitalInput);
     
     // Fire once automatically on page load to initialize the "Awaiting Input" states
     setTimeout(() => {

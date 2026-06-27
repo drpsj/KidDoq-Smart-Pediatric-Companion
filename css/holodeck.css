@@ -1,0 +1,41 @@
+/* holodeck.css */
+.holodeck-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(5, 5, 10, 0.85);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    display: none; /* Controlled by HoloDeck Engine */
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    
+    /* CRITICAL: Unleash 3D Space */
+    perspective: 1200px !important;
+    transform-style: preserve-3d !important;
+    overflow: hidden !important; 
+}
+
+.holodeck-stage {
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d !important;
+}
+
+.holodeck-card {
+    position: absolute;
+    width: 85vw;
+    max-width: 420px;
+    height: 75vh;
+    max-height: 750px;
+    border-radius: 24px;
+    transform-origin: center center;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+    /* Hardware acceleration lock */
+    transform: translateZ(0); 
+}

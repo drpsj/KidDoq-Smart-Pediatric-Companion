@@ -6,18 +6,21 @@
 
 // --- 1. GLOBAL SYSTEM TOAST (Dynamic Island Spatial UI) ---
 window.showSystemToast = function(msg) {
+    // 🚀 SURGICAL FIX: Exit immediately if Silent Mode is enabled
+    if (window.isSilentMode) return;
+
     const container = document.getElementById('systemToastContainer');
     if (!container) { 
         alert(msg); 
         return; 
     }
     
-    // Force the container to act like a Top-Center Dynamic Island
+    // Force the container to act like a Top-Center Dynamic Island safely
     container.style.cssText = `
         position: fixed;
         top: 25px;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 0;
+        width: 100vw;
         display: flex;
         flex-direction: column;
         align-items: center;
