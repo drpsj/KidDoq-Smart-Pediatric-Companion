@@ -115,9 +115,9 @@ window.syncAllDashboards = function() {
     // 🚀 SURGICAL FIX: Live-sync the Rx Staging / Prescription preview
     try { if(typeof renderRxStaging === 'function') renderRxStaging(wt); } catch(e) {}
 
-    // 🚀 SURGICAL FIX: Force Cyan Pulse overriding !important CSS rules
+    // 🚀 SURGICAL FIX: Force Cyan Pulse without destroying the 3D Carousel transform transition
     document.querySelectorAll('.bento-card').forEach(card => {
-        card.style.setProperty('transition', 'box-shadow 0.2s ease, border-color 0.2s ease', 'important');
+        card.style.setProperty('transition', 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, box-shadow 0.2s ease, border-color 0.2s ease', 'important');
         card.style.setProperty('border-color', 'var(--brand-cyan)', 'important');
         card.style.setProperty('box-shadow', '0 0 30px rgba(0, 229, 255, 0.6), inset 0 0 20px rgba(0, 229, 255, 0.2)', 'important');
         
@@ -195,7 +195,7 @@ window.attachDirectScrub = function(zoneId, type) {
         const deltaX = currentX - startX;
         
         if (Math.abs(deltaX) > 5) {
-            e.preventDefault(); 
+            if (e.cancelable) e.preventDefault(); // Safety check for mobile scrolling intervention
             
             if (type === 'weight') {
                 let steps = Math.floor(deltaX / 8); 
@@ -1879,36 +1879,7 @@ window.renderRxStaging = function(weight) {
     container.innerHTML = html;
 };
 
-// =========================================
-// THE NATIVE OPTICAL ENGINE (Zero Touch Math)
-// =========================================
-window.initHoloDeck = function() {
-    const stage = document.querySelector('.cortex-spatial-stage');
-    if(!stage) return;
-    
-    stage.classList.remove('cortex-booting');
-    
-    // 1. Sync DOM tightly
-    let allCards = Array.from(stage.querySelectorAll('.bento-card'));
-    allCards.forEach(c => c.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-far-prev', 'slot-far-next', 'slot-hidden'));
-
-    // Only map cards that are physically visible (prevents ghost math)
-    const cards = allCards.filter(c => window.getComputedStyle(c).display !== 'none');
-    if(cards.length === 0) return;
-
-    // 2. INFINITE SCROLL ENGINE (Removed to support standard flat grid)
-
-    // 3. Build Track (Removed for flat grid stability)
-
-       // 4. Optical State Detection (Replaced with Permanent Visibility)
-    if (window._deckObserver) window._deckObserver.disconnect();
-    
-    // 🚀 SURGICAL FIX: Ensure all mapped cards get the glowing CSS class immediately
-    cards.forEach(card => card.classList.add('is-in-view'));
-};
-
-// Permanently kill Desktop 3D Hover loop
-window.init3DPhysics = function() {}; 
+// Old Legacy Engines Removed. Handled exclusively by holodeck.js now.
 
 }); // <-- Closes the DOMContentLoaded wrapper for the entire file. Do not remove.
 

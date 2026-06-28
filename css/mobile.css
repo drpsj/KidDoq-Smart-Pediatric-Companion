@@ -261,101 +261,6 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
 @keyframes pulseRight { 0%, 100% { transform: translateX(-2px); opacity: 0.3; } 50% { transform: translateX(4px); opacity: 1; } }
 
 
-/* =========================================
-   NATIVE INTELLIGENCE CARDS (SCROLL SNAP)
-   ========================================= */
-
-/* 1. The Native Hardware-Accelerated Rail */
-.cortex-spatial-stage {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: flex-start !important; /* SURGICAL FIX: Forces cards to start at the left edge, preventing clipping */
-    align-items: stretch !important; /* Allows cards to fill the vertical space */
-    gap: 16px !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    scroll-snap-type: x mandatory !important;
-    scroll-behavior: smooth !important;
-    
-    width: 100% !important;
-    padding: 10px 5vw 30px 5vw !important; 
-    
-    perspective: none !important; 
-    transform-style: flat !important;
-    height: 68vh !important; 
-    min-height: 480px !important;
-    margin: 0 !important;
-    
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-}
-.cortex-spatial-stage::-webkit-scrollbar { display: none !important; }
-.cortex-spatial-stage::after, .cortex-spatial-stage::before { display: none !important; }
-
-/* 2. The Magnetic Glass Cards */
-.cortex-spatial-stage .bento-card {
-    display: flex !important; /* SURGICAL FIX: Prevents JS from collapsing the card */
-    flex-direction: column !important;
-    visibility: visible !important;
-    
-    position: relative !important;
-    top: auto !important; left: auto !important; transform: none !important;
-    
-    flex: 0 0 88vw !important; /* Strict sizing prevents flex-shrink from crushing the cards */
-    width: 88vw !important;
-    max-width: 420px !important;
-    height: auto !important;
-    margin: 0 !important;
-    
-    scroll-snap-align: center !important; 
-    scroll-snap-stop: always !important; 
-    
-    opacity: 0.5 !important;
-    transition: opacity 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease !important;
-    
-    background: rgba(10, 15, 25, 0.4) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    pointer-events: auto !important;
-}
-
-/* SURGICAL FIX: Allow JS widget engine to hide cards without CSS overriding it */
-.cortex-spatial-stage .bento-card[style*="display: none"] {
-    display: none !important;
-}
-
-/* 3. Optical Active State (Triggered by IntersectionObserver) */
-.cortex-spatial-stage .bento-card.is-in-view {
-    opacity: 1 !important;
-    background: rgba(10, 15, 25, 0.2) !important;
-    border: 1px solid rgba(0, 229, 255, 0.5) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0, 229, 255, 0.1) !important;
-}
-
-/* 4. Independent Vertical Scrolling Internals */
-.cortex-spatial-stage .bento-card .card-body,
-.cortex-spatial-stage .bento-card .vax-face-front,
-.cortex-spatial-stage .bento-card .vax-face-back {
-    overflow-y: auto !important; 
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior-y: contain !important; /* Locks vertical swipe from pulling the whole app */
-    flex-grow: 1 !important;
-    padding-bottom: 20px !important;
-    scrollbar-width: none !important;
-}
-
-/* 5. Milestones Flip Compatibility */
-.vax-flip-card { height: 100% !important; min-height: 0 !important; }
-.vax-face-front, .vax-face-back { height: 100% !important; max-height: 100% !important; display: flex !important; flex-direction: column !important; }
-.vax-face-back { position: absolute !important; inset: 0 !important; transform: rotateY(180deg) !important; backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; }
-.vax-flip-card.is-flipped { transform: rotateY(180deg) !important; }
-
-/* FIX: Force hide the card if JS explicitly sets display to none, overriding the flex !important */
-.cortex-spatial-stage .bento-card[style*="display: none"] {
-    display: none !important;
-}
-
 /* =========================================================
    INTELLIGENCE WORKSPACE & PREVIEW RAIL
    ========================================================= */
@@ -525,13 +430,11 @@ nav.main-nav button.nav-item.active svg { filter: drop-shadow(0 0 8px rgba(0, 22
     overflow: hidden !important; /* No native scrolling! */
 }
 
+/* 🚀 SURGICAL FIX: Force HoloDeck Cards to Render */
 #workspaceCarousel .bento-card {
-    position: absolute !important;
-    top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
-    margin: auto !important; /* Perfect absolute center */
-    width: 90vw !important;
-    height: 75vh !important;
-    max-height: 800px !important;
-    /* Smooth transition for the slots */
-    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important; /* The JS will override this via inline styles */
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
 }

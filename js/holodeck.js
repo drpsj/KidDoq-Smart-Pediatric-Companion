@@ -5,26 +5,29 @@ const HoloDeckEngine = (function() {
     let startX = 0;
     let isDragging = false;
 
-    // --- SPATIAL MATH ENGINE ---
+    // --- SPATIAL STATE MACHINE ENGINE ---
     function renderPhysics(animate = true) {
         const total = cards.length;
         
-        // 🚀 GOD-MODE 1: Un-Cage the 3D Space (Prevents Safari/Chrome Z-Clipping)
+                // 🚀 ARCHITECTURE FIX 1: True Spatial Stacking
         if (stage) {
             stage.style.setProperty('perspective', '1200px', 'important');
-            stage.style.setProperty('transform-style', 'preserve-3d', 'important');
+            stage.style.setProperty('transform-style', 'preserve-3d', 'important'); // 🚀 FIX: Restored true 3D physics
             stage.style.setProperty('width', '100vw', 'important');
             stage.style.setProperty('height', '100dvh', 'important');
             stage.style.setProperty('display', 'block', 'important');
-            stage.style.setProperty('overflow', 'visible', 'important'); // 🚀 Changed from hidden to visible
+            stage.style.setProperty('overflow', 'visible', 'important'); 
         }
 
         cards.forEach((card, index) => {
             if (animate) {
-                card.style.setProperty('transition', 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease, filter 0.5s ease', 'important');
+                card.style.setProperty('transition', 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease', 'important');
             } else {
                 card.style.setProperty('transition', 'none', 'important');
             }
+
+            // 🚀 ARCHITECTURE FIX 2: Scrub Legacy HTML Ghost Classes
+            card.classList.remove('slot-active', 'slot-prev', 'slot-next', 'slot-hidden');
 
             // Circular Shortest-Path Math
             let offset = index - currentIndex;
@@ -34,43 +37,42 @@ const HoloDeckEngine = (function() {
 
             const absOffset = Math.abs(offset);
             
-            // 🚀 GOD-MODE 2: Safer 3D Depths to prevent swallowing
-            let rotateY = offset * -35; // Slightly shallower rotation
-            let translateZ = absOffset * -120; // Reduced from -250px so they don't clip into the backdrop
-            let translateX = offset * 70; // Wider horizontal spread
-            let scale = 1 - (absOffset * 0.1); 
+            // 🚀 FIX: 3D Spatial Math (Injects true Z-translation)
+            let rotateY = offset * -25;
+            let translateX = offset * 70; 
+            let translateZ = absOffset * -150; // Pushes inactive cards deep into the background
+            let scale = 1 - (absOffset * 0.05); 
+            let opacity = absOffset === 0 ? 1 : Math.max(0, 0.6 - (absOffset * 0.25));
             
-            let opacity = absOffset === 0 ? 1 : Math.max(0, 0.7 - (absOffset * 0.2));
-            let blur = absOffset === 0 ? 'blur(0px)' : `blur(${absOffset * 3}px)`;
-            let zIndex = 100 - absOffset;
+            // Authoritative Base-10000 Z-Index (Failsafe)
+            let zIndex = 10000 - absOffset;
 
-            if (absOffset > 2) opacity = 0; // Cull extreme peripherals
-
-            // 🚀 GOD-MODE 3: Force Dimensions & Backface Visibility
             card.style.setProperty('display', 'flex', 'important');
-            card.style.setProperty('visibility', 'visible', 'important');
             card.style.setProperty('position', 'absolute', 'important');
             card.style.setProperty('top', '0', 'important');
             card.style.setProperty('bottom', '0', 'important');
             card.style.setProperty('left', '0', 'important');
             card.style.setProperty('right', '0', 'important');
             card.style.setProperty('margin', 'auto', 'important');
-            card.style.setProperty('backface-visibility', 'visible', 'important'); // Stops rotation vanishing
             
-            // Hardcode dimensions
             card.style.setProperty('width', '90vw', 'important');
             card.style.setProperty('height', '75vh', 'important');
             card.style.setProperty('max-width', '450px', 'important');
             card.style.setProperty('max-height', '800px', 'important');
 
-            // Apply calculated 3D Physics
-            card.style.setProperty('transform', `translate3d(${translateX}%, 0, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`, 'important');
+            // 🚀 SURGICAL FIX: Apply Z-translation to the matrix
+            card.style.setProperty('transform', `translateX(${translateX}%) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`, 'important');
             card.style.setProperty('opacity', opacity, 'important');
-            card.style.setProperty('filter', blur, 'important');
             card.style.setProperty('z-index', zIndex, 'important');
             
-            // Only the center card is interactive
-            card.style.setProperty('pointer-events', absOffset === 0 ? 'auto' : 'none', 'important');
+            // 🚀 ARCHITECTURE FIX 4: True is-expanded Lifecycle Handover
+            if (absOffset === 0) {
+                card.style.setProperty('pointer-events', 'auto', 'important');
+                card.classList.add('is-expanded'); // Wake up center card
+            } else {
+                card.style.setProperty('pointer-events', 'none', 'important');
+                card.classList.remove('is-expanded'); // Put peripheral cards to sleep
+            }
         });
     }
 
@@ -121,10 +123,8 @@ const HoloDeckEngine = (function() {
 
             currentIndex = Math.max(0, cards.findIndex(c => c.id === startCardId));
 
-            // 🚀 GOD-MODE 4: Wake up inner clinical tools (sub-tabs)
+            // Initialize sub-tabs (is-expanded state is now dynamically managed by renderPhysics)
             cards.forEach(card => {
-                card.classList.add('is-expanded');
-                // Force first sub-tab to be active if it exists, otherwise it stays blank
                 const firstTab = card.querySelector('.sub-tab-content');
                 if (firstTab) firstTab.style.setProperty('display', 'block', 'important');
             });

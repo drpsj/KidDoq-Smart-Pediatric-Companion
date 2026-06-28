@@ -21,31 +21,25 @@
 window.toggleWorkspace = async function(show) {
     const container = document.getElementById('workspaceContainer');
 
-    // 1. LAZY LOADING ENGINE: Fetch the HTML only if we are opening it AND it's empty
+    // 1. LAZY LOADING ENGINE
     if (show && container && container.innerHTML.trim() === '') {
         try {
-            // Updated path to look inside the views folder and bypass the cache!
-                        // HARDCODED PATH: Force the browser to look inside the views folder, ignoring HTML overrides
             const response = await fetch('views/workspace-view.html?v=' + new Date().getTime());
             if (!response.ok) throw new Error("Network response was not ok");
-            const html = await response.text();
-            container.innerHTML = html;
+            container.innerHTML = await response.text();
             
-            // Re-bind the close button background click if needed
             const newBackdrop = document.getElementById('workspaceBackdrop');
             if (newBackdrop) newBackdrop.onclick = () => toggleWorkspace(false);
             
-            // 🚀 THE FIX: Force the drawer to draw the drugs immediately after downloading!
             if (typeof window.renderWorkspaceRx === 'function') window.renderWorkspaceRx();
-            
         } catch (err) {
             console.error("Failed to load Workspace module:", err);
             if(typeof showSystemToast === 'function') showSystemToast("⚠️ Error loading Rx Clipboard.");
-            return; // Abort the opening sequence if the fetch fails
+            return;
         }
     }
 
-    // 2. GRAB ELEMENTS (They are guaranteed to exist in the DOM now)
+    // 2. GRAB ELEMENTS
     const sheet = document.getElementById('rxSmartClipboard');
     const backdrop = document.getElementById('workspaceBackdrop');
     const bentoGrid = document.querySelector('.cortex-bento-grid'); 
@@ -67,10 +61,7 @@ window.toggleWorkspace = async function(show) {
             bentoGrid.style.filter = 'blur(5px)';
         }
         
-        // 🚀 SURGICAL FIX: Boot the HoloDeck only AFTER workspace animation completes
-        setTimeout(() => {
-            if (typeof window.initSpatialDeck === 'function') window.initSpatialDeck();
-        }, 550);
+        // 🚀 Ghost Call Removed: HoloDeck engine is safely booted via launchWorkspace() now.
 
     } else {
         if(sheet) {

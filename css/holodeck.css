@@ -39,3 +39,19 @@
     /* Hardware acceleration lock */
     transform: translateZ(0); 
 }
+
+/* =========================================================
+   🚀 GOD-MODE CSS NUKE: UNCAGE THE HOLODECK
+   ========================================================= */
+html, body, .app-shell, .main-content, #dashboardMainUI, .cortex-bento-grid, #workspaceCarousel {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+}
+
+#workspaceCarousel .bento-card {
+    display: flex !important;
+    visibility: visible !important;
+    /* JS will handle the opacity and transform, this just ensures the browser allows them to be seen */
+}
