@@ -5,7 +5,7 @@
 
                 <div class="cortex-sticky-anchor desktop-grid-override" style="position: sticky; top: 15px; z-index: 4000; display: block; text-align: center; width: 100%; max-width: 100vw; margin: 0 0 10px 0; padding: 0 10px; background: transparent; box-sizing: border-box;">
                 
-                <div id="cortexAnchorPill" class="anchor-pill-premium" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; width: 92% !important; max-width: 500px !important; min-height: 52px !important; margin: 0 auto !important; gap: 10px !important; padding: 6px 16px !important; border-radius: 50px !important; scrollbar-width: none;">
+                <div id="cortexAnchorPill" class="anchor-pill-premium" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; width: 100% !important; max-width: 500px !important; min-height: 52px !important; margin: 0 auto !important; gap: 4px !important; padding: 6px 10px !important; border-radius: 50px !important; scrollbar-width: none;">
                     
                     <input type="hidden" id="hudAgeYrs" value="0">
                     <input type="hidden" id="hudAgeMos" value="0">
@@ -45,23 +45,30 @@
                     </div>
                 </div>
                 
-                <div id="cortexDrawer" class="cortex-collapsed" style="max-height: 0px; opacity: 0; padding: 0 20px; overflow: hidden; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(0, 229, 255, 0.2); border-top: none; border-radius: 0 0 24px 24px; max-width: 480px; margin: -20px auto 10px auto; box-shadow: 0 20px 40px rgba(0,0,0,0.6); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; z-index: -1;">
-                    <div class="row-inputs" style="padding-top: 30px; margin-bottom: 10px;">
-                        <div>
-                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Height (cm)</label>
-                            <input type="number" id="hudHt" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                                <div id="cortexDrawer" class="cortex-collapsed" style="max-height: 0px; opacity: 0; overflow: hidden; display: block !important; background: rgba(0, 0, 0, 0.65) !important; backdrop-filter: blur(25px) !important; -webkit-backdrop-filter: blur(25px) !important; border: 1px solid rgba(0, 229, 255, 0.3) !important; border-radius: 50px !important; width: 92% !important; max-width: 480px !important; padding: 0 !important; box-shadow: 0 15px 35px rgba(0,0,0,0.5); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: absolute; top: calc(100% + 5px); left: 0; right: 0; margin: 0 auto; z-index: 4000; transform: translateY(-10px) scale(0.95); pointer-events: none;">
+                    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 10px 20px; gap: 10px;">
+                        
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                            <label style="font-size: 0.6rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Height <span style="color: rgba(255,255,255,0.4); text-transform: lowercase;">cm</span></label>
+                            <input type="number" id="hudHt" placeholder="--" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 0; background: transparent !important; border: none !important; color: white; border-radius: 0; font-weight: 900; font-size: 1.2rem; text-align: center; box-shadow: none !important; outline: none;">
                         </div>
-                        <div>
-                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">Head Circ (cm)</label>
-                            <input type="number" id="hudHc" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        
+                        <div style="width: 1px; height: 28px; background: rgba(255,255,255,0.15);"></div>
+                        
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                            <label style="font-size: 0.6rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">Head <span style="color: rgba(255,255,255,0.4); text-transform: lowercase;">cm</span></label>
+                            <input type="number" id="hudHc" placeholder="--" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 0; background: transparent !important; border: none !important; color: white; border-radius: 0; font-weight: 900; font-size: 1.2rem; text-align: center; box-shadow: none !important; outline: none;">
                         </div>
-                        <div>
-                            <label style="font-size: 0.7rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase;">MAC (cm)</label>
-                            <input type="number" id="hudMac" placeholder="0.0" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                        
+                        <div style="width: 1px; height: 28px; background: rgba(255,255,255,0.15);"></div>
+                        
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                            <label style="font-size: 0.6rem; color: var(--brand-cyan); font-weight: 800; text-transform: uppercase; margin-bottom: 2px;">MAC <span style="color: rgba(255,255,255,0.4); text-transform: lowercase;">cm</span></label>
+                            <input type="number" id="hudMac" placeholder="--" oninput="broadcastGlobalParameters()" style="width: 100%; padding: 0; background: transparent !important; border: none !important; color: white; border-radius: 0; font-weight: 900; font-size: 1.2rem; text-align: center; box-shadow: none !important; outline: none;">
                         </div>
+                        
                     </div>
                 </div>
-
             </div>
 
             <div class="cortex-greeting-wrapper desktop-grid-override animate-entrance" style="position: relative; width: 100%; padding: 15px 0; border-bottom: 1px solid var(--border-soft);">

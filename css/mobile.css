@@ -167,7 +167,7 @@ input, select, textarea { font-size: 16px !important; }
 
 .cortex-sticky-anchor {
     position: sticky !important; top: 10px !important; z-index: 5000 !important;
-    display: flex !important; justify-content: center !important; width: 100% !important;
+    display: flex !important; flex-direction: column !important; align-items: center !important; width: 100% !important;
     background: transparent !important; margin-bottom: 10px !important;
     margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important;
 }

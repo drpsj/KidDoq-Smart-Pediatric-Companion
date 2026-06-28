@@ -9,17 +9,19 @@ window.toggleCortexDrawer = function() {
     if (!drawer) return;
     
     if (drawer.classList.contains('cortex-collapsed')) {
-        // Open Drawer (Overrides inline hidden styles)
-        drawer.style.maxHeight = '200px';
+        // Open Drawer (Floating Pill Mode)
+        drawer.style.maxHeight = '80px';
         drawer.style.opacity = '1';
-        drawer.style.padding = '0 20px 20px 20px';
+        drawer.style.transform = 'translateY(0) scale(1)';
+        drawer.style.pointerEvents = 'auto';
         drawer.classList.remove('cortex-collapsed');
         if (chevron) chevron.style.transform = 'rotate(180deg)';
     } else {
         // Close Drawer
         drawer.style.maxHeight = '0px';
         drawer.style.opacity = '0';
-        drawer.style.padding = '0 20px';
+        drawer.style.transform = 'translateY(-10px) scale(0.95)';
+        drawer.style.pointerEvents = 'none';
         drawer.classList.add('cortex-collapsed');
         if (chevron) chevron.style.transform = 'rotate(0deg)';
     }
